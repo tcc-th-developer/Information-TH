@@ -403,7 +403,7 @@
 // ── Config ──
 // [FIX] ลบ NOCO token ออกจาก client ทั้งหมด
 // ข้อมูลทุกอย่างดึงผ่าน Worker proxy แทน — token อยู่ฝั่ง server เท่านั้น
-const WORKER_URL = 'https://tradercafeclub.tradercafeclub.workers.dev';
+const WORKER_URL = 'https://information.tradercafeclub.workers.dev';
 // กระเป๋ารับเงินมาจาก Worker (/api/share/payment) เท่านั้น — ไม่มี address ฝังในหน้าและไม่อ่านจาก localStorage
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const safeImg = u => /^https:\/\/[^\s"'<>]+$/.test(String(u||'')) ? String(u) : '';

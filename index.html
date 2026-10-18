@@ -2383,7 +2383,7 @@ input[type=number].tc-inp::-webkit-inner-spin-button{-webkit-appearance:none;mar
 <script>
 // ═══ TCC v4 — global fetch wrapper: แนบ token (admin/member) + จัดการ 401 ═══
 (function(){
-  var BASE='https://tradercafeclub.tradercafeclub.workers.dev';
+  var BASE='https://information.tradercafeclub.workers.dev';
   var _f=window.fetch.bind(window);
   window.__rawFetch=_f;
   // เอกสารที่รันใน iframe about:srcdoc (เช่นพรีวิว) ส่ง fetch ผ่าน postMessage → clone Headers/AbortSignal ไม่ได้
@@ -3049,7 +3049,7 @@ const MENU=[
 // ═══════════════════════════════════════════════════
 //  index_main State & Config
 // ═══════════════════════════════════════════════════
-const WORKER_URL = 'https://tradercafeclub.tradercafeclub.workers.dev';
+const WORKER_URL = 'https://information.tradercafeclub.workers.dev';
 const SYSTEM_WALLET_DEFAULT = { label:'กระเป๋าหลัก', addr:'0xfd1A5bc82603a702a9AF38426FfAC0d6BE5aEeef', qr:'https://i.ibb.co/Q7kBRYg5/photo-2026-04-22-13-17-09.jpg', active:true };
 const LS_ADMINS  = 'tcc_admins';
 const LS_WALLETS = 'tcc_wallets';
@@ -5473,6 +5473,14 @@ function _cafeVidToggle(uid){
 }
 
 function _renderCafeCard(c){
+  if(c.type === 'video' && _isCldVideo(c.videoUrl)){
+    var cv = c.videoUrl;
+    var cp = cv.replace('/upload/','/upload/so_0,f_jpg,q_auto/').replace(/\.[A-Za-z0-9]+$/,'.jpg');
+    return '<div class="info-card" style="padding:14px;text-align:center;">'
+      + '<div style="font-family:Rajdhani,sans-serif;font-size:.85rem;color:var(--gold);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase;">'+(c.title||'&#127916; วีดีโอ')+'</div>'
+      + '<video controls playsinline preload="metadata" poster="'+cp+'" src="'+cv+'" style="width:100%;max-width:320px;max-height:70vh;background:#000;border-radius:14px;"></video>'
+      + '</div>';
+  }
   if(c.type === 'video'){
     var ytId  = _ytIdFromUrl(c.videoUrl||'');
     var thumb = ytId ? 'https://i.ytimg.com/vi/'+ytId+'/hqdefault.jpg' : '';
@@ -5768,7 +5776,7 @@ function _buildCafeModal(card, isEdit){
         document.getElementById('cm-wrap-video').style.display=v?'block':'none';
       ">
         <option value="text"  ${!isVideo?'selected':''}>📝 ข้อความ</option>
-        <option value="video" ${isVideo?'selected':''}>🎬 วีดีโอ (YouTube)</option>
+        <option value="video" ${isVideo?'selected':''}>🎬 วีดีโอ (YouTube / อัปโหลดไฟล์)</option>
       </select>
     </div>
 
@@ -5792,12 +5800,19 @@ function _buildCafeModal(card, isEdit){
 
     <!-- วีดีโอ (video) -->
     <div id="cm-wrap-video" ${!isVideo?'style="display:none;"':''}>
-      <div class="fg"><label class="flbl">YouTube URL *</label>
+      <div class="fg"><label class="flbl">ลิงก์วีดีโอ * (YouTube หรือ Cloudinary)</label>
         <input class="finput" id="cm-video"
           value="${esc(c.videoUrl||'')}"
           placeholder="https://youtube.com/shorts/xxxxx  หรือ  https://youtu.be/xxxxx">
         <div style="font-size:.71rem;color:var(--text-dim);margin-top:3px;">
           💡 รองรับ Shorts / Watch / youtu.be · Thumbnail จะแสดงอัตโนมัติ
+        </div>
+        <div style="margin-top:10px;">
+          <label id="cm-vid-btn" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border:1px dashed rgba(240,185,11,.4);border-radius:10px;color:var(--gold);cursor:pointer;font-size:.82rem;">
+            ⬆️ อัปโหลดวีดีโอไป Cloudinary (mp4 / mov / webm · ไม่เกิน 100MB)
+            <input type="file" id="cm-video-file" accept="video/mp4,video/quicktime,video/webm" style="display:none" onchange="cafeUploadVideo(this)">
+          </label>
+          <div id="cm-vid-prog" style="font-size:.74rem;color:var(--text-dim);margin-top:5px;"></div>
         </div>
       </div>
     </div>
@@ -5832,6 +5847,40 @@ function openEditCafeCardModal(idx){
   document.body.appendChild(m);
 }
 
+// ── Cloudinary video ──────────────────────────────────────────────
+function _isCldVideo(u){
+  return /^https:\/\/res\.cloudinary\.com\/[A-Za-z0-9_-]+\/video\/upload\/[A-Za-z0-9_\-\/.%,]+$/.test(u||'');
+}
+// อัปโหลดวีดีโอตรงจาก browser ไป Cloudinary ด้วยลายเซ็นจาก Worker (เฉพาะแอดมินที่มีสิทธิ์ cafe.edit)
+function cafeUploadVideo(input){
+  var f=input.files&&input.files[0];
+  var prog=document.getElementById('cm-vid-prog');
+  var out=document.getElementById('cm-video');
+  if(!f||!prog||!out) return;
+  if(!/^video\//.test(f.type)){ prog.textContent='❌ เลือกได้เฉพาะไฟล์วีดีโอ'; input.value=''; return; }
+  if(f.size>100*1024*1024){ prog.textContent='❌ ไฟล์ใหญ่เกิน 100MB'; input.value=''; return; }
+  prog.textContent='⏳ กำลังขออนุญาตอัปโหลด...';
+  fetch(WORKER_URL+'/api/upload/sign',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
+    .then(function(r){ return r.json().catch(function(){return {};}).then(function(d){ if(!r.ok) throw new Error(d.error||('HTTP '+r.status)); return d; }); })
+    .then(function(sg){
+      var fd=new FormData();
+      fd.append('file',f); fd.append('api_key',sg.apiKey); fd.append('timestamp',sg.timestamp);
+      fd.append('folder',sg.folder); fd.append('signature',sg.signature);
+      var x=new XMLHttpRequest();
+      x.open('POST','https://api.cloudinary.com/v1_1/'+encodeURIComponent(sg.cloudName)+'/video/upload');
+      x.upload.onprogress=function(e){ if(e.lengthComputable) prog.textContent='⏳ กำลังอัปโหลด '+Math.round(e.loaded/e.total*100)+'%'; };
+      x.onload=function(){
+        var j={}; try{ j=JSON.parse(x.responseText); }catch(e){}
+        if(x.status>=200&&x.status<300&&j.secure_url){ out.value=j.secure_url; prog.textContent='✅ อัปโหลดสำเร็จ — กด "บันทึก" เพื่อใช้ลิงก์นี้'; }
+        else{ prog.textContent='❌ อัปโหลดไม่สำเร็จ: '+((j.error&&j.error.message)||x.status); }
+        input.value='';
+      };
+      x.onerror=function(){ prog.textContent='❌ เครือข่ายขัดข้อง'; input.value=''; };
+      x.send(fd);
+    })
+    .catch(function(e){ prog.textContent='❌ '+e.message; input.value=''; });
+}
+
 // ── _ytIdFromUrl ──────────────────────────────────────────────────
 function _ytIdFromUrl(url){
   if(!url) return '';
@@ -5855,8 +5904,8 @@ async function saveCafeCard(){
     if(msg){msg.className='fmsg er';msg.textContent='กรุณากรอกชื่อ Card';msg.style.display='block';}
     return;
   }
-  if(type==='video' && !_ytIdFromUrl(video)){
-    if(msg){msg.className='fmsg er';msg.textContent='URL YouTube ไม่ถูกต้อง กรุณาตรวจสอบ';msg.style.display='block';}
+  if(type==='video' && !_ytIdFromUrl(video) && !_isCldVideo(video)){
+    if(msg){msg.className='fmsg er';msg.textContent='ลิงก์วีดีโอไม่ถูกต้อง (ใช้ลิงก์ YouTube หรืออัปโหลดไฟล์ไป Cloudinary)';msg.style.display='block';}
     return;
   }
   if(msg){msg.className='fmsg';msg.textContent='⏳ กำลังบันทึก...';msg.style.display='block';}

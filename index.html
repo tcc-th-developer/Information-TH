@@ -3137,6 +3137,7 @@ function applyDashboardStats(){
     setAllById('stat-pending',pending);
     setAllById('stat-total-profit',fmtUSD(total));
   }
+  applyServerTotals();
 }
 let WALLETS=[], ADMINS=[], currentAdmin=null;
 let editWalletIdx=-1;
@@ -3829,6 +3830,7 @@ function buildSystemPaymentInner(){
     document.querySelectorAll('#pmt-stat-total-profit').forEach(e=>e.textContent=fmtUSD(total));
     setTimeout(()=>{ pexBuildMonthFilter&&pexBuildMonthFilter(); pexSearch&&pexSearch(); }, 50);
   }
+  applyServerTotals();
 }
 
 // ═══════════════════════════════════════════════════
@@ -4788,6 +4790,7 @@ function buildSystemPaymentStats(){
   document.querySelectorAll('[id="pmt-stat-payments"]').forEach(e=>e.textContent=PAYMENTS.length);
   document.querySelectorAll('[id="pmt-stat-pending"]').forEach(e=>e.textContent=pending);
   document.querySelectorAll('[id="pmt-stat-total-profit"]').forEach(e=>e.textContent=fmtUSD(total));
+  applyServerTotals();
 }
 
 // ═══════════════════════════════════════════════════
@@ -8022,28 +8025,46 @@ async function ndbFetch(table,params={},_retry=0){
 }
 
 // Fetch ALL records by paginating until no more data
+// v1.2: ขยายหน้าละ 500 (Worker รับสูงสุด 1000) และเอาเพดาน 2,000 รายการออก — หยุดเมื่อได้ครบตาม totalRows
 async function ndbFetchAll(table,params={}){
-  const PAGE_SIZE=100;
+  const PAGE_SIZE=500, MAX_PAGES=100;   // MAX_PAGES = กันลูปไม่รู้จบ (รองรับ 50,000 แถว)
   let allRecords=[];
   let offset=0;
   let totalPages=0;
+  let totalCount=0;
   while(true){
     const d=await ndbFetch(table,{...params,limit:PAGE_SIZE,offset});
     const records=d.list||d.data?.list||[];
     const pageInfo=d.pageInfo||d.data?.pageInfo||{};
     allRecords=allRecords.concat(records);
     totalPages++;
-    // Stop if: fewer records than page size OR reached total count OR empty
-    const totalCount=pageInfo.totalRows||pageInfo.total||0;
-    if(records.length<PAGE_SIZE||(totalCount>0&&allRecords.length>=totalCount)||records.length===0){
-      break;
-    }
+    totalCount=pageInfo.totalRows||pageInfo.total||totalCount;
+    if(records.length<PAGE_SIZE||(totalCount>0&&allRecords.length>=totalCount)||records.length===0) break;
     offset+=PAGE_SIZE;
-    // Safety cap: max 20 pages = 2000 records
-    if(totalPages>=20) break;
-    // [FIX] ลบ delay 250ms ออก — Google Sheets ไม่มีปัญหา 429 เหมือน NocoDB
+    if(totalPages>=MAX_PAGES) break;
   }
+  if(totalCount>0&&allRecords.length<totalCount) console.warn(`ndbFetchAll(${table}): โหลดได้ ${allRecords.length}/${totalCount} รายการ — ข้อมูลไม่ครบ`);
   return allRecords;
+}
+
+// ── v1.2: ตัวเลขสรุป (การ์ดหน้า Payment/System/Admin) มาจาก Worker คำนวณจากทั้งชีต ไม่ขึ้นกับจำนวนแถวที่โหลดมา ──
+let _srvStatsAt=0;
+async function fetchServerStats(force=false){
+  if(!force && window.PUBLIC_STATS && typeof window.PUBLIC_STATS.payments==='number' && Date.now()-_srvStatsAt<60000) return window.PUBLIC_STATS;
+  try{
+    const r=await fetch(`${WORKER_URL}/api/public/stats`);
+    if(r.ok){ const st=await r.json(); if(st&&typeof st.payments==='number'){ window.PUBLIC_STATS=st; _srvStatsAt=Date.now(); } }
+  }catch(e){}
+  return window.PUBLIC_STATS||null;
+}
+function applyServerTotals(){
+  const st=window.PUBLIC_STATS;
+  if(!st||typeof st.payments!=='number') return;
+  const put=(ids,v)=>ids.forEach(id=>document.querySelectorAll(`[id="${id}"]`).forEach(e=>e.textContent=v));
+  put(['stat-payments','pmt-stat-payments','a-stat-pays'],st.payments);
+  put(['stat-pending','pmt-stat-pending','a-stat-pending'],st.pending||0);
+  put(['stat-total-profit','pmt-stat-total-profit','a-stat-profit'],fmtUSD(st.totalProfit||0));
+  if(typeof st.teams==='number') put(['stat-teams','pmt-stat-teams','a-stat-teams'],st.teams);
 }
 
 
@@ -8331,6 +8352,7 @@ async function init(){
   // ── โหลด cache ทันที → Dashboard ไม่หายเมื่อ Refresh ──
   const cm=ssGet(SS_MEMBERS),ct=ssGet(SS_TEAMS),cp=ssGet(SS_PAYMENTS);
   if(cm){MEMBERS=cm;} if(ct){TEAMS=ct;} if(cp){PAYMENTS=cp;}
+  fetchServerStats().then(applyServerTotals);   // v1.2: การ์ดสรุปแสดงตัวเลขจริงทันที ไม่ต้องรอโหลดรายการ
   applyDashboardStats();
   // v29 FIX: อัปเดต pmt-stat-* ทันทีหลังโหลด cache (ก่อน API เรียก)
   // ป้องกันตัวเลข Payment dashboard ขึ้นช้า
@@ -8392,6 +8414,7 @@ async function loadTeams(force=false){
   renderTeams(); renderAdminTeams&&renderAdminTeams();
 }
 async function loadPayments(force=false){
+  await fetchServerStats(force);   // v1.2: ตัวเลขสรุปจาก Worker
   if(!force){
     const c=ssGet(SS_PAYMENTS);
     if(c){
@@ -8409,6 +8432,7 @@ async function loadPayments(force=false){
   });
   const records=await ndbFetchAll((currentAdmin && can('payment','view'))?'payments':'public/payments',{sort:'-Id'});
   PAYMENTS=records; ssSet(SS_PAYMENTS,records);
+  if(window.PUBLIC_STATS&&records.length<(window.PUBLIC_STATS.payments||0)) console.warn(`loadPayments: โหลด ${records.length}/${window.PUBLIC_STATS.payments} รายการ`);
   const total=PAYMENTS.reduce((s,p)=>s+payNum(p,'profit'),0);
   const pending=PAYMENTS.filter(p=>payVal(p,'position')==='Pending').length;
   setAllById('stat-payments',PAYMENTS.length); setAllById('stat-pending',pending); setAllById('stat-total-profit',fmtUSD(total));
@@ -8424,6 +8448,7 @@ function updateAdminStats(){
   set('a-stat-pays',PAYMENTS.length);
   set('a-stat-pending',pending);
   set('a-stat-profit',fmtUSD(total));
+  applyServerTotals();
 }
 
 // ═══════════════ RENDER ═══════════════

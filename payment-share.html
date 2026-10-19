@@ -475,7 +475,7 @@ async function fetchShare(token) {
 }
 
 // ── Render ──
-function renderPayment(p, wallet, exp) {
+function renderPayment(p, wallet, exp, payer) {
   const now = new Date();
   const profit = payNum(p,'profit'), comm = payNum(p,'commission'), guar = payNum(p,'guarantee');
   const bal = payNum(p,'balance'), mem = payNum(p,'member'), cen = payNum(p,'central'), trans = payNum(p,'transfer');
@@ -535,8 +535,9 @@ function renderPayment(p, wallet, exp) {
       </div>
       <div class="wallet-chain">✦ USDT BNB Smart Chain (BEP-20) — ${esc(aw.label)}</div>
       <div class="wallet-hint">โอนเฉพาะ USDT บนเครือข่าย BEP-20 เท่านั้น — ระบบตรวจยอดอัตโนมัติ${isReview ? '' : ' (โอนยอดให้ตรงตามที่ระบุ)'}</div>
+      ${(payer && isPending && !isReview) ? `<div class="wallet-hint" style="color:#fbbf24;">🔐 ให้โอนจากกระเป๋าที่ลงทะเบียนไว้ (${esc(payer)}) เพื่ออนุมัติอัตโนมัติ — หากโอนจากกระเป๋าอื่น แอดมินจะตรวจสอบก่อน</div>` : ''}
     </div>` : `<div class="qr-section"><div class="wallet-hint">ไม่พบข้อมูลกระเป๋ารับเงิน กรุณาติดต่อแอดมิน</div></div>`) : '';
-  const reviewHTML = isReview ? `<div class="status-bar" style="border:1px solid rgba(96,165,250,.35);margin-bottom:10px;"><span class="status-text" style="color:#60a5fa;">🔎 พบการโอนแล้ว — แอดมินกำลังตรวจสอบยอด</span></div>` : '';
+  const reviewHTML = isReview ? `<div class="status-bar" style="border:1px solid rgba(96,165,250,.35);margin-bottom:10px;"><span class="status-text" style="color:#60a5fa;">${/sender_mismatch/.test(String(note||'')) ? '🔎 พบการโอนแล้ว — แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน แอดมินกำลังตรวจสอบ' : '🔎 พบการโอนแล้ว — แอดมินกำลังตรวจสอบยอด'}</span></div>` : '';
   const txHTML = (!isPending && TXH.test(txhash)) ? `
       <div style="margin-top:10px;padding:10px 14px;background:rgba(0,180,255,0.06);border:1px solid rgba(0,180,255,0.2);border-radius:10px;">
         <div style="font-size:0.63rem;color:var(--muted);margin-bottom:4px;letter-spacing:0.5px;">🔗 VERIFIED ON BLOCKCHAIN</div>
@@ -698,7 +699,7 @@ async function load(first) {
     _lastSig = sig;
     document.getElementById('loading-screen').style.display    = 'none';
     document.getElementById('payment-container').style.display = 'block';
-    renderPayment(d.payment, d.wallet, d.exp);
+    renderPayment(d.payment, d.wallet, d.exp, d.payer);
   }
   // ยังไม่ Approve → ตรวจสถานะซ้ำอัตโนมัติ (ระบบ cron ตรวจ USDT ทุก 2 นาที)
   const st = d.payment['Field 15'];

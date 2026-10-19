@@ -8000,7 +8000,22 @@ function setDot(id,st){
 // ═══════════════════════════════════════════════════
 
 // ═══════════════ FIELD HELPERS ═══════════════
-function payVal(p,f){const M={'bnb_id':p['Field 1'],'name':p['Field 2'],'team':p['Field 3'],'lva':p['Field 4'],'lvb':p['Field 5'],'date':p['Field 6'],'profit':p['Field 8'],'commission':p['10.00%'],'guarantee':p['10.00%1'],'balance':p['Field 11'],'member':p['50.00%'],'central':p['50.00%1'],'transfer':p['Field 14'],'position':p['Field 15'],'note':p['Field 16'],'txhash':p['Field 17']};const v=M[f];return(v===undefined||v===null)?'':v;}
+// v1.3: รวมค่าสถานะที่หลากหลาย (เว้นวรรค/ตัวพิมพ์/ภาษาไทย) ให้เป็น 'Approve' | 'Pending' | ค่าอื่นตามเดิม
+function _normPayStatus(v){
+  const t=String(v==null?'':v).replace(/\s+/g,' ').trim(), l=t.toLowerCase();
+  if(!l||l==='pending'||l.includes('รอ')||l==='wait'||l==='waiting'||l==='unpaid') return 'Pending';
+  if(l==='approve'||l==='approved'||l==='paid'||l.includes('จ่ายแล้ว')||l.includes('อนุมัติ')) return 'Approve';
+  return t;
+}
+// v1.3: สถานะอยู่ได้หลายคอลัมน์ (แถวใหม่ Field 15 / แถวเก่าใน Sheet อยู่ที่ Field 13 / หัว 'Status') → เลือกช่องที่เป็นค่าสถานะจริง
+function _payStatusOf(p){
+  for(const k of ['Field 15','Status','status','Field 13']){
+    const n=_normPayStatus(p[k]);
+    if(p[k]!==undefined&&p[k]!==null&&String(p[k]).trim()!==''&&(n==='Approve'||n==='Pending'||n==='Review')) return n;
+  }
+  return 'Pending';
+}
+function payVal(p,f){const M={'bnb_id':p['Field 1'],'name':p['Field 2'],'team':p['Field 3'],'lva':p['Field 4'],'lvb':p['Field 5'],'date':p['Field 6'],'profit':p['Field 8'],'commission':p['10.00%'],'guarantee':p['10.00%1'],'balance':p['Field 11'],'member':p['50.00%'],'central':p['50.00%1'],'transfer':p['Field 14'],'position':_payStatusOf(p),'note':p['Field 16'],'txhash':p['Field 17']};const v=M[f];return(v===undefined||v===null)?'':v;}
 function payNum(p,f){return parseFloat(String(payVal(p,f)).replace(/[$,\s]/g,''))||0;}
 function fmt(n){return n.toLocaleString("en",{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtUSD(n){return "$"+fmt(n);}
@@ -8062,7 +8077,9 @@ function applyServerTotals(){
   if(!st||typeof st.payments!=='number') return;
   const put=(ids,v)=>ids.forEach(id=>document.querySelectorAll(`[id="${id}"]`).forEach(e=>e.textContent=v));
   put(['stat-payments','pmt-stat-payments','a-stat-pays'],st.payments);
-  put(['stat-pending','pmt-stat-pending','a-stat-pending'],st.pending||0);
+  // v1.3: ถ้าโหลดรายการครบแล้วใช้ยอดที่นับจริงในหน้าเว็บ (กัน Worker ส่ง 0/ค่าไม่ตรง) ไม่งั้นใช้ค่าจาก Worker
+  const localPend=(Array.isArray(PAYMENTS)&&PAYMENTS.length&&PAYMENTS.length>=st.payments)?PAYMENTS.filter(p=>payVal(p,'position')==='Pending').length:null;
+  put(['stat-pending','pmt-stat-pending','a-stat-pending'],localPend!==null?localPend:(st.pending||0));
   put(['stat-total-profit','pmt-stat-total-profit','a-stat-profit'],fmtUSD(st.totalProfit||0));
   if(typeof st.teams==='number') put(['stat-teams','pmt-stat-teams','a-stat-teams'],st.teams);
 }

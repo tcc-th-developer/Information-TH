@@ -412,27 +412,31 @@ const POLL_MS = 20000;
 let _token = '', _pollTimer = null, _lastSig = '';
 
 // ── Field map ──
-function payVal(p, f) {
-  const M = {
-    bnb_id:     p['Field 1'],
-    name:       p['Field 2'],
-    team:       p['Field 3'],
-    lva:        p['Field 4'],
-    lvb:        p['Field 5'],
-    date:       p['Field 6'],
-    profit:     p['Field 8'],
-    commission: p['10.00%'],
-    guarantee:  p['10.00%1'],
-    balance:    p['Field 11'],
-    member:     p['50.00%'],
-    central:    p['50.00%1'],
-    transfer:   p['Field 14'],
-    position:   p['Field 15'],
-    note:       p['Field 16'],
-    txhash:     p['Field 17']
-  };
-  const v = M[f];
-  return (v === undefined || v === null) ? '' : v;
+// v1.3: แถวใน Sheet มี 2 เลย์เอาต์ — (ก) แถวเดิม/legacy: ข้อมูลชิดซ้าย Field 7..Field 13 + โน้ตที่ '50.00%'  (ข) แถวที่ระบบสร้างเอง: ตามหัวคอลัมน์เดิม Field 8/10.00%/.../Field 17
+const _PAY_STD={profit:'Field 8',commission:'10.00%',guarantee:'10.00%1',balance:'Field 11',member:'50.00%',central:'50.00%1',transfer:'Field 14',note:'Field 16',txhash:'Field 17'};
+const _PAY_LEG={profit:'Field 7',commission:'Field 8',guarantee:'Field 9',balance:'10.00%',member:'10.00%1',central:'Field 11',transfer:'Field 12',note:'50.00%',txhash:'50.00%1'};
+function _hasMoney(v){return v!==undefined&&v!==null&&/\d/.test(String(v))&&/^[\s$฿,.\-+\d]+$/.test(String(v));}
+function _payLegacy(p){return _hasMoney(p['Field 7'])&&_hasMoney(p['Field 12']);}
+function _payStatusOf(p){
+  for(const k of ['Field 15','Status','status','Field 13']){
+    const l=String(p[k]==null?'':p[k]).replace(/\s+/g,' ').trim().toLowerCase();
+    if(!l) continue;
+    if(l==='pending'||l.includes('รอ')) return 'Pending';
+    if(l==='approve'||l==='approved'||l==='paid'||l.includes('จ่ายแล้ว')||l.includes('อนุมัติ')) return 'Approve';
+    if(l==='review') return 'Review';
+  }
+  return 'Pending';
+}
+function payVal(p,f){
+  const fix={bnb_id:p['Field 1'],name:p['Field 2'],team:p['Field 3'],lva:p['Field 4'],lvb:p['Field 5'],date:p['Field 6']};
+  let v;
+  if(f==='position') return _payStatusOf(p);
+  if(f in fix) v=fix[f];
+  else if(f==='note'){ v=p[_payLegacy(p)?_PAY_LEG.note:_PAY_STD.note]; }
+  else if(f==='sysnote'){ v=p['Field 16']; }
+  else if(f==='txhash'){ v=p['Field 17']; if((v===undefined||v===null||v==='')&&_payLegacy(p)) v=p[_PAY_LEG.txhash]; }
+  else v=p[(_payLegacy(p)?_PAY_LEG:_PAY_STD)[f]];
+  return(v===undefined||v===null)?'':v;
 }
 function payNum(p, f) {
   return parseFloat(String(payVal(p, f)).replace(/[$,\s]/g, '')) || 0;
@@ -537,7 +541,7 @@ function renderPayment(p, wallet, exp, payer) {
       <div class="wallet-hint">โอนเฉพาะ USDT บนเครือข่าย BEP-20 เท่านั้น — ระบบตรวจยอดอัตโนมัติ${isReview ? '' : ' (โอนยอดให้ตรงตามที่ระบุ)'}</div>
       ${(payer && isPending && !isReview) ? `<div class="wallet-hint" style="color:#fbbf24;">🔐 ให้โอนจากกระเป๋าที่ลงทะเบียนไว้ (${esc(payer)}) เพื่ออนุมัติอัตโนมัติ — หากโอนจากกระเป๋าอื่น แอดมินจะตรวจสอบก่อน</div>` : ''}
     </div>` : `<div class="qr-section"><div class="wallet-hint">ไม่พบข้อมูลกระเป๋ารับเงิน กรุณาติดต่อแอดมิน</div></div>`) : '';
-  const reviewHTML = isReview ? `<div class="status-bar" style="border:1px solid rgba(96,165,250,.35);margin-bottom:10px;"><span class="status-text" style="color:#60a5fa;">${/sender_mismatch/.test(String(note||'')) ? '🔎 พบการโอนแล้ว — แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน แอดมินกำลังตรวจสอบ' : '🔎 พบการโอนแล้ว — แอดมินกำลังตรวจสอบยอด'}</span></div>` : '';
+  const reviewHTML = isReview ? `<div class="status-bar" style="border:1px solid rgba(96,165,250,.35);margin-bottom:10px;"><span class="status-text" style="color:#60a5fa;">${/sender_mismatch/.test(String(payVal(p,'sysnote')||note||'')) ? '🔎 พบการโอนแล้ว — แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน แอดมินกำลังตรวจสอบ' : '🔎 พบการโอนแล้ว — แอดมินกำลังตรวจสอบยอด'}</span></div>` : '';
   const txHTML = (!isPending && TXH.test(txhash)) ? `
       <div style="margin-top:10px;padding:10px 14px;background:rgba(0,180,255,0.06);border:1px solid rgba(0,180,255,0.2);border-radius:10px;">
         <div style="font-size:0.63rem;color:var(--muted);margin-bottom:4px;letter-spacing:0.5px;">🔗 VERIFIED ON BLOCKCHAIN</div>
@@ -694,7 +698,7 @@ const REASONS = {
 async function load(first) {
   const d = await fetchShare(_token);
   if (!d.valid) { showError(REASONS[d.reason] || REASONS.invalid); return false; }
-  const sig = JSON.stringify([d.payment['Field 15'], d.payment['Field 17'], d.wallet && d.wallet.addr]);
+  const sig = JSON.stringify([payVal(d.payment,'position'), payVal(d.payment,'txhash'), d.wallet && d.wallet.addr]);
   if (first || sig !== _lastSig) {
     _lastSig = sig;
     document.getElementById('loading-screen').style.display    = 'none';
@@ -702,7 +706,7 @@ async function load(first) {
     renderPayment(d.payment, d.wallet, d.exp, d.payer);
   }
   // ยังไม่ Approve → ตรวจสถานะซ้ำอัตโนมัติ (ระบบ cron ตรวจ USDT ทุก 2 นาที)
-  const st = d.payment['Field 15'];
+  const st = payVal(d.payment,'position');
   if (st === 'Approve' && _pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
   return true;
 }

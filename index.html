@@ -8010,12 +8010,30 @@ function _normPayStatus(v){
 // v1.3: สถานะอยู่ได้หลายคอลัมน์ (แถวใหม่ Field 15 / แถวเก่าใน Sheet อยู่ที่ Field 13 / หัว 'Status') → เลือกช่องที่เป็นค่าสถานะจริง
 function _payStatusOf(p){
   for(const k of ['Field 15','Status','status','Field 13']){
-    const n=_normPayStatus(p[k]);
-    if(p[k]!==undefined&&p[k]!==null&&String(p[k]).trim()!==''&&(n==='Approve'||n==='Pending'||n==='Review')) return n;
+    const l=String(p[k]==null?'':p[k]).replace(/\s+/g,' ').trim().toLowerCase();
+    if(!l) continue;
+    if(l==='pending'||l.includes('รอ')) return 'Pending';
+    if(l==='approve'||l==='approved'||l==='paid'||l.includes('จ่ายแล้ว')||l.includes('อนุมัติ')) return 'Approve';
+    if(l==='review') return 'Review';
   }
   return 'Pending';
 }
-function payVal(p,f){const M={'bnb_id':p['Field 1'],'name':p['Field 2'],'team':p['Field 3'],'lva':p['Field 4'],'lvb':p['Field 5'],'date':p['Field 6'],'profit':p['Field 8'],'commission':p['10.00%'],'guarantee':p['10.00%1'],'balance':p['Field 11'],'member':p['50.00%'],'central':p['50.00%1'],'transfer':p['Field 14'],'position':_payStatusOf(p),'note':p['Field 16'],'txhash':p['Field 17']};const v=M[f];return(v===undefined||v===null)?'':v;}
+// v1.3: แถวใน Sheet มี 2 เลย์เอาต์ — (ก) แถวเดิม/legacy: ข้อมูลชิดซ้าย Field 7..Field 13 + โน้ตที่ '50.00%'  (ข) แถวที่ระบบสร้างเอง: ตามหัวคอลัมน์เดิม Field 8/10.00%/.../Field 17
+const _PAY_STD={profit:'Field 8',commission:'10.00%',guarantee:'10.00%1',balance:'Field 11',member:'50.00%',central:'50.00%1',transfer:'Field 14',note:'Field 16',txhash:'Field 17'};
+const _PAY_LEG={profit:'Field 7',commission:'Field 8',guarantee:'Field 9',balance:'10.00%',member:'10.00%1',central:'Field 11',transfer:'Field 12',note:'50.00%',txhash:'50.00%1'};
+function _hasMoney(v){return v!==undefined&&v!==null&&/\d/.test(String(v))&&/^[\s$฿,.\-+\d]+$/.test(String(v));}
+function _payLegacy(p){return _hasMoney(p['Field 7'])&&_hasMoney(p['Field 12']);}
+function payVal(p,f){
+  const fix={bnb_id:p['Field 1'],name:p['Field 2'],team:p['Field 3'],lva:p['Field 4'],lvb:p['Field 5'],date:p['Field 6']};
+  let v;
+  if(f==='position') return _payStatusOf(p);
+  if(f in fix) v=fix[f];
+  else if(f==='note'){ v=p[_payLegacy(p)?_PAY_LEG.note:_PAY_STD.note]; }
+  else if(f==='sysnote'){ v=p['Field 16']; }
+  else if(f==='txhash'){ v=p['Field 17']; if((v===undefined||v===null||v==='')&&_payLegacy(p)) v=p[_PAY_LEG.txhash]; }
+  else v=p[(_payLegacy(p)?_PAY_LEG:_PAY_STD)[f]];
+  return(v===undefined||v===null)?'':v;
+}
 function payNum(p,f){return parseFloat(String(payVal(p,f)).replace(/[$,\s]/g,''))||0;}
 function fmt(n){return n.toLocaleString("en",{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtUSD(n){return "$"+fmt(n);}

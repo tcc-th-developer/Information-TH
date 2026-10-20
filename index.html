@@ -9010,7 +9010,7 @@ function renderTradeRows(){
       <select class="form-control" onchange="tradeRows[${i}].coin=this.value">${COINS.map(c=>`<option value="${c}" ${r.coin===c?'selected':''}>${c}/USDT</option>`).join('')}</select>
     </div>
     <div style="flex:1.5;min-width:110px;"><div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px;">กำไร (USD)</div>
-      <input type="number" class="form-control" placeholder="0.00" value="${r.profit||''}" min="0" step="0.01" inputmode="decimal" onwheel="this.blur()" onkeydown="if(event.key==='ArrowUp'||event.key==='ArrowDown')event.preventDefault()" oninput="tradeRows[${i}].profit=Math.round((parseFloat(this.value)||0)*100)/100;updateCalc();">
+      <input type="number" class="form-control" placeholder="0.00" value="${r.profit||''}" min="0" step="0.01" oninput="tradeRows[${i}].profit=parseFloat(this.value)||0;updateCalc();">
     </div>
     <button class="btn btn-danger btn-sm" onclick="removeTradeRow(${i})" style="margin-top:16px;">🗑️</button>
   </div>`).join('');
@@ -9568,7 +9568,7 @@ async function saveTeam(){
 // ═══════════════ SAVE PAYMENT ═══════════════
 async function savePayment(){
   if(!selectedAdminMember){tccNotif('warn','ยังไม่ได้เลือกสมาชิก','กรุณาเลือกสมาชิกก่อนดำเนินการ');return;}
-  const total=Math.round(tradeRows.reduce((s,r)=>s+Math.round((r.profit||0)*100),0))/100;
+  const total=tradeRows.reduce((s,r)=>s+(r.profit||0),0);
   if(total<=0){tccNotif('warn','ข้อมูลไม่ครบ','กรุณากรอกรายการเทรดอย่างน้อย 1 รายการ');return;}
   const comm=total*.10,guar=total*.10,bal=total*.80,mem=bal*.50,cen=bal*.50,trans=cen+comm;
   const status=document.getElementById('af-position').value;
@@ -9578,7 +9578,7 @@ async function savePayment(){
   let dateStr;
   if(payDate){const[y,mo,d]=payDate.split('-');dateStr=`${parseInt(d)}/${parseInt(mo)}/${y}`;}
   else{dateStr=`${today.getDate()}/${today.getMonth()+1}/${today.getFullYear()}`;}
-  const tradeNote=tradeRows.map((t,i)=>`ครั้งที่${i+1}: ${t.coin} +$${(Math.round((t.profit||0)*100)/100).toFixed(2)}`).join(' | ');
+  const tradeNote=tradeRows.map((t,i)=>`ครั้งที่${i+1}: ${t.coin} +$${t.profit}`).join(' | ');
   
   // ดึง lva/lvb จาก DOM elements (คำนวณจาก TEAMS)
   const lvaFromDOM=document.getElementById('af-lva-full')?.textContent||'—';

@@ -2265,9 +2265,9 @@ input[type=number].tc-inp::-webkit-inner-spin-button{-webkit-appearance:none;mar
   <div class="modal modal-sm">
     <div class="modal-hd"><span class="modal-title" id="add-wallet-title">➕ เพิ่มกระเป๋าใหม่</span><button class="modal-close" onclick="document.getElementById('add-wallet-modal').classList.remove('open')" title="ปิด">✕</button></div>
     <div class="modal-body">
-      <div class="form-group"><label class="form-label">ชื่อกระเป๋า / ป้ายกำกับ</label><input type="text" class="form-control" id="new-wallet-label" placeholder="เช่น กระเป๋าหลัก, กระเป๋าสำรอง"></div>
-      <div class="form-group"><label class="form-label">ที่อยู่กระเป๋า (0x...)</label><input type="text" class="form-control" id="new-wallet-addr" placeholder="0xfd1A5bc82603a702a9AF38426FfAC0d6BE5aEeef"></div>
-      <div class="form-group"><label class="form-label">URL รูป QR Code (ถ้ามี)</label><input type="text" class="form-control" id="new-wallet-qr" placeholder="https://..."></div>
+      <div class="form-group"><label class="form-label">ชื่อกระเป๋า / ป้ายกำกับ (ไม่ใส่ก็ได้)</label><input type="text" class="form-control" id="new-wallet-label" placeholder="เช่น กระเป๋าหลัก, กระเป๋าสำรอง"></div>
+      <div class="form-group"><label class="form-label">ที่อยู่กระเป๋า (0x...)</label><input type="text" class="form-control" id="new-wallet-addr" placeholder="0xfd1A5bc82603a702a9AF38426FfAC0d6BE5aEeef" oninput="walletQrPreview()" autocomplete="off" spellcheck="false"></div>
+      <div class="form-group" style="text-align:center;"><div style="color:var(--muted);font-size:0.75rem;margin-bottom:6px;">QR Code (ระบบสร้างให้อัตโนมัติจากที่อยู่กระเป๋า)</div><img id="new-wallet-qr-preview" alt="" style="display:none;width:130px;height:130px;background:#fff;border-radius:8px;padding:4px;"><div id="new-wallet-qr-hint" style="color:var(--muted);font-size:0.75rem;">กรอกที่อยู่กระเป๋าเพื่อดูตัวอย่าง QR</div></div>
       <div class="form-group" style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="new-wallet-active" style="width:auto;"><label style="color:var(--muted);font-size:0.85rem;">ตั้งเป็นกระเป๋าหลัก (default)</label></div>
       <div style="display:flex;gap:8px;"><button class="btn btn-outline" onclick="document.getElementById('add-wallet-modal').classList.remove('open')" style="flex:1">ยกเลิก</button><button class="btn btn-gold" onclick="saveWallet()" style="flex:2">💾 บันทึก</button></div>
     </div>
@@ -8198,12 +8198,17 @@ function saveWalletsLocal(){localStorage.setItem(LS_WALLETS,JSON.stringify(WALLE
 // ── Sync WALLETS → Worker KV (ผ่าน /api/wallets POST) ───────────
 async function saveWalletsToWorker(silent=false){
   try{
+    WALLETS=normalizeWallets(WALLETS);saveWalletsLocal();
     const res=await fetch(`${WORKER_URL}/api/wallets`,{
       method:'POST',
       headers:getAuthHeader(),
       body:JSON.stringify({wallets:WALLETS}),
     });
-    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(!res.ok){
+      let msg='HTTP '+res.status;
+      try{const d=await res.json();if(d&&d.error)msg=d.error+' (HTTP '+res.status+')';}catch(_){}
+      throw new Error(msg);
+    }
     if(!silent) tccNotif('success','บันทึกกระเป๋าสำเร็จ','ข้อมูลซิงค์ไปยังระบบแล้ว');
   }catch(e){
     // Worker ไม่มี endpoint นี้ → fallback localStorage เท่านั้น
@@ -9010,7 +9015,7 @@ function renderTradeRows(){
       <select class="form-control" onchange="tradeRows[${i}].coin=this.value">${COINS.map(c=>`<option value="${c}" ${r.coin===c?'selected':''}>${c}/USDT</option>`).join('')}</select>
     </div>
     <div style="flex:1.5;min-width:110px;"><div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px;">กำไร (USD)</div>
-      <input type="number" class="form-control" placeholder="0.00" value="${r.profit||''}" min="0" step="0.01" oninput="tradeRows[${i}].profit=parseFloat(this.value)||0;updateCalc();">
+      <input type="number" class="form-control" placeholder="0.00" value="${r.profit||''}" min="0" step="0.01" inputmode="decimal" onwheel="this.blur()" onkeydown="if(event.key==='ArrowUp'||event.key==='ArrowDown')event.preventDefault()" oninput="tradeRows[${i}].profit=Math.round((parseFloat(this.value)||0)*100)/100;updateCalc();">
     </div>
     <button class="btn btn-danger btn-sm" onclick="removeTradeRow(${i})" style="margin-top:16px;">🗑️</button>
   </div>`).join('');
@@ -9067,6 +9072,33 @@ function updatePayWallet(){
   }else{display.style.display='none';}
 }
 
+// ── QR อัตโนมัติ: สร้างจากที่อยู่กระเป๋า (ลิงก์ https ผ่านการตรวจของ Worker) ──
+const WALLET_ADDR_RE=/^0x[0-9a-fA-F]{40}$/;
+function walletQrUrl(addr){
+  return 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data='+encodeURIComponent(String(addr||'').trim());
+}
+function walletQrPreview(){
+  const addr=(document.getElementById('new-wallet-addr').value||'').trim();
+  const img=document.getElementById('new-wallet-qr-preview'), hint=document.getElementById('new-wallet-qr-hint');
+  if(!img||!hint)return;
+  if(WALLET_ADDR_RE.test(addr)){img.src=walletQrUrl(addr);img.style.display='inline-block';hint.style.display='none';}
+  else{img.style.display='none';img.removeAttribute('src');hint.style.display='block';hint.textContent=addr?'ที่อยู่กระเป๋าไม่ถูกต้อง (ต้องเป็น 0x + 40 ตัวอักษร hex)':'กรอกที่อยู่กระเป๋าเพื่อดูตัวอย่าง QR';}
+}
+// รวมกระเป๋าที่ที่อยู่ซ้ำ (ไม่สนตัวพิมพ์) เหลือ 1 ตัว, ให้ Active ได้ตัวเดียว และสร้าง QR ใหม่จากที่อยู่ทุกตัว
+function normalizeWallets(list){
+  const map=new Map();
+  (list||[]).forEach(w=>{
+    const addr=String(w&&w.addr||'').trim();
+    if(!WALLET_ADDR_RE.test(addr))return;
+    const k=addr.toLowerCase(), prev=map.get(k);
+    map.set(k,{label:String(w.label||'').trim()||(prev&&prev.label)||'กระเป๋า',addr,qr:walletQrUrl(addr),active:!!(w.active||(prev&&prev.active))});
+  });
+  const out=[...map.values()];
+  let seen=false;
+  out.forEach(w=>{if(w.active&&!seen)seen=true;else w.active=false;});
+  if(out.length&&!seen)out[0].active=true;
+  return out;
+}
 function openAddWalletModal(idx=-1){
   editWalletIdx=idx;
   const title=document.getElementById('add-wallet-title');
@@ -9075,33 +9107,37 @@ function openAddWalletModal(idx=-1){
     title.textContent='✏️ แก้ไขกระเป๋า';
     document.getElementById('new-wallet-label').value=w.label;
     document.getElementById('new-wallet-addr').value=w.addr;
-    document.getElementById('new-wallet-qr').value=w.qr||'';
     document.getElementById('new-wallet-active').checked=w.active;
   }else{
     title.textContent='➕ เพิ่มกระเป๋าใหม่';
     document.getElementById('new-wallet-label').value='';
     document.getElementById('new-wallet-addr').value='';
-    document.getElementById('new-wallet-qr').value='';
     document.getElementById('new-wallet-active').checked=false;
   }
+  walletQrPreview();
   document.getElementById('add-wallet-modal').classList.add('open');
 }
 function editWallet(i){openAddWalletModal(i);}
 async function saveWallet(){
-  const label=document.getElementById('new-wallet-label').value.trim();
+  const labelIn=document.getElementById('new-wallet-label').value.trim();
   const addr=document.getElementById('new-wallet-addr').value.trim();
-  const qr=document.getElementById('new-wallet-qr').value.trim();
   const isActive=document.getElementById('new-wallet-active').checked;
-  if(!label||!addr){tccNotif('warn','กรอกข้อมูลไม่ครบ','กรุณากรอกชื่อและที่อยู่กระเป๋า');return;}
+  if(!addr){tccNotif('warn','กรอกข้อมูลไม่ครบ','กรุณากรอกที่อยู่กระเป๋า');return;}
+  if(!WALLET_ADDR_RE.test(addr)){tccNotif('warn','ที่อยู่กระเป๋าไม่ถูกต้อง','ต้องเป็น 0x ตามด้วยตัวอักษร hex 40 ตัว');return;}
+  // ที่อยู่ซ้ำกับกระเป๋าที่มีอยู่ (เช่นกระเป๋าเริ่มต้นของระบบ) → รวมเป็นตัวเดียว ไม่เช่นนั้น Worker จะตอบ 400 "มีกระเป๋าซ้ำ"
+  const dupIdx=WALLETS.findIndex((w,i)=>i!==editWalletIdx&&String(w.addr).trim().toLowerCase()===addr.toLowerCase());
+  const prevActive=dupIdx>=0?!!WALLETS[dupIdx].active:false;
+  const label=labelIn||(dupIdx>=0?WALLETS[dupIdx].label:'')||('กระเป๋า '+(WALLETS.length+1));
   if(isActive)WALLETS.forEach(w=>w.active=false);
-  const wallet={label,addr,qr,active:isActive||WALLETS.length===0};
-  if(editWalletIdx>=0)WALLETS[editWalletIdx]=wallet;
+  const wallet={label,addr,qr:walletQrUrl(addr),active:isActive||prevActive||WALLETS.length===0};
+  if(editWalletIdx>=0){WALLETS[editWalletIdx]=wallet;if(dupIdx>=0)WALLETS.splice(dupIdx,1);}
+  else if(dupIdx>=0)WALLETS[dupIdx]=wallet;
   else WALLETS.push(wallet);
+  WALLETS=normalizeWallets(WALLETS);
   saveWalletsLocal();
   renderWalletsList();
   populateWalletSelect();
   document.getElementById('add-wallet-modal').classList.remove('open');
-  // ── ซิงค์ไป Worker KV ──────────────────────────────────────────
   // ── ซิงค์ไป Worker (Worker เขียนชีต Wallets เอง) ──
   await saveWalletsToWorker();
 }
@@ -9568,7 +9604,7 @@ async function saveTeam(){
 // ═══════════════ SAVE PAYMENT ═══════════════
 async function savePayment(){
   if(!selectedAdminMember){tccNotif('warn','ยังไม่ได้เลือกสมาชิก','กรุณาเลือกสมาชิกก่อนดำเนินการ');return;}
-  const total=tradeRows.reduce((s,r)=>s+(r.profit||0),0);
+  const total=Math.round(tradeRows.reduce((s,r)=>s+Math.round((r.profit||0)*100),0))/100;
   if(total<=0){tccNotif('warn','ข้อมูลไม่ครบ','กรุณากรอกรายการเทรดอย่างน้อย 1 รายการ');return;}
   const comm=total*.10,guar=total*.10,bal=total*.80,mem=bal*.50,cen=bal*.50,trans=cen+comm;
   const status=document.getElementById('af-position').value;
@@ -9578,7 +9614,7 @@ async function savePayment(){
   let dateStr;
   if(payDate){const[y,mo,d]=payDate.split('-');dateStr=`${parseInt(d)}/${parseInt(mo)}/${y}`;}
   else{dateStr=`${today.getDate()}/${today.getMonth()+1}/${today.getFullYear()}`;}
-  const tradeNote=tradeRows.map((t,i)=>`ครั้งที่${i+1}: ${t.coin} +$${t.profit}`).join(' | ');
+  const tradeNote=tradeRows.map((t,i)=>`ครั้งที่${i+1}: ${t.coin} +$${(Math.round((t.profit||0)*100)/100).toFixed(2)}`).join(' | ');
   
   // ดึง lva/lvb จาก DOM elements (คำนวณจาก TEAMS)
   const lvaFromDOM=document.getElementById('af-lva-full')?.textContent||'—';

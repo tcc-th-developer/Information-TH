@@ -8440,6 +8440,8 @@ async function loadMembers(force=false){
   if(!(currentAdmin && can('members','view'))){
     // สาธารณะ: ไม่โหลดรายชื่อสมาชิก (PII) — ใช้ตัวเลขรวมจาก /api/public/stats
     try{ const st=await (await fetch(`${WORKER_URL}/api/public/stats`)).json(); window.PUBLIC_STATS=st; setAllById('stat-members',st.members||0); }catch(e){}
+    // v1.3.4: รายชื่อล่าสุดแบบปิดบังชื่อ/ไอดี สำหรับหน้า Register
+    try{ const pm=await (await fetch(`${WORKER_URL}/api/public/members`)).json(); window.PUBLIC_RECENT=Array.isArray(pm.list)?pm.list:[]; window.PUBLIC_RECENT_TOTAL=pm.total||0; }catch(e){ window.PUBLIC_RECENT=[]; }
     MEMBERS=[]; return;
   }
   const records=await ndbFetchAll('members');
@@ -9875,6 +9877,8 @@ function renderRegisterMemberList(q){
   const countEl=document.getElementById('reg-member-count');
   if(!tbody) return;
 
+  // v1.3.4: ผู้ใช้สาธารณะ (ไม่มี MEMBERS) → ใช้รายชื่อแบบปิดบังจาก Worker
+  if((!MEMBERS || !MEMBERS.length) && Array.isArray(window.PUBLIC_RECENT)){ renderRegisterPublicList(q); return; }
   // ถ้า MEMBERS ยังไม่โหลด
   if(!MEMBERS || !MEMBERS.length){
     tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:22px;font-size:.8rem;">⏳ กำลังโหลดข้อมูล...</td></tr>';
@@ -9882,7 +9886,7 @@ function renderRegisterMemberList(q){
     if(!renderRegisterMemberList._waiting){
       renderRegisterMemberList._waiting=true;
       const wait=()=>{
-        if(MEMBERS && MEMBERS.length){
+        if((MEMBERS && MEMBERS.length) || Array.isArray(window.PUBLIC_RECENT)){
           renderRegisterMemberList._waiting=false;
           renderRegisterMemberList(document.getElementById('reg-member-search')?.value||'');
         } else { setTimeout(wait,400); }
@@ -9932,6 +9936,35 @@ function renderRegisterMemberList(q){
       <td style="font-weight:500;color:var(--text);font-size:.75rem;">${memVal(m,'name')||'—'}</td>
       <td style="color:#94a3b8;font-size:.73rem;">${memVal(m,'team')||'—'}</td>
       <td>${badge(memVal(m,'status'))}</td>
+    </tr>`).join('');
+}
+
+// v1.3.4: รายชื่อล่าสุดสำหรับผู้ใช้สาธารณะ — แถวของคนที่เพิ่งสมัครในเบราว์เซอร์นี้แสดงเต็ม ส่วนคนอื่นถูกปิดบังโดย Worker
+function renderRegisterPublicList(q){
+  const tbody=document.getElementById('reg-member-list-body'), countEl=document.getElementById('reg-member-count');
+  if(!tbody) return;
+  const mine=(window._myRegs||[]).map(r=>({id:r.id,name:r.name,team:r.team,status:'Pending',row:r.row,mine:true}));
+  const myRows=new Set(mine.map(r=>String(r.row)));
+  const all=[...mine,...(window.PUBLIC_RECENT||[]).filter(r=>!myRows.has(String(r.row)))];
+  const kw=(q||'').toLowerCase().trim();
+  const list=kw?all.filter(m=>[m.id,m.name,m.team].some(v=>String(v||'').toLowerCase().includes(kw))):all;
+  if(countEl) countEl.textContent = kw ? `(พบ ${list.length} รายการ)` : `(ล่าสุด ${list.length} รายการ จากทั้งหมด ${window.PUBLIC_RECENT_TOTAL||all.length} คน — ชื่อ/ไอดีของสมาชิกอื่นถูกปิดบัง)`;
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:22px;font-size:.8rem;">🔍 ไม่พบข้อมูลที่ตรงกัน</td></tr>';
+    return;
+  }
+  const badge=st=>{
+    if(st==='Trading&payments') return '<span class="bdg b-green">✅ T&P</span>';
+    if(st==='Trading')          return '<span class="bdg b-yellow">📈 Trading</span>';
+    return '<span class="bdg b-red">⏳ Pending</span>';
+  };
+  tbody.innerHTML=list.map((m,i)=>`
+    <tr${m.mine?' style="background:rgba(240,185,11,0.07);"':''}>
+      <td style="color:var(--text-dim);font-size:.73rem;">${i+1}</td>
+      <td style="color:var(--gold);font-family:monospace;font-weight:600;font-size:.73rem;">${esc(m.id)}${m.mine?' <span style="font-size:.6rem;color:var(--green);">(คุณ)</span>':''}</td>
+      <td style="font-weight:500;color:var(--text);font-size:.75rem;">${esc(m.name)||'—'}</td>
+      <td style="color:#94a3b8;font-size:.73rem;">${esc(m.team)||'—'}</td>
+      <td>${badge(m.status)}</td>
     </tr>`).join('');
 }
 
@@ -10183,7 +10216,7 @@ async function submitRegistration(){
 
     // ── Step 2: Insert ข้อมูล + URL รูป ลง Google Sheets ──
     if(btn) btn.textContent='⏳ กำลังบันทึก...';
-    await ndbInsert('members', {
+    const regRes = await ndbInsert('members', {
       'BNB_ID'         : bnbid,
       'Name'           : name,
       'Phone'          : phone,
@@ -10196,6 +10229,8 @@ async function submitRegistration(){
       'Status'         : 'Pending',
       'ReferrerId'     : referrerId || '',  // [REF-3] บันทึก BNB_ID ของผู้แนะนำ
     });
+    // v1.3.4: จำรายการที่เพิ่งสมัคร เพื่อแสดงในรายชื่อทันที (ผู้ใช้สาธารณะไม่ได้รับรายชื่อเต็ม)
+    (window._myRegs=window._myRegs||[]).unshift({id:bnbid,name:name,team:team,row:regRes&&(regRes.Id||regRes._row)});
     // ── แสดง success notification (action bar) ──
     showSuccess('✅ สมัครสมาชิกสำเร็จ!',
       `บันทึกข้อมูลของ ${name} (BNB ID: ${bnbid}) เรียบร้อยแล้ว`);

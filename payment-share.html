@@ -565,7 +565,7 @@ function renderPayment(p, wallet, exp, payer) {
   const noticeHTML = (isPending && !isReview) ? `<div class="pay-notice">
       <div class="pay-notice-t">⚠️ ก่อนโอน: กรุณาโอนจากเลขกระเป๋าที่ท่านลงทะเบียนไว้เท่านั้น</div>
       ${payer ? `<div class="pay-notice-w">${esc(payer)}</div>` : ''}
-      <div class="pay-notice-s">หากโอนจากกระเป๋าอื่น แอดมินจะตรวจสอบก่อนอนุมัติ</div>
+      <div class="pay-notice-s">เพื่อความสะดวกรวดเร็วต่อการอนุมัติของระบบ หากโอนจากกระเป๋าอื่น อาจจะต้องตรวจสอบก่อนอนุมัติ</div>
     </div>` : '';
   const reviewHTML = isReview ? `<div class="status-bar" style="border:1px solid rgba(96,165,250,.35);margin-bottom:10px;"><span class="status-text" style="color:#60a5fa;">${/sender_mismatch/.test(String(payVal(p,'sysnote')||note||'')) ? '🔎 พบการโอนแล้ว — แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน แอดมินกำลังตรวจสอบ' : '🔎 พบการโอนแล้ว — แอดมินกำลังตรวจสอบยอด'}</span></div>` : '';
   // v1.4: อนุมัติอัตโนมัติแล้ว แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน → เตือนบนการ์ด (แอดมินได้รับแจ้งทาง Telegram)

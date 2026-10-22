@@ -9684,7 +9684,7 @@ function showPaymentDetail(rowId){
   const activeWallet=WALLETS.find(w=>w.active)||WALLETS[0]||SYSTEM_WALLET_DEFAULT;
 
   // Parse trade history from note
-  const tradeHistory=note?note.split(' | ').filter(x=>x.includes(':')):[];
+  const tradeHistory=note?note.split(' | ').filter(x=>x.includes(':')&&!/^\s*\[auto:/.test(x)):[];
 
   // ✨ ซ่อน close button เมื่อแชร์ payment
   setTimeout(function(){
@@ -9780,6 +9780,7 @@ function showPaymentDetail(rowId){
       </div>
 
       <!-- Trade History -->
+      ${/\[auto:sender_mismatch\]/.test(note)?'<div style="margin-bottom:14px;padding:10px 12px;border-radius:10px;background:rgba(240,185,11,0.10);border:1px solid rgba(240,185,11,0.45);color:var(--gold);font-size:0.74rem;line-height:1.5;">⚠️ ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียนไว้ — ระบบอนุมัติให้แล้ว และแจ้งแอดมินตรวจสอบเพิ่มเติม</div>':''}
       ${tradeHistory.length?'<div style="margin-bottom:14px;"><div style="font-size:0.72rem;color:var(--gold);font-weight:600;margin-bottom:10px;">📈 ประวัติการเทรด</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;">'
         +tradeHistory.map(function(t,idx){
             var parts=t.split(':');
@@ -14332,7 +14333,7 @@ function buildPayDetailHTML(p, walletObj){
   var date = payVal(p,'date'), note = payVal(p,'note');
   var lva = payVal(p,'lva'), lvb = payVal(p,'lvb');
   var status = payVal(p,'position'), isPending = status !== 'Approve';
-  var tradeHistory = note ? note.split(' | ').filter(function(x){ return x.indexOf(':')>=0; }) : [];
+  var tradeHistory = note ? note.split(' | ').filter(function(x){ return x.indexOf(':')>=0 && !/^\s*\[auto:/.test(x); }) : [];
   var aw = walletObj || SYSTEM_WALLET_DEFAULT;
   var safeAddr = jsq(aw.addr||'');
 
@@ -14352,6 +14353,8 @@ function buildPayDetailHTML(p, walletObj){
     tradeHTML = '<div style="margin-bottom:14px;"><div style="font-size:0.72rem;color:var(--gold);font-weight:600;margin-bottom:10px;">📈 ประวัติการเทรด</div>'
       +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;">'+cards+'</div></div>';
   }
+
+  if(/\[auto:sender_mismatch\]/.test(note)) tradeHTML = '<div style="margin-bottom:14px;padding:10px 12px;border-radius:10px;background:rgba(240,185,11,0.10);border:1px solid rgba(240,185,11,0.45);color:var(--gold);font-size:0.74rem;line-height:1.5;">⚠️ ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียนไว้ — ระบบอนุมัติให้แล้ว และแจ้งแอดมินตรวจสอบเพิ่มเติม</div>' + tradeHTML;
 
   var detailRows = [
     ['กำไรรวม (100%)', '+'+fD(profit), 'var(--green)'],

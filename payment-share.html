@@ -492,7 +492,7 @@ function renderPayment(p, wallet, exp, payer) {
   const name = payVal(p,'name'), bnbId = payVal(p,'bnb_id'), team = payVal(p,'team');
   const date = payVal(p,'date'), note = payVal(p,'note');
   const lva = payVal(p,'lva'), lvb = payVal(p,'lvb');
-  const tradeHistory = note ? note.split(' | ').filter(x => x.includes(':')) : [];
+  const tradeHistory = note ? note.split(' | ').filter(x => x.includes(':') && !/^\s*\[auto:/.test(x)) : [];
 
   // ── อัพเดท OG meta tags ด้วยข้อมูลจริงของ payment ──
   // (LINE/Facebook อ่าน og:title + og:description แม้จะ dynamic)
@@ -535,7 +535,7 @@ function renderPayment(p, wallet, exp, payer) {
   const walletHTML = isPending ? (aw ? `
     <div class="qr-section">
       <div class="qr-section-title">🔐 SCAN QR CODE FOR PAYMENT</div>
-      ${safeImg(aw.qr) ? `<div class="qr-img-wrap"><img class="qr-img" src="${esc(safeImg(aw.qr))}" alt="QR Code" referrerpolicy="no-referrer" onerror="this.style.display='none'"></div>` : ''}
+      <div class="qr-img-wrap"><img class="qr-img" src="${esc(safeImg(aw.qr) || ('https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=' + encodeURIComponent(aw.addr)))}" data-fb="${esc('https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=' + encodeURIComponent(aw.addr))}" alt="QR Code" referrerpolicy="no-referrer" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.fb;}else{this.parentNode.style.display='none';}"></div>
       <div class="wallet-box">
         <div class="wallet-addr" id="wal-addr">${esc(aw.addr)}</div>
         <button class="copy-btn" data-addr="${esc(aw.addr)}" onclick="copyAddr(this.dataset.addr)">📋 Copy</button>
@@ -545,6 +545,8 @@ function renderPayment(p, wallet, exp, payer) {
       ${(payer && isPending && !isReview) ? `<div class="wallet-hint" style="color:#fbbf24;">🔐 ให้โอนจากกระเป๋าที่ลงทะเบียนไว้ (${esc(payer)}) เพื่ออนุมัติอัตโนมัติ — หากโอนจากกระเป๋าอื่น แอดมินจะตรวจสอบก่อน</div>` : ''}
     </div>` : `<div class="qr-section"><div class="wallet-hint">ไม่พบข้อมูลกระเป๋ารับเงิน กรุณาติดต่อแอดมิน</div></div>`) : '';
   const reviewHTML = isReview ? `<div class="status-bar" style="border:1px solid rgba(96,165,250,.35);margin-bottom:10px;"><span class="status-text" style="color:#60a5fa;">${/sender_mismatch/.test(String(payVal(p,'sysnote')||note||'')) ? '🔎 พบการโอนแล้ว — แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน แอดมินกำลังตรวจสอบ' : '🔎 พบการโอนแล้ว — แอดมินกำลังตรวจสอบยอด'}</span></div>` : '';
+  // v1.4: อนุมัติอัตโนมัติแล้ว แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน → เตือนบนการ์ด (แอดมินได้รับแจ้งทาง Telegram)
+  const warnHTML = (!isReview && /\[auto:sender_mismatch\]/.test(String(note||''))) ? `<div class="status-bar" style="border:1px solid rgba(240,185,11,.45);background:rgba(240,185,11,.08);margin-bottom:10px;"><span class="status-text" style="color:var(--gold);font-size:.78rem;line-height:1.5;">⚠️ ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียนไว้ — ระบบอนุมัติให้แล้ว และแจ้งแอดมินตรวจสอบเพิ่มเติม</span></div>` : '';
   const txHTML = (!isPending && TXH.test(txhash)) ? `
       <div style="margin-top:10px;padding:10px 14px;background:rgba(0,180,255,0.06);border:1px solid rgba(0,180,255,0.2);border-radius:10px;">
         <div style="font-size:0.63rem;color:var(--muted);margin-bottom:4px;letter-spacing:0.5px;">🔗 VERIFIED ON BLOCKCHAIN</div>
@@ -663,7 +665,7 @@ function renderPayment(p, wallet, exp, payer) {
       ${tradeHTML}
 
       <!-- Wallet / QR (pending only) -->
-      ${reviewHTML}${walletHTML}
+      ${warnHTML}${reviewHTML}${walletHTML}
 
       <!-- Status bar -->
       <div class="status-bar" style="border:1px solid ${isPending?'rgba(240,185,11,0.25)':'rgba(3,192,117,0.25)'};">

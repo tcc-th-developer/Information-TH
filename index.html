@@ -3409,9 +3409,7 @@ MENU.forEach(m=>{
               </label>
               <div id="binance-preview" style="display:none;margin-top:8px;">
                 <img id="binance-thumb" src="" alt="Binance"
-                  style="width:100%;max-height:150px;border-radius:8px;object-fit:cover;
-                         object-position:center top;border:2px solid rgba(240,185,11,0.4);
-                         background:rgba(255,255,255,0.04);display:block;">
+                  style="width:150px;aspect-ratio:9/16;object-fit:contain;border-radius:10px;border:2px solid rgba(240,185,11,0.45);background:#0b0e13;display:block;">
                 <button onclick="clearImgUpload('reg-binance-img-file','binance-preview','binance-thumb','binance-upload-btn')"
                   style="margin-top:5px;padding:3px 10px;background:rgba(246,70,93,0.15);
                     border:1px solid rgba(246,70,93,0.4);border-radius:5px;color:#f6465d;
@@ -3443,9 +3441,7 @@ MENU.forEach(m=>{
               </label>
               <div id="qr-preview" style="display:none;margin-top:8px;display:none;">
                 <img id="qr-thumb" src="" alt="QR Code"
-                  style="width:180px;height:180px;border-radius:10px;object-fit:contain;
-                         border:2px solid rgba(240,185,11,0.5);background:rgba(255,255,255,0.06);
-                         padding:6px;display:block;">
+                  style="width:150px;aspect-ratio:9/16;object-fit:contain;border-radius:10px;border:2px solid rgba(240,185,11,0.45);background:#0b0e13;display:block;">
                 <button onclick="clearImgUpload('reg-wallet-qr-file','qr-preview','qr-thumb','qr-upload-btn')"
                   style="margin-top:5px;padding:3px 10px;background:rgba(246,70,93,0.15);
                     border:1px solid rgba(246,70,93,0.4);border-radius:5px;color:#f6465d;
@@ -10153,8 +10149,7 @@ function regNext(step){
     const binanceHtml = binanceSrc
       ?`<div class="info-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
           <span class="info-k">ภาพโปรไฟล์ Binance ✅</span>
-          <img src="${binanceSrc}" alt="Binance" style="width:100%;max-height:130px;border-radius:8px;
-            border:2px solid rgba(240,185,11,0.4);object-fit:cover;object-position:center top;">
+          <img src="${binanceSrc}" alt="Binance" style="width:150px;aspect-ratio:9/16;object-fit:contain;border-radius:10px;border:2px solid rgba(240,185,11,0.45);background:#0b0e13;display:block;">
         </div>`
       :`<div class="info-row"><span class="info-k">ภาพโปรไฟล์ Binance</span>
           <span class="info-v" style="color:#f6465d;">⚠️ ยังไม่ได้อัปโหลด</span></div>`;
@@ -10162,9 +10157,7 @@ function regNext(step){
     const qrHtml = qrSrc
       ?`<div class="info-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
           <span class="info-k">QR Code กระเป๋า ✅</span>
-          <img src="${qrSrc}" alt="QR" style="width:160px;height:160px;border-radius:8px;
-            border:2px solid rgba(240,185,11,0.4);object-fit:contain;padding:4px;
-            background:rgba(255,255,255,0.04);">
+          <img src="${qrSrc}" alt="QR" style="width:150px;aspect-ratio:9/16;object-fit:contain;border-radius:10px;border:2px solid rgba(240,185,11,0.45);background:#0b0e13;display:block;">
         </div>`
       :`<div class="info-row"><span class="info-k">QR Code กระเป๋า</span>
           <span class="info-v" style="color:#f6465d;">⚠️ ยังไม่ได้อัปโหลด</span></div>`;

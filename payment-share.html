@@ -291,6 +291,12 @@
   .trade-no  { font-size: 0.58rem; color: var(--muted); margin-bottom: 2px; }
   .trade-coin{ font-size: 0.7rem;  color: var(--gold);  font-weight: 700; margin-bottom: 4px; }
   .trade-amt { font-size: 0.9rem;  font-weight: 700;    color: var(--green); }
+  .trade-amt.neg { color: var(--red); }
+  .trade-card.neg::before { background: linear-gradient(90deg, var(--red), #b3243a); }
+  .pay-notice { background: rgba(240,185,11,.08); border: 1px solid rgba(240,185,11,.45); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; text-align: center; }
+  .pay-notice-t { font-size: .78rem; color: var(--gold); font-weight: 700; line-height: 1.5; }
+  .pay-notice-w { font-family: monospace; font-size: .85rem; color: #fff; margin-top: 4px; letter-spacing: .5px; }
+  .pay-notice-s { font-size: .62rem; color: var(--muted); margin-top: 3px; }
 
   /* Wallet / QR */
   .qr-section { margin-bottom: 14px; }
@@ -445,7 +451,19 @@ function payNum(p, f) {
   return parseFloat(String(payVal(p, f)).replace(/[$,\s]/g, '')) || 0;
 }
 function fmtUSD(n) {
-  return '$' + (parseFloat(n) || 0).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const v = parseFloat(n) || 0;   // v1.5: ติดลบแสดงเป็น -$6.00 (ไม่ใช่ $-6.00)
+  return (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+// v1.5: แยกรายการเทรด "ครั้งที่1:BTC +$-6.00" → { coin, val, neg } (รองรับ +$-6, -$6, $-6, +$6)
+function parseTrade(t) {
+  const i = t.indexOf(':');
+  const left = (i < 0 ? '' : t.slice(0, i)).replace(/ครั้งที่\s*\d+/g, '').trim();
+  const right = (i < 0 ? t : t.slice(i + 1)).trim();
+  const m = right.match(/([+\-]?)\s*\$?\s*([+\-]?)\s*\$?\s*(\d[\d,]*(?:\.\d+)?)/);
+  if (!m) return { coin: left, raw: right };
+  const val = parseFloat(m[3].replace(/,/g, '')) || 0;
+  const neg = (m[1] === '-' || m[2] === '-') && val !== 0;
+  return { coin: (right.slice(0, m.index).trim() || left), val, neg };
 }
 
 // ── Toast ──
@@ -521,13 +539,13 @@ function renderPayment(p, wallet, exp, payer) {
     <div class="section-title">📈 ประวัติการเทรด</div>
     <div class="trade-grid" style="margin-bottom:14px;">
       ${tradeHistory.map((t, idx) => {
-        const pts = t.split(':');
-        const coin = (pts[0]||'').replace(/ครั้งที่\d+/g,'').trim();
-        const amt  = (pts[1]||'').trim();
-        return `<div class="trade-card">
+        const tr = parseTrade(t);
+        const isNeg = !tr.raw && tr.neg;
+        const amtTxt = tr.raw !== undefined ? tr.raw : ((isNeg ? '-' : '+') + fmtUSD(tr.val).replace('-',''));
+        return `<div class="trade-card${isNeg ? ' neg' : ''}">
           <div class="trade-no">ครั้งที่ ${idx+1}</div>
-          <div class="trade-coin">${esc(coin)||'—'}</div>
-          <div class="trade-amt">${esc(amt)}</div>
+          <div class="trade-coin">${esc(tr.coin)||'—'}</div>
+          <div class="trade-amt${isNeg ? ' neg' : ''}">${esc(amtTxt)}</div>
         </div>`;
       }).join('')}
     </div>` : '';
@@ -542,8 +560,13 @@ function renderPayment(p, wallet, exp, payer) {
       </div>
       <div class="wallet-chain">✦ USDT BNB Smart Chain (BEP-20) — ${esc(aw.label)}</div>
       <div class="wallet-hint">โอนเฉพาะ USDT บนเครือข่าย BEP-20 เท่านั้น — ระบบตรวจยอดอัตโนมัติ${isReview ? '' : ' (โอนยอดให้ตรงตามที่ระบุ)'}</div>
-      ${(payer && isPending && !isReview) ? `<div class="wallet-hint" style="color:#fbbf24;">🔐 ให้โอนจากกระเป๋าที่ลงทะเบียนไว้ (${esc(payer)}) เพื่ออนุมัติอัตโนมัติ — หากโอนจากกระเป๋าอื่น แอดมินจะตรวจสอบก่อน</div>` : ''}
     </div>` : `<div class="qr-section"><div class="wallet-hint">ไม่พบข้อมูลกระเป๋ารับเงิน กรุณาติดต่อแอดมิน</div></div>`) : '';
+  // v1.5: ข้อความก่อนโอน — ให้โอนจากกระเป๋าที่สมาชิกลงทะเบียนไว้ + แสดงเลขย่อ (หน้า 5 / ท้าย 5 ตัว จาก Worker)
+  const noticeHTML = (isPending && !isReview) ? `<div class="pay-notice">
+      <div class="pay-notice-t">⚠️ ก่อนโอน: กรุณาโอนจากเลขกระเป๋าที่ท่านลงทะเบียนไว้เท่านั้น</div>
+      ${payer ? `<div class="pay-notice-w">${esc(payer)}</div>` : ''}
+      <div class="pay-notice-s">หากโอนจากกระเป๋าอื่น แอดมินจะตรวจสอบก่อนอนุมัติ</div>
+    </div>` : '';
   const reviewHTML = isReview ? `<div class="status-bar" style="border:1px solid rgba(96,165,250,.35);margin-bottom:10px;"><span class="status-text" style="color:#60a5fa;">${/sender_mismatch/.test(String(payVal(p,'sysnote')||note||'')) ? '🔎 พบการโอนแล้ว — แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน แอดมินกำลังตรวจสอบ' : '🔎 พบการโอนแล้ว — แอดมินกำลังตรวจสอบยอด'}</span></div>` : '';
   // v1.4: อนุมัติอัตโนมัติแล้ว แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน → เตือนบนการ์ด (แอดมินได้รับแจ้งทาง Telegram)
   const warnHTML = (!isReview && /\[auto:sender_mismatch\]/.test(String(note||''))) ? `<div class="status-bar" style="border:1px solid rgba(240,185,11,.45);background:rgba(240,185,11,.08);margin-bottom:10px;"><span class="status-text" style="color:var(--gold);font-size:.78rem;line-height:1.5;">⚠️ ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียนไว้ — ระบบอนุมัติให้แล้ว และแจ้งแอดมินตรวจสอบเพิ่มเติม</span></div>` : '';
@@ -607,7 +630,7 @@ function renderPayment(p, wallet, exp, payer) {
       <div class="summary-grid">
         <div class="summary-box">
           <div class="summary-lbl">ส่วนแบ่งสมาชิก (50%)</div>
-          <div class="summary-val col-green">${fmtUSD(mem)}</div>
+          <div class="summary-val" style="color:${mem<0?'var(--red)':'var(--green)'};">${fmtUSD(mem)}</div>
         </div>
         <div class="summary-box">
           <div class="summary-lbl">ส่วนประกันกำไร (10%)</div>
@@ -625,11 +648,11 @@ function renderPayment(p, wallet, exp, payer) {
           <div class="detail-section-title">📊 รายละเอียดส่วนแบ่ง</div>
           <div class="detail-inner">
             ${[
-              ['กำไรรวม (100%)',     '+'+fmtUSD(profit), 'var(--green)'],
+              ['กำไรรวม (100%)',     (profit<0?'':'+')+fmtUSD(profit), profit<0?'var(--red)':'var(--green)'],
               ['ประกันกำไร (10%)',   '-'+fmtUSD(guar),   'var(--red)'],
               ['ค่าคอมมิชั่น (10%)','-'+fmtUSD(comm),   'var(--red)'],
               ['คงเหลือสุทธิ (80%)', fmtUSD(bal),       'var(--gold)'],
-              ['ส่วนผู้เทรด (50%)',  fmtUSD(mem),       'var(--green)'],
+              ['ส่วนผู้เทรด (50%)',  fmtUSD(mem),       mem<0?'var(--red)':'var(--green)'],
               ['ส่วนระบบ (50%)',     fmtUSD(cen),       'var(--gold)'],
             ].map(([l,v,c]) => `
               <div class="detail-row">
@@ -665,7 +688,7 @@ function renderPayment(p, wallet, exp, payer) {
       ${tradeHTML}
 
       <!-- Wallet / QR (pending only) -->
-      ${warnHTML}${reviewHTML}${walletHTML}
+      ${warnHTML}${reviewHTML}${noticeHTML}${walletHTML}
 
       <!-- Status bar -->
       <div class="status-bar" style="border:1px solid ${isPending?'rgba(240,185,11,0.25)':'rgba(3,192,117,0.25)'};">

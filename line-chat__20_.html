@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>LINE Chat</title>
+<style>
+:root{
+  --bg:#111111; --surface:#1c1c1e; --surface2:#2c2c2e; --line:#262628;
+  --tx:#ffffff; --tx2:#8e8e93; --green:#06c755; --red:#ff334b; --blue:#3b82f6;
+  --wall:#1b1d22;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:-apple-system,"Sarabun","Noto Sans Thai","Hiragino Sans",sans-serif;background:#000;color:var(--tx);display:flex;justify-content:center}
+.app{position:relative;width:100%;max-width:440px;height:100dvh;background:var(--bg);overflow:hidden}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.screen.on{display:flex}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+svg{display:block}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;flex-shrink:0;text-transform:uppercase;width:66px;height:66px;font-size:26px;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.lhead .acts button.myav{width:40px;height:40px;padding:0;position:relative}
+.lhead .acts button.myav .avatar{width:36px;height:36px;font-size:15px}
+.lhead .acts button.myav::after{content:"";position:absolute;right:1px;bottom:1px;width:12px;height:12px;border-radius:50%;background:var(--surface2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 7.5L7.800 2.700l1.500 1.500L4.500 9H3z' fill='%23fff'/%3E%3C/svg%3E") center/10px no-repeat;border:1.5px solid var(--bg)}
+
+/* ===== List header ===== */
+.lhead{padding:calc(16px + env(safe-area-inset-top)) 20px 12px;display:flex;align-items:center;justify-content:space-between}
+.lhead h1{font-size:25px;font-weight:800;color:var(--tx);letter-spacing:.2px}
+.lhead .acts{display:flex;align-items:center;gap:6px}
+.lhead .acts button{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:var(--tx);border-radius:50%}
+.lhead .acts button:active{background:var(--surface)}
+.lhead .acts button.act{color:var(--green)}
+.sbox{margin:6px 18px 10px;height:46px;border-radius:23px;background:var(--surface);display:flex;align-items:center;gap:10px;padding:0 16px;color:var(--tx2)}
+.sbox input{flex:1;background:none;border:none;outline:none;color:var(--tx);font-size:16px;font-family:inherit;min-width:0}
+.sbox input::placeholder{color:#6d6d72}
+
+/* ===== List items ===== */
+.chatlist{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.item{display:flex;align-items:center;gap:14px;padding:11px 18px;cursor:pointer}
+.item:active{background:var(--surface)}
+.avwrap{position:relative;width:66px;height:66px;flex-shrink:0}
+.pinb{position:absolute;right:-4px;bottom:-2px;width:26px;height:26px;border-radius:50%;background:var(--blue);border:2.5px solid var(--bg);display:flex;align-items:center;justify-content:center}
+.item .mid{flex:1;min-width:0;align-self:stretch;display:flex;flex-direction:column;justify-content:center}
+.item .nm{font-size:17px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .pv{font-size:15px;color:var(--tx2);margin-top:4px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.item .rt{display:flex;flex-direction:column;align-items:flex-end;gap:8px;align-self:stretch;padding-top:6px;min-width:52px}
+.item .tm{font-size:13px;color:var(--tx2);white-space:nowrap}
+.badge{background:var(--green);color:#fff;font-size:15px;font-weight:700;min-width:30px;height:30px;border-radius:15px;padding:0 8px;display:flex;align-items:center;justify-content:center}
+.empty{padding:50px 24px;text-align:center;color:var(--tx2);font-size:15px;line-height:1.7;white-space:pre-line}
+
+/* ===== Bottom nav ===== */
+.nav{flex-shrink:0;display:flex;background:var(--bg);border-top:1px solid var(--line);padding:6px 0 calc(8px + env(safe-area-inset-bottom))}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;color:var(--tx2);padding:4px 0;position:relative}
+.nav button.on{color:var(--tx)}
+.nav .ic{position:relative}
+.nav .nb{position:absolute;top:-8px;left:20px;background:var(--red);color:#fff;font-size:12px;font-weight:700;min-width:22px;height:22px;border-radius:11px;padding:0 6px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg)}
+.nav .dot{position:absolute;top:-3px;right:-5px;width:11px;height:11px;border-radius:50%;background:var(--red);border:2px solid var(--bg)}
+
+/* ===== Chat ===== */
+#chat{background:var(--wall)}
+.chead{background:var(--bg);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid var(--line)}
+.chead .back{width:34px;height:38px;display:flex;align-items:center;justify-content:center}
+.chead .back.hide{display:none}
+.chead .avatar{width:38px;height:38px;font-size:16px}
+.chead .nm{font-size:16px;font-weight:600}
+.chead .st{font-size:11px;color:var(--tx2);margin-top:1px;min-height:14px}
+.msgs{flex:1;overflow-y:auto;padding:10px 10px 14px;-webkit-overflow-scrolling:touch}
+.divider{text-align:center;margin:12px 0 8px}
+.divider span{display:inline-block;background:rgba(255,255,255,.12);color:#c7c7cc;font-size:11px;padding:3px 12px;border-radius:12px}
+.row{display:flex;align-items:flex-end;gap:7px;margin-top:3px}
+.row.first{margin-top:10px}
+.row.me{justify-content:flex-end}
+.row .avatar{width:34px;height:34px;font-size:14px}
+.row .ph{width:34px;flex-shrink:0}
+.col{display:flex;flex-direction:column;max-width:70%}
+.row.me .col{align-items:flex-end}
+.bwrap{display:flex;align-items:flex-end;gap:5px}
+.meta{font-size:10px;color:var(--tx2);line-height:1.25;white-space:nowrap;text-align:right}
+.row.other .meta{text-align:left}
+.pname{font-size:11px;color:var(--tx2);margin:0 0 3px 2px}
+.bubble{padding:8px 13px;border-radius:18px;font-size:15px;line-height:1.45;word-break:break-word;white-space:pre-wrap;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;position:relative}
+.row.other .bubble{background:var(--surface2);color:#fff;border-top-left-radius:4px}
+.row.me .bubble{background:var(--green);color:#06130a;border-top-right-radius:4px}
+.bubble a.lnk{color:#8ec5ff;text-decoration:underline;text-underline-offset:2px;word-break:break-all;cursor:pointer;-webkit-user-select:text;user-select:text}
+.row.me .bubble a.lnk{color:#06130a;font-weight:600}
+.bubble.del{background:#26262a!important;color:var(--tx2)!important;font-style:italic;font-size:13px}
+.bubble.sticker{background:none!important;font-size:64px;line-height:1.1;padding:0}
+.bubble.img{padding:0;background:none!important;overflow:hidden;border-radius:14px}
+.bubble.img img{display:block;max-width:100%;max-height:300px;border-radius:14px;cursor:zoom-in}
+.quote{border-left:3px solid rgba(255,255,255,.35);padding:2px 0 2px 8px;margin-bottom:5px;font-size:12px;color:#c7c7cc;max-height:34px;overflow:hidden}
+.quote b{display:block;font-size:11px;color:#fff}
+.row.me .quote{border-left-color:rgba(0,0,0,.35);color:rgba(0,0,0,.65)}
+.row.me .quote b{color:rgba(0,0,0,.85)}
+.pending{opacity:.55}
+.aitag{font-size:10px;color:var(--green);margin:0 2px 3px;display:flex;align-items:center;gap:3px;font-weight:600}
+.aitag::before{content:"AI";background:var(--green);color:#06130a;border-radius:4px;padding:0 4px;font-size:9px;font-weight:800}
+.row.me .aitag{justify-content:flex-end}
+.aipill{display:none;border:1px solid var(--tx2);color:var(--tx2);border-radius:14px;padding:4px 11px;font-size:12px;font-weight:700;flex-shrink:0}
+.aipill.on{border-color:var(--green);color:var(--green)}
+.aipill.pause{border-color:#d9a400;color:#d9a400}
+
+.replybar{display:none;background:var(--surface);padding:7px 12px;align-items:center;gap:10px;border-top:1px solid var(--line);flex-shrink:0}
+.replybar.on{display:flex}
+.replybar .rb{flex:1;min-width:0;border-left:3px solid var(--green);padding-left:8px;font-size:12px;color:#c7c7cc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.replybar .rb b{display:block;color:#fff}
+.replybar .x{font-size:20px;color:var(--tx2);padding:0 4px}
+
+.ibar{background:var(--bg);border-top:1px solid var(--line);padding:10px 8px calc(20px + env(safe-area-inset-bottom));display:flex;align-items:flex-end;gap:6px;flex-shrink:0}
+.ibar .ib{width:38px;height:40px;color:#a1a1a6;display:flex;align-items:center;justify-content:center}
+.ibar textarea{flex:1;border:1px solid var(--surface2);background:var(--surface);color:#fff;border-radius:20px;padding:9px 14px;font-size:15px;font-family:inherit;outline:none;resize:none;min-height:40px;max-height:112px;line-height:1.4;overflow-y:hidden;display:block}
+.ibar textarea::placeholder{color:#6d6d72}
+.ibar textarea:focus{border-color:var(--green)}
+.sendb{width:38px;height:38px;border-radius:50%;background:var(--green);color:#06130a;display:none;align-items:center;justify-content:center}
+.sendb.on{display:flex}
+.sendb:active{transform:scale(.92)}
+
+.stickers{display:none;background:var(--surface);border-top:1px solid var(--line);height:230px;overflow-y:auto;padding:10px;grid-template-columns:repeat(4,1fr);gap:6px;flex-shrink:0}
+.stickers.on{display:grid}
+.stickers button{font-size:44px;padding:6px;border-radius:12px}
+.stickers button:active{background:var(--surface2)}
+
+/* ===== Guideline menu (สมาชิกเท่านั้น) ===== */
+.guide{display:none;background:var(--bg);border-top:1px solid var(--line);flex-shrink:0}
+.guide.on{display:block}
+.gtog{display:flex;align-items:center;gap:7px;width:100%;padding:8px 14px;font-size:13px;font-weight:600;color:var(--green);text-align:left}
+.gtog .car{margin-left:auto;transition:transform .2s;color:var(--tx2)}
+.guide.open .gtog .car{transform:rotate(180deg)}
+.gbody{display:none;padding:0 10px 8px}
+.guide.open .gbody{display:block}
+.gcats{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.gcats::-webkit-scrollbar{display:none}
+.gcat{flex-shrink:0;border:1px solid var(--surface2);background:var(--surface);color:#fff;border-radius:16px;padding:6px 12px;font-size:13px;white-space:nowrap}
+.gcat.on{border-color:var(--green);color:var(--green);background:rgba(6,199,85,.12)}
+.gsubs{display:none;padding-top:0}
+.gcat.sub{font-size:12px;padding:4px 10px;border-radius:12px;color:var(--tx2)}
+.gcat.sub.on{color:var(--green)}
+.gqs{display:flex;flex-direction:column;gap:6px;max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.gq{text-align:left;background:var(--surface);border:1px solid var(--surface2);color:#fff;border-radius:12px;padding:9px 12px;font-size:13.5px;line-height:1.35}
+.gq:active{background:var(--surface2)}
+
+/* ===== Menu / viewer / toast ===== */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:20}
+.overlay.on{display:flex}
+.menu{background:var(--surface2);border-radius:14px;width:240px;overflow:hidden}
+.menu button{display:block;width:100%;padding:15px 18px;text-align:left;font-size:15px;color:#fff;border-bottom:1px solid #3a3a3c}
+.menu button:last-child{border-bottom:none}
+.menu button.red{color:#ff5a64}
+.menu button:active{background:#3a3a3c}
+#viewer{background:rgba(0,0,0,.94)}
+#viewer img{max-width:100%;max-height:100%;object-fit:contain}
+.toast{position:absolute;left:50%;bottom:100px;transform:translateX(-50%);background:rgba(60,60,64,.96);color:#fff;font-size:13px;padding:9px 18px;border-radius:18px;z-index:30;display:none;max-width:85%;text-align:center}
+.bubble.img video{display:block;max-width:100%;max-height:300px;border-radius:14px;background:#000}
+.bubble .prog{font-size:11px;color:var(--tx2);padding:4px 8px}
+.lg{margin:auto;width:min(320px,88%);display:flex;flex-direction:column;gap:12px;text-align:center}
+.lg h2{font-size:18px;font-weight:600}
+.lg p{font-size:13px;color:var(--tx2)}
+.lg input{background:var(--surface);border:1px solid var(--line);border-radius:10px;color:var(--tx);font-size:16px;padding:12px;outline:none;font-family:inherit}
+.lg button{background:var(--green);color:#fff;font-size:16px;font-weight:600;border-radius:10px;padding:12px}
+.lg .err{color:var(--red);font-size:13px;min-height:18px}
+
+/* ===== Visitor + ปุ่มภาษา (เฟส 1) ===== */
+.chead .lang{display:none;flex-shrink:0;height:30px;padding:0 11px;border-radius:15px;background:var(--surface2);color:var(--tx);font-size:12px;font-weight:600;white-space:nowrap}
+.chead .lang.on{display:block}
+.vhint{display:none;align-items:center;gap:10px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line);font-size:12px;line-height:1.35;color:var(--tx2);flex-shrink:0}
+body.visitor .vhint{display:flex}
+.vhint span{flex:1;min-width:0}
+.vhint button{flex-shrink:0;background:var(--green);color:#fff;border-radius:14px;padding:6px 12px;font-size:12px;font-weight:600}
+body.visitor .ibar,body.visitor #replybar,body.visitor #stickers{display:none!important}
+body.visitor .guide{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+
+/* ===== Member หน้าแรก + ห้องสนทนา (เฟส 2) ===== */
+body.member .lhead .acts,body.member .nav{display:none!important}
+.lhead .lang{display:none;flex-shrink:0;height:30px;padding:0 11px;border-radius:15px;background:var(--surface2);color:var(--tx);font-size:12px;font-weight:600;white-space:nowrap}
+body.member .lhead .lang{display:block}
+.sec{padding:12px 18px 6px;font-size:13px;font-weight:700;color:var(--tx2);letter-spacing:.2px}
+.item .nm .chip{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:10px;background:var(--surface2);color:var(--tx2);font-size:11px;font-weight:600;vertical-align:2px}
+.item .nm .chip.ok{background:rgba(6,199,85,.16);color:var(--green)}
+.item .nm .chip.warn{background:rgba(255,184,0,.16);color:#e0a800}
+.item .nm .chip.bad{background:rgba(255,69,58,.16);color:var(--red)}
+.rbar{display:none;align-items:center;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line);font-size:13px;line-height:1.35;color:var(--tx2);flex-shrink:0}
+.rbar span{flex:1;min-width:0}
+.rbar button{flex-shrink:0;background:var(--green);color:#fff;border-radius:16px;padding:8px 14px;font-size:13px;font-weight:600}
+.rbar button[hidden]{display:none}
+.rbar button:disabled{opacity:.6}
+body.room.ro .rbar{display:flex}
+body.room.ro .ibar,body.room.ro #replybar,body.room.ro #stickers{display:none!important}
+/* แอดมินที่มีสิทธิ์ดูแชทส่วนตัวแต่ไม่มีสิทธิ์ตอบ → ซ่อนช่องพิมพ์ ใช้แถบข้อความแทน */
+body.dmro .rbar{display:flex}
+body.dmro .ibar,body.dmro #replybar,body.dmro #stickers{display:none!important}
+/* Visitor อ่านห้อง: ใช้แถบ "เข้าสู่ระบบเพื่อขอเข้าห้อง" แทนแถบแนะนำเดิม */
+body.visitor.room .vhint{display:none}
+
+/* ===== แอดมิน: แท็บห้อง + จัดการห้อง (เฟส 3) ===== */
+.admtabs{display:none;gap:8px;padding:0 18px 10px;flex-shrink:0}
+body.admin .admtabs{display:flex}
+.admtabs button{flex:1;height:38px;border-radius:19px;background:var(--surface);color:var(--tx2);font-size:15px;font-weight:600}
+.admtabs button.on{background:var(--green);color:#fff}
+.tbadge{display:none;margin-left:6px;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--red);color:#fff;font-size:12px;font-weight:700;line-height:20px;vertical-align:1px}
+.tbadge.on{display:inline-block}
+.chead .mgb{display:none;flex-shrink:0;height:30px;padding:0 12px;border-radius:15px;background:var(--surface2);color:var(--tx);font-size:12px;font-weight:600;white-space:nowrap}
+body.admin.room .chead .mgb{display:block}
+.item.addroom .avatar{background:var(--green);font-size:30px;font-weight:400}
+.item.req{cursor:default}
+.btn-s{height:34px;padding:0 14px;border-radius:17px;font-size:13px;font-weight:600;background:var(--surface2);color:var(--tx);white-space:nowrap}
+.btn-s.ok{background:var(--green);color:#fff}
+.btn-s.bad{background:rgba(255,69,58,.16);color:var(--red)}
+.btn-s:disabled{opacity:.6}
+.req .btns{display:flex;gap:6px;flex-shrink:0}
+#mgOv{align-items:flex-end;z-index:22}
+.sheet{width:100%;max-height:88%;display:flex;flex-direction:column;background:var(--surface);border-radius:18px 18px 0 0;overflow:hidden}
+.sh-head{display:flex;align-items:flex-start;gap:10px;padding:16px 16px 8px}
+.sh-head>div{flex:1;min-width:0}
+.sh-title{font-size:18px;font-weight:700;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sh-sub{font-size:13px;color:var(--tx2);margin-top:3px}
+.sh-x{width:36px;height:36px;border-radius:50%;background:var(--surface2);color:var(--tx);font-size:16px;flex-shrink:0}
+.sheet .admtabs{display:flex;padding:6px 16px 10px}
+.sheet .admtabs button{height:34px;font-size:13px}
+.sh-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:150px}
+.mrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.mrow .avatar{width:44px;height:44px;font-size:17px}
+.mrow .mid{flex:1;min-width:0}
+.mrow .nm{font-size:15px;font-weight:600;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow .sub{font-size:12px;color:var(--tx2);margin-top:2px}
+.mrow .btns{display:flex;flex-wrap:wrap;gap:6px;width:100%;padding-left:56px}
+.sh-foot{display:flex;gap:10px;padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.sh-foot button{flex:1;height:42px;border-radius:21px;background:var(--surface2);color:var(--tx);font-size:14px;font-weight:600}
+.sh-foot button.danger{background:rgba(255,69,58,.16);color:var(--red)}
+#dlgOv{z-index:26;padding:20px}
+.dlg{width:100%;max-width:360px;background:var(--surface2);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.dlg-title{font-size:17px;font-weight:700;color:var(--tx)}
+.dlg-body{font-size:14px;line-height:1.5;color:var(--tx2);white-space:pre-line}
+.dlg input[type=text],.dlg textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--tx);font-size:15px;padding:10px 12px;font-family:inherit;outline:none}
+.dlg textarea{resize:none;height:72px}
+.dlg label.chk{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--tx2);line-height:1.4}
+.dlg label.chk input{margin-top:3px;flex-shrink:0}
+.dlg-err{color:var(--red);font-size:13px}
+.dlg-btns{display:flex;gap:10px}
+.dlg-btns button{flex:1;height:42px;border-radius:21px;font-size:15px;font-weight:600;background:var(--surface);color:var(--tx)}
+.dlg-btns button.ok{background:var(--green);color:#fff}
+.dlg-btns button.danger{background:var(--red);color:#fff}
+.dlg-btns button:disabled{opacity:.6}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Admin login (โหมดแอดมินเท่านั้น) -->
+  <div class="screen" id="login">
+    <div class="lg">
+      <h2>แชทซัพพอร์ต (แอดมิน)</h2>
+      <p>ใส่ ADMIN_KEY เพื่อเข้าใช้งาน (เก็บไว้เฉพาะแท็บนี้)</p>
+      <input id="lgKey" type="password" placeholder="ADMIN_KEY" autocomplete="off">
+      <div class="err" id="lgErr"></div>
+      <button id="lgBtn">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+
+  <!-- Chat list -->
+  <div class="screen on" id="list">
+    <div class="lhead">
+      <h1>แชท</h1>
+      <button class="lang" id="langBtnL" type="button" aria-label="Language"></button>
+      <div class="acts">
+        <button id="bProfile" class="myav" aria-label="โปรไฟล์ซัพพอร์ต" style="display:none"><div id="myav"></div></button>
+        <button id="bUnread" aria-label="เฉพาะที่ยังไม่อ่าน">
+          <svg width="30" height="30" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M3 8a2 2 0 0 1 2-2h5l2 2h10a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 19l4-5 3 3.5 2-2.5 3 4z"/></svg>
+        </button>
+        <button id="bNew" aria-label="แชทใหม่">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5C8.9 5 4 9 4 14c0 2.5 1.2 4.7 3.2 6.3L6.2 26l5.6-2.6c1 .3 2 .4 3.2.4 6.1 0 11-4 11-9"/><circle cx="10.5" cy="14.5" r="1.2" fill="currentColor"/><circle cx="15" cy="14.5" r="1.2" fill="currentColor"/><circle cx="19.5" cy="14.5" r="1.2" fill="currentColor"/><path d="M25 3v8M21 7h8"/></svg>
+        </button>
+        <button id="bMore" aria-label="เมนู">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor"><circle cx="14" cy="6" r="2.3"/><circle cx="14" cy="14" r="2.3"/><circle cx="14" cy="22" r="2.3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="admtabs" id="admTabs"><button id="tabDm" class="on" type="button">แชท</button><button id="tabRooms" type="button">ห้องสนทนา<span class="tbadge" id="tabRoomsN"></span></button></div>
+    <div class="sbox">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
+      <input id="search" placeholder="ค้นหา" autocomplete="off">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V5a2 2 0 0 1 2-2h4M17 3h4a2 2 0 0 1 2 2v4M23 17v4a2 2 0 0 1-2 2h-4M9 23H5a2 2 0 0 1-2-2v-4M2 13h22"/></svg>
+    </div>
+    <div class="chatlist" id="chatlist"></div>
+    <div class="nav">
+      <button data-tab="home">
+        <span class="ic"><svg width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linejoin="round"><path d="M4 14L15 4l11 10v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M11 26v-7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v7"/></svg></span>หน้าหลัก
+      </button>
+      <button class="on" data-tab="chat">
+        <span class="ic"><svg width="30" height="30" viewBox="0 0 30 30" fill="currentColor"><path d="M15 3C8.4 3 3 7.4 3 13c0 2.7 1.3 5.1 3.4 6.9L5.3 26l6-2.9c1.1.3 2.3.4 3.7.4 6.6 0 12-4.4 12-10.2S21.600 3 15 3z"/><circle cx="9.500" cy="13.500" r="1.600" fill="#111"/><circle cx="15" cy="13.500" r="1.600" fill="#111"/><circle cx="20.500" cy="13.500" r="1.600" fill="#111"/></svg><span class="nb" id="navBadge" style="display:none"></span></span>แชท
+      </button>
+      <button data-tab="open">
+        <span class="ic"><svg width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><rect x="3" y="3" width="24" height="24" rx="8"/><circle cx="15" cy="15" r="4.500"/><path d="M19.500 11v5.500a2.500 2.500 0 0 0 5 0V15"/></svg></span>โอเพนแชท
+      </button>
+      <button data-tab="today">
+        <span class="ic"><svg width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a5 5 0 0 1 5-5h9a7 7 0 0 1 7 7v1a7 7 0 0 1-7 7h-1v5l-5-4H11a5 5 0 0 1-5-5z"/><circle cx="17.500" cy="11" r="3"/></svg><span class="dot"></span></span>TODAY
+      </button>
+    </div>
+  </div>
+
+  <!-- Chat -->
+  <div class="screen" id="chat">
+    <div class="chead">
+      <button class="back" id="back" aria-label="กลับ">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4L7 13l9 9"/></svg>
+      </button>
+      <div class="avatar" id="pav"></div>
+      <div style="flex:1;min-width:0">
+        <div class="nm" id="pname"></div>
+        <div class="st" id="pst"></div>
+      </div>
+      <button class="mgb" id="mgBtn" type="button">จัดการห้อง</button>
+      <button class="lang" id="langBtn" type="button" aria-label="Language"></button>
+      <button class="aipill" id="aiPill" aria-label="AI"></button>
+    </div>
+    <div class="vhint" id="vhint"><span id="vhintTx"></span><button id="vhintBtn" type="button"></button></div>
+    <div class="msgs" id="msgs"></div>
+    <div class="replybar" id="replybar">
+      <div class="rb" id="rbtxt"></div>
+      <button class="x" id="rbx">✕</button>
+    </div>
+    <div class="stickers" id="stickers"></div>
+    <div class="guide" id="guide">
+      <button class="gtog" id="gtog" type="button" aria-expanded="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        <span id="gtogTx"></span>
+        <svg class="car" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+      </button>
+      <div class="gbody"><div class="gcats" id="gcats"></div><div class="gcats gsubs" id="gsubs"></div><div class="gqs" id="gqs"></div></div>
+    </div>
+    <div class="ibar">
+      <button class="ib" id="imgBtn" aria-label="รูปภาพ">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><rect x="3" y="4" width="20" height="18" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M4 20l6-6 4 4 3-3 6 5"/></svg>
+      </button>
+      <textarea id="input" rows="1" placeholder="พิมพ์ข้อความ"></textarea>
+      <button class="ib" id="stBtn" aria-label="สติกเกอร์">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="13" cy="13" r="10"/><path d="M8.500 15c1 2.200 2.600 3.200 4.500 3.200s3.500-1 4.500-3.200"/><circle cx="9.500" cy="10.500" r="1" fill="currentColor"/><circle cx="16.500" cy="10.500" r="1" fill="currentColor"/></svg>
+      </button>
+      <button class="sendb" id="send" aria-label="ส่ง">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.500V3.500L22 12z"/></svg>
+      </button>
+    </div>
+    <div class="rbar" id="rbar"><span id="rbarTx"></span><button id="rbarBtn" type="button" hidden></button></div>
+    <input type="file" id="file" accept="image/*,video/mp4,video/webm,video/quicktime" style="display:none">
+    <input type="file" id="avFile" accept="image/png,image/jpeg,image/webp" style="display:none">
+  </div>
+
+  <div class="overlay" id="mgOv"><div class="sheet">
+    <div class="sh-head"><div><div class="sh-title" id="mgTitle"></div><div class="sh-sub" id="mgSub"></div></div><button class="sh-x" id="mgX" type="button" aria-label="ปิด">✕</button></div>
+    <div class="admtabs" id="mgTabs"></div>
+    <div class="sh-body" id="mgList"></div>
+    <div class="sh-foot"><button id="mgEdit" type="button">แก้ไขห้อง</button><button id="mgDel" class="danger" type="button">ลบห้อง</button></div>
+  </div></div>
+  <div class="overlay" id="dlgOv"><div class="dlg">
+    <div class="dlg-title" id="dlgTitle"></div><div class="dlg-body" id="dlgBody"></div><div class="dlg-err" id="dlgErr"></div>
+    <div class="dlg-btns"><button id="dlgNo" type="button"></button><button id="dlgOk" type="button"></button></div>
+  </div></div>
+  <div class="overlay" id="menuOv"><div class="menu" id="menu"></div></div>
+  <div class="overlay" id="viewer"><img id="vimg" alt=""></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* =====================================================================
+   TCC Support Chat — แชทส่วนตัว สมาชิก ↔ ทีมซัพพอร์ต
+
+   สมาชิก : เปิดใน iframe จากแอป — แอปส่ง {type:"sc-init", token, lang, api?} ทาง postMessage
+            (token = session token ของ GAS ที่ _tccGetToken() ให้) แล้ว Worker ออก chat token ให้
+   แอดมิน : เปิด line-chat.html?mode=admin  (พิมพ์ ADMIN_KEY ครั้งแรก เก็บใน sessionStorage ของแท็บ)
+            เปิดห้องตรงได้ด้วย  ?mode=admin&uid=<member id>&name=<ชื่อ>
+    Visitor: ยังไม่ล็อกอิน → แอปส่ง {type:"sc-init", visitor:true, lang, api?} · ไม่มีฝั่งแอดมิน · ไม่มีช่องพิมพ์ · เลือกถามได้เฉพาะเมนู FAQ
+             (GET /api/public/menu · POST /api/public/ask {qid,lang} — Worker ตอบจาก FAQ ตรง ไม่เก็บข้อความ ไม่เรียกโมเดล)
+    ข้อความ iframe → แอป: sc-need-init · sc-close (ปุ่มกลับ) · sc-login (ปุ่มเข้าสู่ระบบในโหมด Visitor) · sc-reset (โหมดเปลี่ยนกลางทาง ให้แอปโหลดใหม่)
+    ข้อความ แอป → iframe: sc-init · sc-visible {on}  (member: sc-init ใส่ chat:{token,me,exp_ms} ที่แลกจาก POST /api/me/chat-token ของ Worker หลัก)
+    ภาษา: ปุ่ม 🌐 ที่หัวห้อง (6 ภาษา) จำค่าที่เลือกไว้ใน localStorage "sc_lang" — ค่าที่เลือกเองชนะ lang ที่แอปส่งมา
+    แอดมินฝังในแอป (เฟส 3): แอปใส่ window.__SC_ADMIN=1 ไว้หัว srcdoc + ส่ง sc-init {chat:{token(role=admin),me,exp_ms}} (แลกจาก POST /api/admin/chat-token ของ Worker หลัก · root เท่านั้น) → ไม่ต้องกรอก ADMIN_KEY
+             แท็บ "ห้องสนทนา": สร้าง/แก้/ลบห้อง · คิวคำขอเข้าห้อง (อนุมัติ/ปฏิเสธ) · ในห้อง ปุ่ม "จัดการห้อง" = รออนุมัติ/สมาชิก/ถูกบล็อก/ทั้งระบบ (ถอดออก · บล็อก · ปลดบล็อก · บล็อก/ปลดบล็อกทั้งระบบ) · แอดมินกดค้างข้อความของสมาชิกในห้องเพื่อลบได้ — หน้าจอแอดมินเป็นภาษาไทยอย่างเดียว
+    Member หน้าแรก (เฟส 2): รายการ = ห้องคุยกับซัพพอร์ต/AI (ปักหมุด) + ห้องสนทนา จาก GET /api/rooms · ปุ่มกลับในห้อง → กลับรายการ
+             ห้องสนทนา: อ่านได้ทุกห้อง (ยกเว้นห้องส่วนตัว/ถูกบล็อก) · พิมพ์ได้เมื่อแอดมินอนุมัติ (แถบ #rbar แทนช่องพิมพ์ + ปุ่ม "ขอเข้าห้อง")
+             ห้องส่งได้: ข้อความ/สติกเกอร์/รูป/วิดีโอ (อัปโหลดด้วย /api/upload-sign?room=ID) · ชื่อผู้ส่งที่คนอื่นเห็นถูกย่อเป็น "ชื่อต้น*****" โดย Worker · ถ้า Worker ยังไม่มี /api/rooms จะถอยไปห้องซัพพอร์ตตรง ๆ แบบเฟส 1
+   ===================================================================== */
+const DEFAULT_API = "https://line-chat-worker.tcc-team-developer.workers.dev";
+const SUPPORT_ID = "__support__";
+const SHOW_PIN_BADGE = true; // ป้ายหมุดสีน้ำเงินที่มุมอวาตาร์ (ตามภาพตัวอย่าง)
+const VIDEO_OK = ["video/mp4", "video/webm", "video/quicktime"];
+
+const STICKERS = ["😀","😂","🥰","😎","😭","😡","🥳","😴","👍","👏","🙏","💪","❤️","🔥","🎉","💰","📈","📉","🚀","🤝","☕","🍜","🐱","🐶"];
+const COLORS = ["#5b8c5a","#e17055","#0984e3","#6c5ce7","#d63031","#00b894","#e84393","#d9a400","#636e72","#00a5a8"];
+
+// ---- เมนูไกด์ไลน์: ค่าด้านล่างเป็นเมนูสำรอง (ใช้เมื่อโหลดจาก Worker ไม่ได้) — เมนูจริงดึงจาก GET /api/kb/menu (loadGuide) ----
+// ไม่ต้องอัปเดตทุกครั้งที่แก้ FAQ · อยากให้สำรองตรงกับปัจจุบัน: node -e "import('./src/kb.js').then(m=>console.log(JSON.stringify(m.menuData())))" (โครงสร้างต้นไม้: หมวด → children → items)
+// ข้อความที่ส่งต้องตรงกับ q ของรหัสนั้นเป๊ะ (Worker ตรวจ) ไม่งั้นถูกปฏิบัติเป็นข้อความพิมพ์เอง
+let GUIDE = [{"id":"login","icon":"🔑","name":{"th":"เข้าสู่ระบบ","en":"Login","vi":"Đăng nhập","kh":"ចូលប្រព័ន្ធ","mm":"အကောင့်ဝင်ရန်","la":"ເຂົ້າລະບົບ"},"items":[{"id":"login_how","q":{"th":"วิธีเข้าสู่ระบบ / ตั้งรหัสผ่านครั้งแรก","en":"How do I log in / set my first password?","vi":"Đăng nhập / đặt mật khẩu lần đầu như thế nào?","kh":"តើចូលប្រព័ន្ធ / កំណត់ពាក្យសម្ងាត់លើកដំបូងយ៉ាងដូចម្តេច?","mm":"အကောင့်ဝင်ရန် / ပထမဆုံး စကားဝှက်သတ်မှတ်ရန် ဘယ်လိုလုပ်ရမလဲ။","la":"ເຂົ້າລະບົບ / ຕັ້ງລະຫັດຜ່ານຄັ້ງທຳອິດແນວໃດ?"}},{"id":"login_nophone","q":{"th":"ไม่พบเบอร์โทรในระบบ ทำอย่างไร","en":"My phone number is not found. What should I do?","vi":"Không tìm thấy số điện thoại trong hệ thống, phải làm sao?","kh":"រកមិនឃើញលេខទូរស័ព្ទក្នុងប្រព័ន្ធ តើត្រូវធ្វើយ៉ាងណា?","mm":"စနစ်ထဲတွင် ဖုန်းနံပါတ် မတွေ့ပါက ဘာလုပ်ရမလဲ။","la":"ບໍ່ພົບເບີໂທໃນລະບົບ ເຮັດແນວໃດ?"}},{"id":"login_locked","q":{"th":"ใส่รหัสผ่านผิด 5 ครั้งต้องทำอย่างไร","en":"What happens if I enter the wrong password 5 times?","vi":"Nhập sai mật khẩu 5 lần thì sao?","kh":"បើបញ្ចូលពាក្យសម្ងាត់ខុស 5 ដងត្រូវធ្វើយ៉ាងណា?","mm":"စကားဝှက် 5 ကြိမ် မှားထည့်ပါက ဘာဖြစ်မလဲ။","la":"ຖ້າໃສ່ລະຫັດຜ່ານຜິດ 5 ເທື່ອຈະເປັນແນວໃດ?"}},{"id":"login_remember","q":{"th":"ติ๊ก 'จำการเข้าสู่ระบบ' อยู่ได้นานแค่ไหน","en":"How long does 'Remember login' last?","vi":"'Ghi nhớ đăng nhập' duy trì được bao lâu?","kh":"'ចងចាំការចូលប្រព័ន្ធ' នៅបានរយៈពេលប៉ុន្មាន?","mm":"'အကောင့်ဝင်ထားမှုကို မှတ်ထားပါ' က ဘယ်လောက်ကြာအောင် ရှိနေမလဲ။","la":"ຕິກ 'ຈື່ການເຂົ້າລະບົບ' ຢູ່ໄດ້ດົນປານໃດ?"}}]},{"id":"wallet","icon":"💸","name":{"th":"ฝาก/ถอน","en":"Deposit / Withdraw","vi":"Nạp / Rút","kh":"ដាក់ / ដកប្រាក់","mm":"ငွေသွင်း / ငွေထုတ်","la":"ຝາກ / ຖອນ"},"items":[{"id":"deposit_how","q":{"th":"วิธีฝากเงิน / เติมเงิน และขั้นต่ำ","en":"How do I deposit, and what is the minimum?","vi":"Cách nạp tiền và mức tối thiểu?","kh":"របៀបដាក់ប្រាក់ និងចំនួនអប្បបរមា?","mm":"ငွေသွင်းနည်းနှင့် အနည်းဆုံးပမာဏ ဘယ်လောက်လဲ။","la":"ວິທີຝາກເງິນ ແລະຂັ້ນຕ່ຳເທົ່າໃດ?"}},{"id":"withdraw_how","q":{"th":"วิธีถอนเงิน และใช้เวลานานเท่าไร","en":"How do I withdraw, and how long does it take?","vi":"Cách rút tiền và mất bao lâu?","kh":"របៀបដកប្រាក់ និងប្រើពេលប៉ុន្មាន?","mm":"ငွေထုတ်နည်းနှင့် ဘယ်လောက်ကြာမလဲ။","la":"ວິທີຖອນເງິນ ແລະໃຊ້ເວລາດົນປານໃດ?"}},{"id":"withdraw_status","q":{"th":"ถอนเงินช้า / สถานะการถอนหมายถึงอะไร","en":"Withdrawal is slow / what do the withdrawal statuses mean?","vi":"Rút tiền chậm / các trạng thái rút tiền có nghĩa là gì?","kh":"ការដកប្រាក់យឺត / ស្ថានភាពនៃការដកប្រាក់មានន័យដូចម្តេច?","mm":"ငွေထုတ်ခြင်း နှောင့်နှေးပါက / ငွေထုတ်အခြေအနေများ၏ အဓိပ္ပာယ်","la":"ຖອນເງິນຊ້າ / ສະຖານະການຖອນໝາຍເຖິງຫຍັງ"}},{"id":"fee_withdraw","q":{"th":"ค่าธรรมเนียมและขั้นต่ำการถอน On-chain","en":"On-chain withdrawal fees and minimums","vi":"Phí và mức tối thiểu khi rút On-chain","kh":"ថ្លៃសេវា និងចំនួនអប្បបរមានៃការដកប្រាក់ On-chain","mm":"On-chain ငွေထုတ်ခြင်း၏ ကြေးနှင့် အနည်းဆုံးပမာဏ","la":"ຄ່າທຳນຽມ ແລະຂັ້ນຕ່ຳການຖອນ On-chain"}},{"id":"coins_networks","q":{"th":"เหรียญและเครือข่ายที่รองรับ","en":"Supported coins and networks","vi":"Các đồng coin và mạng lưới được hỗ trợ","kh":"រូបិយប័ណ្ណ និងបណ្តាញដែលគាំទ្រ","mm":"ပံ့ပိုးထားသော ဒင်္ဂါးများနှင့် ကွန်ရက်များ","la":"ເຫຼຽນ ແລະເຄືອຂ່າຍທີ່ຮອງຮັບ"}}]},{"id":"earn","icon":"📈","name":{"th":"Earn","en":"Earn","vi":"Earn","kh":"Earn","mm":"Earn","la":"Earn"},"items":[{"id":"earn_create","q":{"th":"สร้างสัญญา Earn อย่างไร","en":"How do I create an Earn contract?","vi":"Tạo hợp đồng Earn như thế nào?","kh":"តើបង្កើតកិច្ចសន្យា Earn យ៉ាងដូចម្តេច?","mm":"Earn စာချုပ် ဘယ်လို ဖန်တီးရမလဲ။","la":"ສ້າງສັນຍາ Earn ແນວໃດ?"}},{"id":"earn_plans","q":{"th":"แผน Earn มีอะไรบ้าง ผลตอบแทนเท่าไร","en":"What Earn plans are available and what are the returns?","vi":"Có những gói Earn nào và lợi nhuận bao nhiêu?","kh":"តើមានគម្រោង Earn អ្វីខ្លះ ហើយផលចំណេញប៉ុន្មាន?","mm":"Earn အစီအစဉ်များ ဘာတွေရှိပြီး အမြတ်ဘယ်လောက်လဲ။","la":"ແຜນ Earn ມີຫຍັງແດ່ ຜົນຕອບແທນເທົ່າໃດ?"}},{"id":"earn_claim","q":{"th":"รับเงินต้นคืนและเคลมกำไร Earn","en":"How do I get my principal back and claim Earn profit?","vi":"Nhận lại vốn gốc và nhận (claim) lợi nhuận Earn","kh":"ទទួលប្រាក់ដើមវិញ និងទាមទារប្រាក់ចំណេញ Earn","mm":"Earn ရင်းငွေပြန်ယူခြင်းနှင့် အမြတ် claim လုပ်ခြင်း","la":"ຮັບເງິນຕົ້ນຄືນ ແລະເຄລມກຳໄລ Earn"}},{"id":"earn_split","q":{"th":"การแบ่งกำไรเป็นอย่างไร","en":"How is the profit split?","vi":"Lợi nhuận được chia như thế nào?","kh":"តើការបែងចែកប្រាក់ចំណេញយ៉ាងដូចម្តេច?","mm":"အမြတ်ခွဲဝေမှု ဘယ်လိုလဲ။","la":"ການແບ່ງກຳໄລເປັນແນວໃດ?"}}]},{"id":"futures","icon":"📊","name":{"th":"Futures","en":"Futures","vi":"Futures","kh":"Futures","mm":"Futures","la":"Futures"},"items":[{"id":"fut_close","q":{"th":"ปิดออเดอร์ ตั้ง TP/SL ยกเลิกออเดอร์","en":"Closing orders, setting TP/SL and cancelling orders","vi":"Đóng lệnh, đặt TP/SL và hủy lệnh","kh":"បិទការបញ្ជា កំណត់ TP/SL និងលុបចោលការបញ្ជា","mm":"အော်ဒါပိတ်ခြင်း၊ TP/SL သတ်မှတ်ခြင်းနှင့် အော်ဒါပယ်ဖျက်ခြင်း","la":"ປິດອໍເດີ ຕັ້ງ TP/SL ແລະຍົກເລີກອໍເດີ"}},{"id":"fut_modes","q":{"th":"Futures แท็บ Contract กับ Direct ต่างกันอย่างไร","en":"What's the difference between the Contract and Direct tabs in Futures?","vi":"Tab Contract và Direct trong Futures khác nhau thế nào?","kh":"តើផ្ទាំង Contract និង Direct ក្នុង Futures ខុសគ្នាយ៉ាងដូចម្តេច?","mm":"Futures ရှိ Contract နှင့် Direct တက်ဘ် ဘာကွာသလဲ။","la":"ແທັບ Contract ແລະ Direct ໃນ Futures ແຕກຕ່າງກັນແນວໃດ?"}},{"id":"fut_funding","q":{"th":"Funding Fee คืออะไร คิดอย่างไร","en":"What is the Funding Fee and how is it charged?","vi":"Funding Fee là gì và được tính thế nào?","kh":"Funding Fee គឺជាអ្វី ហើយគិតយ៉ាងដូចម្តេច?","mm":"Funding Fee ဆိုတာ ဘာလဲ၊ ဘယ်လိုတွက်သလဲ။","la":"Funding Fee ແມ່ນຫຍັງ ຄິດແນວໃດ?"}}],"children":[{"id":"fut_contract","icon":"📋","name":{"th":"Futures · Contract","en":"Futures · Contract","vi":"Futures · Contract","kh":"Futures · Contract","mm":"Futures · Contract","la":"Futures · Contract"},"items":[{"id":"fut_open","q":{"th":"เปิดออเดอร์ Futures แท็บ Contract อย่างไร","en":"How do I open a Futures order (Contract tab)?","vi":"Mở lệnh Futures (tab Contract) như thế nào?","kh":"តើបើកការបញ្ជា Futures (ផ្ទាំង Contract) យ៉ាងដូចម្តេច?","mm":"Futures အော်ဒါ (Contract တက်ဘ်) ဘယ်လိုဖွင့်ရမလဲ။","la":"ເປີດອໍເດີ Futures (ແທັບ Contract) ແນວໃດ?"}},{"id":"fut_freeze","q":{"th":"สัญญาถูก Freeze / Auto-Liquidate คืออะไร","en":"What does a Frozen contract / Auto-Liquidate mean?","vi":"Hợp đồng bị Freeze / Auto-Liquidate nghĩa là gì?","kh":"កិច្ចសន្យាត្រូវបាន Freeze / Auto-Liquidate មានន័យដូចម្តេច?","mm":"စာချုပ် Freeze / Auto-Liquidate ဖြစ်ခြင်းဆိုတာ ဘာလဲ။","la":"ສັນຍາຖືກ Freeze / Auto-Liquidate ແມ່ນຫຍັງ?"}},{"id":"fut_c_pnl","q":{"th":"กำไรขาดทุนของ Contract ไปอยู่ที่ไหน","en":"Where do Contract profits and losses go?","vi":"Lãi lỗ của Contract đi đâu?","kh":"តើចំណេញខាតរបស់ Contract ទៅណា?","mm":"Contract ၏ အမြတ်အရှုံး ဘယ်သို့ရောက်သလဲ။","la":"ກຳໄລຂາດທຶນຂອງ Contract ໄປຢູ່ໃສ?"}}]},{"id":"fut_direct","icon":"⚡","name":{"th":"Futures · Direct","en":"Futures · Direct","vi":"Futures · Direct","kh":"Futures · Direct","mm":"Futures · Direct","la":"Futures · Direct"},"items":[{"id":"fut_direct_start","q":{"th":"เริ่มเทรดแท็บ Direct อย่างไร","en":"How do I start trading in the Direct tab?","vi":"Bắt đầu giao dịch ở tab Direct như thế nào?","kh":"តើចាប់ផ្តើមជួញដូរក្នុងផ្ទាំង Direct យ៉ាងដូចម្តេច?","mm":"Direct တက်ဘ်တွင် ကုန်သွယ်မှု ဘယ်လိုစရမလဲ။","la":"ເລີ່ມເທຣດແທັບ Direct ແນວໃດ?"}},{"id":"fut_direct_liq","q":{"th":"Direct ถูก Liq เมื่อไร มี Freeze ไหม","en":"When is a Direct position liquidated, and is there a Freeze?","vi":"Khi nào Position ở Direct bị Liq, có Freeze không?","kh":"តើ Position ក្នុង Direct ត្រូវ Liq នៅពេលណា មាន Freeze ឬទេ?","mm":"Direct တွင် Position ဘယ်အချိန် Liq ဖြစ်သလဲ၊ Freeze ရှိသလား။","la":"Direct ຖືກ Liq ເມື່ອໃດ ມີ Freeze ບໍ?"}}]}]},{"id":"history","icon":"🧾","name":{"th":"ประวัติ/รายการ","en":"History","vi":"Lịch sử","kh":"ប្រវត្តិ","mm":"မှတ်တမ်း","la":"ປະຫວັດ"},"items":[{"id":"hist_trades","q":{"th":"ดูประวัติเทรด ออเดอร์ และ Funding ได้ที่ไหน","en":"Where can I see my trade, order and Funding history?","vi":"Xem lịch sử giao dịch, lệnh và Funding ở đâu?","kh":"តើមើលប្រវត្តិជួញដូរ ការបញ្ជា និង Funding នៅឯណា?","mm":"ကုန်သွယ်မှု၊ အော်ဒါနှင့် Funding မှတ်တမ်းကို ဘယ်မှာကြည့်ရမလဲ။","la":"ເບິ່ງປະຫວັດເທຣດ ອໍເດີ ແລະ Funding ໄດ້ຢູ່ໃສ?"}},{"id":"hist_pnl","q":{"th":"ดู Realized PNL และ Daily PNL ได้อย่างไร","en":"How do I see Realized PNL and Daily PNL?","vi":"Xem Realized PNL và Daily PNL như thế nào?","kh":"តើមើល Realized PNL និង Daily PNL យ៉ាងដូចម្តេច?","mm":"Realized PNL နှင့် Daily PNL ကို ဘယ်လိုကြည့်ရမလဲ။","la":"ເບິ່ງ Realized PNL ແລະ Daily PNL ແນວໃດ?"}},{"id":"hist_money","q":{"th":"ดูประวัติเงินเข้า-ออก และค้นหารายการ","en":"How do I see money in/out history and search records?","vi":"Xem lịch sử tiền vào/ra và tìm kiếm giao dịch như thế nào?","kh":"តើមើលប្រវត្តិប្រាក់ចូល-ចេញ និងស្វែងរកកំណត់ត្រាយ៉ាងដូចម្តេច?","mm":"ငွေဝင်/ထွက် မှတ်တမ်းကို ကြည့်ပြီး ရှာဖွေနည်း","la":"ເບິ່ງປະຫວັດເງິນເຂົ້າ-ອອກ ແລະຄົ້ນຫາລາຍການແນວໃດ?"}},{"id":"hist_mismatch","q":{"th":"ตัวเลขหรือรายการไม่ตรง ต้องการให้ตรวจสอบ","en":"A number or record looks wrong and I want it checked","vi":"Số liệu hoặc giao dịch không khớp, tôi muốn được kiểm tra","kh":"លេខ ឬកំណត់ត្រាមិនត្រូវគ្នា ខ្ញុំចង់ឱ្យពិនិត្យ","mm":"ကိန်းဂဏန်း သို့မဟုတ် စာရင်း မကိုက်ညီ၊ စစ်ဆေးပေးစေလိုပါသည်","la":"ຕົວເລກ ຫຼືລາຍການບໍ່ກົງກັນ ຕ້ອງການໃຫ້ກວດສອບ"}}]},{"id":"loan","icon":"🏦","name":{"th":"สินเชื่อ","en":"Loan","vi":"Vay (Loan)","kh":"ប្រាក់កម្ចី","mm":"ချေးငွေ","la":"ສິນເຊື່ອ"},"items":[{"id":"loan_how","q":{"th":"สินเชื่อ (Loan) ทำงานอย่างไร ดอกเบี้ยเท่าไร","en":"How does the Loan work and what is the interest rate?","vi":"Khoản vay (Loan) hoạt động thế nào và lãi suất bao nhiêu?","kh":"តើប្រាក់កម្ចី (Loan) ដំណើរការយ៉ាងដូចម្តេច ហើយការប្រាក់ប៉ុន្មាន?","mm":"ချေးငွေ (Loan) ဘယ်လိုအလုပ်လုပ်ပြီး အတိုးနှုန်း ဘယ်လောက်လဲ။","la":"ສິນເຊື່ອ (Loan) ເຮັດວຽກແນວໃດ ດອກເບ້ຍເທົ່າໃດ?"}},{"id":"loan_ltv","q":{"th":"LTV, Margin Call และการบังคับขายของสินเชื่อ","en":"Loan LTV, Margin Call and forced liquidation","vi":"LTV, Margin Call và bán cưỡng chế của khoản vay","kh":"LTV, Margin Call និងការបង្ខំលក់នៃប្រាក់កម្ចី","mm":"ချေးငွေ၏ LTV, Margin Call နှင့် အတင်းအကျပ်ရောင်းချမှု","la":"LTV, Margin Call ແລະການບັງຄັບຂາຍຂອງສິນເຊື່ອ"}},{"id":"loan_repay","q":{"th":"ชำระคืนสินเชื่อได้เมื่อไร มีค่าธรรมเนียมไหม","en":"When can I repay the Loan, and is there a fee?","vi":"Khi nào có thể trả nợ khoản vay và có mất phí không?","kh":"តើអាចសងប្រាក់កម្ចីពេលណា ហើយមានថ្លៃសេវាទេ?","mm":"ချေးငွေကို ဘယ်အချိန် ပြန်ဆပ်နိုင်ပြီး ကြေးရှိပါသလား။","la":"ຊຳລະສິນເຊື່ອຄືນໄດ້ເມື່ອໃດ ມີຄ່າທຳນຽມບໍ?"}}]},{"id":"commission","icon":"🤝","name":{"th":"คอมมิชชั่น","en":"Commission","vi":"Hoa hồng","kh":"កម្រៃជើងសារ","mm":"ကော်မရှင်","la":"ຄອມມິດຊັນ"},"items":[{"id":"comm_source","q":{"th":"ค่าคอมมิชชั่นมาจากไหน ได้เท่าไร","en":"Where does commission come from and how much is it?","vi":"Hoa hồng đến từ đâu và được bao nhiêu?","kh":"តើកម្រៃជើងសារមកពីណា ហើយបានប៉ុន្មាន?","mm":"ကော်မရှင်က ဘယ်ကရပြီး ဘယ်လောက်ရမလဲ။","la":"ຄ່າຄອມມິດຊັນມາຈາກໃສ ໄດ້ເທົ່າໃດ?"}},{"id":"comm_referral","q":{"th":"ค่าแนะนำสมาชิกใหม่ได้เท่าไร","en":"How much is the referral fee for new members?","vi":"Phí giới thiệu thành viên mới là bao nhiêu?","kh":"តើថ្លៃណែនាំសមាជិកថ្មីបានប៉ុន្មាន?","mm":"အဖွဲ့ဝင်အသစ် မိတ်ဆက်ကြေး ဘယ်လောက်ရမလဲ။","la":"ຄ່າແນະນຳສະມາຊິກໃໝ່ໄດ້ເທົ່າໃດ?"}},{"id":"comm_claim","q":{"th":"โอน/เคลมค่าคอมมิชชั่นได้เมื่อไร","en":"When can I transfer / claim commission?","vi":"Khi nào có thể chuyển / nhận (claim) hoa hồng?","kh":"តើអាចផ្ទេរ / ទាមទារកម្រៃជើងសារបានពេលណា?","mm":"ကော်မရှင်ကို ဘယ်အချိန် လွှဲ / claim လုပ်နိုင်မလဲ။","la":"ໂອນ/ເຄລມຄ່າຄອມມິດຊັນໄດ້ເມື່ອໃດ?"}}]},{"id":"market","icon":"🛒","name":{"th":"Marketplace","en":"Marketplace","vi":"Marketplace","kh":"Marketplace","mm":"Marketplace","la":"Marketplace"},"items":[{"id":"mp_intro","q":{"th":"Marketplace คืออะไร เข้าใช้งานอย่างไร","en":"What is the Marketplace and how do I use it?","vi":"Marketplace là gì và truy cập như thế nào?","kh":"តើ Marketplace ជាអ្វី ហើយចូលប្រើយ៉ាងដូចម្តេច?","mm":"Marketplace ဆိုတာ ဘာလဲ၊ ဘယ်လို ဝင်သုံးရမလဲ။","la":"Marketplace ແມ່ນຫຍັງ ເຂົ້າໃຊ້ງານແນວໃດ?"}},{"id":"mp_wallet","q":{"th":"ฝาก/ถอนเงินใน Marketplace มีค่าธรรมเนียมไหม","en":"Are there fees for deposits / withdrawals in the Marketplace?","vi":"Nạp / rút tiền trong Marketplace có mất phí không?","kh":"តើការដាក់ / ដកប្រាក់ក្នុង Marketplace មានថ្លៃសេវាទេ?","mm":"Marketplace ထဲတွင် ငွေသွင်း / ငွေထုတ်ရန် ကြေးရှိပါသလား။","la":"ຝາກ/ຖອນເງິນໃນ Marketplace ມີຄ່າທຳນຽມບໍ?"}},{"id":"mp_ff","q":{"th":"Funding Free (FF) คืออะไร","en":"What is Funding Free (FF)?","vi":"Funding Free (FF) là gì?","kh":"តើ Funding Free (FF) ជាអ្វី?","mm":"Funding Free (FF) ဆိုတာ ဘာလဲ။","la":"Funding Free (FF) ແມ່ນຫຍັງ?"}},{"id":"mp_seller","q":{"th":"สมัครเป็นผู้ขาย (Seller) ใน Marketplace","en":"How do I become a Seller in the Marketplace?","vi":"Đăng ký làm người bán (Seller) trong Marketplace","kh":"ចុះឈ្មោះជាអ្នកលក់ (Seller) ក្នុង Marketplace","mm":"Marketplace တွင် ရောင်းသူ (Seller) အဖြစ် လျှောက်ထားခြင်း","la":"ສະໝັກເປັນຜູ້ຂາຍ (Seller) ໃນ Marketplace"}}]},{"id":"kyc","icon":"🪪","name":{"th":"KYC","en":"KYC","vi":"KYC","kh":"KYC","mm":"KYC","la":"KYC"},"items":[{"id":"kyc_how","q":{"th":"ต้อง KYC หรือไม่ และ KYC อย่างไร","en":"Is KYC required and how do I do it?","vi":"Có cần KYC không và KYC như thế nào?","kh":"តើត្រូវ KYC ឬទេ ហើយ KYC យ៉ាងដូចម្តេច?","mm":"KYC လုပ်ရန် လိုပါသလား၊ ဘယ်လိုလုပ်ရမလဲ။","la":"ຕ້ອງ KYC ບໍ ແລະ KYC ແນວໃດ?"}},{"id":"kyc_limits","q":{"th":"ลิมิตการฝากถอนขึ้นกับอะไร","en":"What do deposit and withdrawal limits depend on?","vi":"Hạn mức nạp rút phụ thuộc vào điều gì?","kh":"តើកម្រិតកំណត់នៃការដាក់ដកប្រាក់អាស្រ័យលើអ្វី?","mm":"ငွေသွင်း/ငွေထုတ် ကန့်သတ်ချက်သည် ဘာပေါ်မူတည်သလဲ။","la":"ລິມິດການຝາກຖອນຂຶ້ນກັບຫຍັງ?"}},{"id":"kyc_help","q":{"th":"ติดปัญหาในการยืนยันตัวตน ทำอย่างไร","en":"I have a problem with verification. What should I do?","vi":"Gặp vấn đề khi xác minh danh tính, phải làm sao?","kh":"ជួបបញ្ហាក្នុងការផ្ទៀងផ្ទាត់អត្តសញ្ញាណ តើត្រូវធ្វើយ៉ាងណា?","mm":"အတည်ပြုရာတွင် ပြဿနာရှိပါက ဘာလုပ်ရမလဲ။","la":"ຕິດບັນຫາໃນການຢືນຢັນຕົວຕົນ ເຮັດແນວໃດ?"}}]},{"id":"tcc","icon":"🏠","name":{"th":"ภาพรวม TCC","en":"About TCC","vi":"Giới thiệu TCC","kh":"អំពី TCC","mm":"TCC အကြောင်း","la":"ກ່ຽວກັບ TCC"},"items":[{"id":"tcc_what","q":{"th":"TCC (Trader Cafe Club) คืออะไร","en":"What is TCC (Trader Cafe Club)?","vi":"TCC (Trader Cafe Club) là gì?","kh":"តើ TCC (Trader Cafe Club) ជាអ្វី?","mm":"TCC (Trader Cafe Club) ဆိုတာ ဘာလဲ။","la":"TCC (Trader Cafe Club) ແມ່ນຫຍັງ?"}},{"id":"tcc_map","q":{"th":"TCC มีฟีเจอร์อะไรบ้าง และแต่ละอย่างใช้ทำอะไร","en":"What features does TCC have and what is each one for?","vi":"TCC có những tính năng nào và mỗi tính năng dùng để làm gì?","kh":"TCC មានមុខងារអ្វីខ្លះ ហើយនីមួយៗប្រើសម្រាប់អ្វី?","mm":"TCC တွင် လုပ်ဆောင်ချက်များ ဘာတွေရှိပြီး တစ်ခုချင်းစီက ဘာအတွက်လဲ။","la":"TCC ມີຟີເຈີຫຍັງແດ່ ແລະແຕ່ລະອັນໃຊ້ເຮັດຫຍັງ?"}},{"id":"tcc_vs","q":{"th":"TCC ต่างจากแพลตฟอร์มซื้อขายทั่วไปอย่างไร มีข้อดีอะไร","en":"How is TCC different from a typical trading platform, and what are its advantages?","vi":"TCC khác gì so với nền tảng giao dịch thông thường và có ưu điểm gì?","kh":"តើ TCC ខុសពីវេទិកាជួញដូរទូទៅយ៉ាងដូចម្តេច ហើយមានគុណសម្បត្តិអ្វីខ្លះ?","mm":"TCC သည် ပုံမှန်ကုန်သွယ်ရေးပလက်ဖောင်းများနှင့် ဘာကွာခြားပြီး အားသာချက်တွေ ဘာတွေလဲ။","la":"TCC ແຕກຕ່າງຈາກແພລດຟອມຊື້ຂາຍທົ່ວໄປແນວໃດ ແລະມີຂໍ້ດີຫຍັງ?"}},{"id":"tcc_risk","q":{"th":"TCC มีระบบควบคุมความเสี่ยงอย่างไร","en":"What risk controls does TCC have?","vi":"TCC có cơ chế kiểm soát rủi ro nào?","kh":"តើ TCC មានប្រព័ន្ធគ្រប់គ្រងហានិភ័យអ្វីខ្លះ?","mm":"TCC တွင် အန္တရာယ်ထိန်းချုပ်မှုစနစ် ဘာတွေရှိလဲ။","la":"TCC ມີລະບົບຄວບຄຸມຄວາມສ່ຽງແນວໃດ?"}},{"id":"tcc_start","q":{"th":"เริ่มใช้งาน TCC ต้องทำอะไรบ้าง","en":"What do I need to do to get started with TCC?","vi":"Tôi cần làm gì để bắt đầu dùng TCC?","kh":"តើត្រូវធ្វើអ្វីខ្លះដើម្បីចាប់ផ្តើមប្រើ TCC?","mm":"TCC ကို စတင်သုံးရန် ဘာတွေလုပ်ရမလဲ။","la":"ເລີ່ມໃຊ້ TCC ຕ້ອງເຮັດຫຍັງແດ່?"}}]},{"id":"whale","icon":"🐋","name":{"th":"Whale (วาฬ)","en":"Whale Tools","vi":"Whale (cá voi)","kh":"Whale (ត្រីបាឡែន)","mm":"Whale (ဝေလ်)","la":"Whale (ປາວານ)"},"items":[{"id":"whale_intro","q":{"th":"Whale Tracker (Whale EXT) คืออะไร มีอะไรให้ดูบ้าง","en":"What is Whale Tracker (Whale EXT) and what can I see there?","vi":"Whale Tracker (Whale EXT) là gì và có những gì để xem?","kh":"តើ Whale Tracker (Whale EXT) ជាអ្វី ហើយមានអ្វីខ្លះឱ្យមើល?","mm":"Whale Tracker (Whale EXT) ဆိုတာ ဘာလဲ၊ ဘာတွေကြည့်လို့ရလဲ။","la":"Whale Tracker (Whale EXT) ແມ່ນຫຍັງ ແລະ ມີຫຍັງໃຫ້ເບິ່ງແດ່?"}},{"id":"whale_feed","q":{"th":"อ่านหน้า Live Feed ของ Whale อย่างไร (Long/Short, Action, Mega Whale)","en":"How do I read the Whale Live Feed (Long/Short, Action, Mega Whale)?","vi":"Đọc Live Feed của Whale thế nào (Long/Short, Action, Mega Whale)?","kh":"តើអានទំព័រ Live Feed របស់ Whale យ៉ាងដូចម្តេច (Long/Short, Action, Mega Whale)?","mm":"Whale Live Feed ကို ဘယ်လိုဖတ်ရမလဲ (Long/Short, Action, Mega Whale)။","la":"ອ່ານໜ້າ Live Feed ຂອງ Whale ແນວໃດ (Long/Short, Action, Mega Whale)?"}},{"id":"whale","q":{"th":"วาฬแจ้งเตือน (Whale Alert / Whale Tracker) คืออะไร","en":"What is Whale Alert / Whale Tracker?","vi":"Whale Alert / Whale Tracker (cá voi) là gì?","kh":"តើ Whale Alert / Whale Tracker ជាអ្វី?","mm":"Whale Alert / Whale Tracker ဆိုတာ ဘာလဲ။","la":"Whale Alert / Whale Tracker (ປາວານ) ແມ່ນຫຍັງ?"}},{"id":"whale_analytics","q":{"th":"หน้า Analytics ของ Whale ดูอะไรได้บ้าง","en":"What can I see on the Whale Analytics page?","vi":"Trang Analytics của Whale có những gì?","kh":"តើអាចមើលអ្វីខ្លះនៅទំព័រ Analytics របស់ Whale?","mm":"Whale Analytics စာမျက်နှာတွင် ဘာတွေကြည့်လို့ရလဲ။","la":"ໜ້າ Analytics ຂອງ Whale ເບິ່ງຫຍັງໄດ້ແດ່?"}},{"id":"whale_data","q":{"th":"Whale Data คืออะไร ป้าย STRONG BUY / ACCUMULATING หมายถึงอะไร","en":"What is Whale Data and what do the STRONG BUY / ACCUMULATING labels mean?","vi":"Whale Data là gì và nhãn STRONG BUY / ACCUMULATING nghĩa là gì?","kh":"Whale Data ជាអ្វី ហើយស្លាក STRONG BUY / ACCUMULATING មានន័យដូចម្តេច?","mm":"Whale Data ဆိုတာ ဘာလဲ၊ STRONG BUY / ACCUMULATING အမှတ်အသားက ဘာကို ဆိုလိုလဲ။","la":"Whale Data ແມ່ນຫຍັງ ແລະປ້າຍ STRONG BUY / ACCUMULATING ໝາຍເຖິງຫຍັງ?"}},{"id":"whale_forecast","q":{"th":"Forecast (Master Signal) คืออะไร และต้องทำอย่างไรถึงจะเข้าใช้ได้","en":"What is Forecast (Master Signal) and how do I get access?","vi":"Forecast (Master Signal) là gì và làm sao để được truy cập?","kh":"Forecast (Master Signal) ជាអ្វី ហើយត្រូវធ្វើយ៉ាងណាដើម្បីចូលប្រើ?","mm":"Forecast (Master Signal) ဆိုတာ ဘာလဲ၊ ဘယ်လို ဝင်ရောက်သုံးရမလဲ။","la":"Forecast (Master Signal) ແມ່ນຫຍັງ ແລະຕ້ອງເຮັດແນວໃດຈຶ່ງເຂົ້າໃຊ້ໄດ້?"}},{"id":"whale_orderbook","q":{"th":"หน้า Order Book ของ Whale ดูอะไรได้","en":"What can I see on the Whale Order Book page?","vi":"Trang Order Book của Whale cho xem những gì?","kh":"តើអាចមើលអ្វីខ្លះនៅទំព័រ Order Book របស់ Whale?","mm":"Whale Order Book စာမျက်နှာတွင် ဘာတွေကြည့်လို့ရလဲ။","la":"ໜ້າ Order Book ຂອງ Whale ເບິ່ງຫຍັງໄດ້?"}},{"id":"whale_hunter","q":{"th":"Hunter (แผนที่ Liquidation) คืออะไร อ่านอย่างไร","en":"What is Hunter (the liquidation map) and how do I read it?","vi":"Hunter (bản đồ thanh lý) là gì và đọc thế nào?","kh":"Hunter (ផែនទី Liquidation) ជាអ្វី ហើយអានយ៉ាងដូចម្តេច?","mm":"Hunter (Liquidation မြေပုံ) ဆိုတာ ဘာလဲ၊ ဘယ်လိုဖတ်ရမလဲ။","la":"Hunter (ແຜນທີ່ Liquidation) ແມ່ນຫຍັງ ແລະອ່ານແນວໃດ?"}},{"id":"whale_limits","q":{"th":"ข้อมูล Whale ครอบคลุมเหรียญไหน และมีข้อจำกัดอะไรบ้าง","en":"Which coins does Whale data cover, and what are the limitations?","vi":"Dữ liệu Whale bao gồm những coin nào và có giới hạn gì?","kh":"ទិន្នន័យ Whale គ្របដណ្តប់រូបិយប័ណ្ណណាខ្លះ ហើយមានដែនកំណត់អ្វីខ្លះ?","mm":"Whale ဒေတာသည် ဒင်္ဂါးမည်သည်တို့ကို ဖုံးလွှမ်းသလဲ၊ ကန့်သတ်ချက်များ ဘာတွေရှိလဲ။","la":"ຂໍ້ມູນ Whale ຄຸມເຫຼຽນໃດແດ່ ແລະມີຂໍ້ຈຳກັດຫຍັງ?"}}]},{"id":"general","icon":"💬","name":{"th":"ทั่วไป / ความปลอดภัย","en":"General / Security","vi":"Chung / Bảo mật","kh":"ទូទៅ / សុវត្ថិភាព","mm":"အထွေထွေ / လုံခြုံရေး","la":"ທົ່ວໄປ / ຄວາມປອດໄພ"},"items":[{"id":"chat_media","q":{"th":"ส่งรูปหรือวิดีโอในแชทได้ไหม","en":"Can I send photos or videos in chat?","vi":"Có thể gửi ảnh hoặc video trong chat không?","kh":"តើអាចផ្ញើរូបភាព ឬវីដេអូក្នុងការជជែកបានទេ?","mm":"ချက်တင်တွင် ဓာတ်ပုံ သို့မဟုတ် ဗီဒီယို ပို့လို့ရပါသလား။","la":"ສົ່ງຮູບ ຫຼື ວິດີໂອໃນແຊັດໄດ້ບໍ?"}},{"id":"security_secrets","q":{"th":"ต้องให้รหัสผ่าน / OTP / seed phrase / private key กับทีมงานไหม","en":"Do I need to give my password / OTP / seed phrase / private key to the team?","vi":"Có cần đưa mật khẩu / OTP / seed phrase / private key cho đội ngũ không?","kh":"តើត្រូវផ្តល់ពាក្យសម្ងាត់ / OTP / seed phrase / private key ដល់ក្រុមការងារទេ?","mm":"စကားဝှက် / OTP / seed phrase / private key ကို အဖွဲ့အား ပေးရန် လိုပါသလား။","la":"ຕ້ອງໃຫ້ລະຫັດຜ່ານ / OTP / seed phrase / private key ກັບທີມງານບໍ?"}}]}];
+
+// ================= Config =================
+const $ = s => document.querySelector(s);
+const P = new URLSearchParams(location.search);
+const EMBED_ADMIN = window.__SC_ADMIN === 1;   // แอปหลักฝังโหมดแอดมิน (ใส่ธงก่อนสคริปต์นี้) → ใช้ chat token ที่แอปแลกให้ ไม่ใช้ ADMIN_KEY
+const IS_ADMIN = P.get("mode") === "admin" || EMBED_ADMIN;
+if (IS_ADMIN) document.body.classList.add("admin");
+const IN_FRAME = window.parent !== window;
+let API = DEFAULT_API;
+let chatToken = "", tokenExp = 0, adminKey = "";
+let me = { id: "", name: "" };
+// [PERMS] สิทธิ์แอดมินแบบแบ่งระดับ: null = ทุกสิทธิ์ (root / ADMIN_KEY) · Set = สิทธิ์ที่ Worker หลักออกให้ใน token (Worker ตรวจซ้ำทุกคำสั่ง — ที่นี่แค่ซ่อนปุ่มที่ไม่มีสิทธิ์)
+let ADM_PM = null, ADM_LEVEL = "";
+const canDo = p => !IS_ADMIN || ADM_PM === null || ADM_PM.has(p);
+const canMembers = () => canDo("memberApprove") || canDo("memberBlock") || canDo("globalBlock");
+const canMg = () => canMembers() || canDo("roomEdit") || canDo("roomDelete");
+const fixedPeer = IS_ADMIN ? null : { id: SUPPORT_ID, name: "", color: "#d9a400" };
+const onBack = IS_ADMIN ? null : () => { try { parent.postMessage({ type: "sc-close" }, "*"); } catch (_) { } };
+
+// ================= i18n (ลำดับ: th, en, vi, kh, mm, la — ตรงกับ TCC_I18N ของแอปหลัก) =================
+const LANG_IDX = { th: 0, en: 1, vi: 2, kh: 3, mm: 4, la: 5 };
+const LOCALES = { th: "th-TH", en: "en-GB", vi: "vi-VN", kh: "km-KH", mm: "my-MM", la: "lo-LA" };
+let LANG = "th";
+const I18N = {
+  ph:       ["พิมพ์ข้อความ", "Type a message", "Nhập tin nhắn", "វាយសារ", "မက်ဆေ့ချ်ရိုက်ပါ", "ພິມຂໍ້ຄວາມ"],
+  typing:   ["กำลังพิมพ์...", "Typing...", "Đang nhập...", "កំពុងវាយ...", "ရိုက်နေသည်...", "ກຳລັງພິມ..."],
+  read:     ["อ่านแล้ว", "Read", "Đã xem", "បានអាន", "ဖတ်ပြီး", "ອ່ານແລ້ວ"],
+  today:    ["วันนี้", "Today", "Hôm nay", "ថ្ងៃនេះ", "ဒီနေ့", "ມື້ນີ້"],
+  yday:     ["เมื่อวาน", "Yesterday", "Hôm qua", "ម្សិលមិញ", "မနေ့က", "ມື້ວານ"],
+  reply:    ["ตอบกลับ", "Reply", "Trả lời", "ឆ្លើយតប", "ပြန်ရန်", "ຕອບກັບ"],
+  copy:     ["คัดลอก", "Copy", "Sao chép", "ចម្លង", "ကူးယူ", "ສຳເນົາ"],
+  copied:   ["คัดลอกแล้ว", "Copied", "Đã sao chép", "បានចម្លង", "ကူးယူပြီး", "ສຳເນົາແລ້ວ"],
+  openLink: ["เปิดลิงก์ภายนอก?", "Open this external link?", "Mở liên kết bên ngoài?", "បើកតំណខាងក្រៅ?", "ပြင်ပလင့်ခ်ကို ဖွင့်မလား?", "ເປີດລິ້ງພາຍນອກບໍ?"],
+  unsend:   ["ยกเลิกการส่ง", "Unsend", "Thu hồi", "ដកសារវិញ", "ပြန်ရုပ်သိမ်း", "ຍົກເລີກການສົ່ງ"],
+  youUns:   ["คุณยกเลิกการส่งข้อความ", "You unsent a message", "Bạn đã thu hồi tin nhắn", "អ្នកបានដកសារវិញ", "သင် မက်ဆေ့ချ်ကို ပြန်ရုပ်သိမ်းခဲ့သည်", "ເຈົ້າໄດ້ຍົກເລີກຂໍ້ຄວາມ"],
+  theyUns:  ["{n} ยกเลิกการส่งข้อความ", "{n} unsent a message", "{n} đã thu hồi tin nhắn", "{n} បានដកសារវិញ", "{n} မက်ဆေ့ချ်ကို ပြန်ရုပ်သိမ်းခဲ့သည်", "{n} ໄດ້ຍົກເລີກຂໍ້ຄວາມ"],
+  replyTo:  ["ตอบกลับ", "Replying to", "Trả lời", "ឆ្លើយតបទៅ", "ပြန်ကြားနေသည့်သူ", "ຕອບກັບ"],
+  you:      ["คุณ", "You", "Bạn", "អ្នក", "သင်", "ເຈົ້າ"],
+  self:     ["ตัวเอง", "yourself", "chính mình", "ខ្លួនឯង", "ကိုယ်တိုင်", "ຕົນເອງ"],
+  msg:      ["ข้อความ", "Message", "Tin nhắn", "សារ", "မက်ဆေ့ချ်", "ຂໍ້ຄວາມ"],
+  img:      ["🖼️ รูปภาพ", "🖼️ Photo", "🖼️ Ảnh", "🖼️ រូបភាព", "🖼️ ဓာတ်ပုံ", "🖼️ ຮູບພາບ"],
+  vid:      ["🎬 วิดีโอ", "🎬 Video", "🎬 Video", "🎬 វីដេអូ", "🎬 ဗီဒီယို", "🎬 ວິດີໂອ"],
+  sendFail: ["ส่งไม่สำเร็จ", "Failed to send", "Gửi không thành công", "ផ្ញើមិនបានសម្រេច", "ပို့မရပါ", "ສົ່ງບໍ່ສຳເລັດ"],
+  bigImg:   ["รูปใหญ่เกินไป", "Photo is too large", "Ảnh quá lớn", "រូបភាពធំពេក", "ဓာတ်ပုံ ကြီးလွန်းသည်", "ຮູບໃຫຍ່ເກີນໄປ"],
+  bigVid:   ["วิดีโอใหญ่เกิน 25MB", "Video exceeds 25MB", "Video vượt quá 25MB", "វីដេអូធំជាង 25MB", "ဗီဒီယို 25MB ကျော်နေသည်", "ວິດີໂອໃຫຍ່ເກີນ 25MB"],
+  badType:  ["ไม่รองรับไฟล์ชนิดนี้", "Unsupported file type", "Không hỗ trợ loại tệp này", "មិនគាំទ្រប្រភេទឯកសារនេះ", "ဤဖိုင်အမျိုးအစားကို မထောက်ပံ့ပါ", "ບໍ່ຮອງຮັບໄຟລ໌ປະເພດນີ້"],
+  badImg:   ["เปิดรูปไม่ได้", "Can't open this photo", "Không mở được ảnh", "មិនអាចបើករូបភាពបាន", "ဓာတ်ပုံကို ဖွင့်မရပါ", "ເປີດຮູບບໍ່ໄດ້"],
+  support:  ["ทีมซัพพอร์ต", "Support team", "Đội hỗ trợ", "ក្រុមគាំទ្រ", "ပံ့ပိုးရေးအဖွဲ့", "ທີມຊ່ວຍເຫຼືອ"],
+  upl:      ["กำลังอัปโหลด", "Uploading", "Đang tải lên", "កំពុងផ្ទុកឡើង", "တင်နေသည်", "ກຳລັງອັບໂຫຼດ"],
+  authFail: ["ยืนยันตัวตนไม่ผ่าน กรุณาเข้าสู่ระบบแอปใหม่", "Sign-in check failed. Please log in to the app again", "Xác thực thất bại. Vui lòng đăng nhập lại ứng dụng", "ការផ្ទៀងផ្ទាត់បរាជ័យ សូមចូលកម្មវិធីម្តងទៀត", "အတည်ပြုမှု မအောင်မြင်ပါ။ အက်ပ်သို့ ပြန်လည်ဝင်ပါ", "ການຢືນຢັນບໍ່ຜ່ານ ກະລຸນາເຂົ້າສູ່ລະບົບແອັບອີກຄັ້ງ"],
+  fromApp:  ["เปิดแชทจากในแอปเท่านั้น", "Open this chat from inside the app", "Hãy mở trò chuyện từ trong ứng dụng", "សូមបើកការជជែកពីក្នុងកម្មវិធី", "အက်ပ်အတွင်းမှသာ ချတ်ကို ဖွင့်ပါ", "ກະລຸນາເປີດແຊັດຈາກໃນແອັບ"],
+  aiLabel:  ["ผู้ช่วย AI", "AI assistant", "Trợ lý AI", "ជំនួយការ AI", "AI လက်ထောက်", "ຜູ້ຊ່ວຍ AI"],
+  guide:    ["ปัญหาที่พบบ่อย", "Common problems", "Vấn đề thường gặp", "បញ្ហាដែលតែងតែជួប", "မကြာခဏ ကြုံရသော ပြဿနာများ", "ບັນຫາທີ່ພົບເລື້ອຍໆ"],
+  empty:    ["ยังไม่มีข้อความ ส่งข้อความถึงทีมซัพพอร์ตได้เลย", "No messages yet. Send a message to the support team", "Chưa có tin nhắn. Hãy nhắn cho đội hỗ trợ", "មិនទាន់មានសារ។ ផ្ញើសារទៅក្រុមគាំទ្រ", "မက်ဆေ့ချ် မရှိသေးပါ။ ပံ့ပိုးရေးအဖွဲ့ထံ ပို့ပါ", "ຍັງບໍ່ມີຂໍ້ຄວາມ ສົ່ງຫາທີມຊ່ວຍເຫຼືອໄດ້ເລີຍ"],
+  vGreet:   ["สวัสดีครับ 😊 ผมคือผู้ช่วย AI ของ TCC เลือกคำถามจากเมนูด้านล่างได้เลยครับ", "Hello! 😊 I'm TCC's AI assistant. Pick a question from the menu below.", "Xin chào! 😊 Mình là trợ lý AI của TCC. Hãy chọn một câu hỏi trong menu bên dưới nhé.", "សួស្តី! 😊 ខ្ញុំជាជំនួយការ AI របស់ TCC។ សូមជ្រើសរើសសំណួរពីម៉ឺនុយខាងក្រោម។", "မင်္ဂလာပါ 😊 ကျွန်ုပ်သည် TCC ၏ AI လက်ထောက်ဖြစ်ပါသည်။ အောက်ပါမီနူးမှ မေးခွန်းတစ်ခု ရွေးပါ။", "ສະບາຍດີ! 😊 ຂ້ອຍແມ່ນຜູ້ຊ່ວຍ AI ຂອງ TCC. ເລືອກຄຳຖາມຈາກເມນູດ້ານລຸ່ມໄດ້ເລີຍ."],
+  vHint:    ["คุยกับเจ้าหน้าที่ได้เมื่อเข้าสู่ระบบสมาชิก", "Log in as a member to chat with our staff", "Đăng nhập thành viên để trò chuyện với nhân viên", "ចូលជាសមាជិក ដើម្បីជជែកជាមួយបុគ្គលិក", "ဝန်ထမ်းများနှင့် စကားပြောရန် အဖွဲ့ဝင်အဖြစ် ဝင်ရောက်ပါ", "ເຂົ້າສູ່ລະບົບສະມາຊິກເພື່ອລົມກັບເຈົ້າໜ້າທີ່"],
+  vLogin:   ["เข้าสู่ระบบ", "Log in", "Đăng nhập", "ចូលប្រព័ន្ធ", "အကောင့်ဝင်ရန်", "ເຂົ້າລະບົບ"],
+  vFail:    ["ขออภัย ตอบไม่ได้ในตอนนี้ กรุณาลองใหม่อีกครั้ง", "Couldn't get an answer right now. Please try again.", "Hiện chưa thể trả lời. Vui lòng thử lại.", "មិនអាចឆ្លើយបានពេលនេះ។ សូមព្យាយាមម្តងទៀត។", "ယခု အဖြေမရနိုင်ပါ။ ထပ်ကြိုးစားပါ။", "ຕອບບໍ່ໄດ້ໃນຕອນນີ້. ກະລຸນາລອງໃໝ່."],
+  listTitle: ["แชท", "Chats", "Trò chuyện", "ជជែក", "ချတ်", "ແຊັດ"],
+  search:   ["ค้นหา", "Search", "Tìm kiếm", "ស្វែងរក", "ရှာဖွေရန်", "ຄົ້ນຫາ"],
+  roomsHead: ["ห้องสนทนา", "Chat rooms", "Phòng trò chuyện", "បន្ទប់ជជែក", "စကားဝိုင်းများ", "ຫ້ອງສົນທະນາ"],
+  stJoined: ["เข้าร่วมแล้ว", "Joined", "Đã tham gia", "បានចូលរួម", "ဝင်ပြီး", "ເຂົ້າຮ່ວມແລ້ວ"],
+  stPending: ["รออนุมัติ", "Pending", "Chờ duyệt", "រង់ចាំអនុម័ត", "အတည်ပြုရန် စောင့်ဆိုင်း", "ລໍຖ້າອະນຸມັດ"],
+  stView:   ["อ่านอย่างเดียว", "Read only", "Chỉ xem", "អានតែប៉ុណ្ណោះ", "ဖတ်ရန်သာ", "ອ່ານຢ່າງດຽວ"],
+  stPrivate: ["ห้องส่วนตัว", "Private", "Riêng tư", "ឯកជន", "ကိုယ်ပိုင်", "ສ່ວນຕົວ"],
+  stBlocked: ["ถูกบล็อก", "Blocked", "Bị chặn", "ត្រូវបានរារាំង", "ပိတ်ပင်ခံရ", "ຖືກບລັອກ"],
+  membersN: ["{n} สมาชิก", "{n} members", "{n} thành viên", "{n} សមាជិក", "အဖွဲ့ဝင် {n} ဦး", "{n} ສະມາຊິກ"],
+  noRooms:  ["ยังไม่มีห้องสนทนา", "No chat rooms yet", "Chưa có phòng trò chuyện", "មិនទាន់មានបន្ទប់ជជែក", "စကားဝိုင်း မရှိသေးပါ", "ຍັງບໍ່ມີຫ້ອງສົນທະນາ"],
+  noMatch:  ["ไม่พบรายการ", "Nothing found", "Không tìm thấy", "រកមិនឃើញ", "မတွေ့ပါ", "ບໍ່ພົບ"],
+  startChat: ["เริ่มแชทเลย", "Start chatting", "Bắt đầu trò chuyện", "ចាប់ផ្តើមជជែក", "စကားပြောရန် စတင်ပါ", "ເລີ່ມແຊັດເລີຍ"],
+  stk:      ["สติกเกอร์", "Sticker", "Nhãn dán", "ស្ទីកគ័រ", "စတစ်ကာ", "ສະຕິກເກີ"],
+  barRead:  ["อ่านอย่างเดียว — ขอเข้าห้องเพื่อพิมพ์ข้อความ", "Read only — request to join to send messages", "Chỉ xem — hãy xin vào phòng để nhắn tin", "អានតែប៉ុណ្ណោះ — សូមស្នើចូលបន្ទប់ដើម្បីផ្ញើសារ", "ဖတ်ရန်သာ — မက်ဆေ့ချ်ပို့ရန် အခန်းဝင်ခွင့် တောင်းပါ", "ອ່ານຢ່າງດຽວ — ຂໍເຂົ້າຫ້ອງເພື່ອພິມຂໍ້ຄວາມ"],
+  barPending: ["ส่งคำขอแล้ว รอแอดมินอนุมัติ ระหว่างนี้อ่านได้อย่างเดียว", "Request sent — waiting for admin approval. You can read in the meantime.", "Đã gửi yêu cầu — đang chờ quản trị viên duyệt. Bạn vẫn có thể xem.", "បានផ្ញើសំណើ — រង់ចាំអ្នកគ្រប់គ្រងអនុម័ត។ អ្នកអាចអានបានក្នុងពេលនេះ។", "တောင်းဆိုမှု ပို့ပြီး — အက်ဒမင် အတည်ပြုရန် စောင့်ဆိုင်းနေသည်။ ယခုအတွင်း ဖတ်၍ရသည်။", "ສົ່ງຄຳຂໍແລ້ວ — ລໍຖ້າແອດມິນອະນຸມັດ. ຕອນນີ້ອ່ານໄດ້ຢ່າງດຽວ."],
+  barBlocked: ["คุณถูกบล็อกจากห้องนี้", "You have been blocked from this room", "Bạn đã bị chặn khỏi phòng này", "អ្នកត្រូវបានរារាំងពីបន្ទប់នេះ", "ဤအခန်းမှ သင့်ကို ပိတ်ပင်ထားသည်", "ທ່ານຖືກບລັອກຈາກຫ້ອງນີ້"],
+  barPrivate: ["ห้องส่วนตัว — ขอเข้าห้องเพื่อดูและร่วมสนทนา", "Private room — request to join to view and chat", "Phòng riêng tư — hãy xin vào phòng để xem và trò chuyện", "បន្ទប់ឯកជន — សូមស្នើចូលដើម្បីមើល និងជជែក", "ကိုယ်ပိုင်အခန်း — ကြည့်ရှုပြီး စကားပြောရန် ဝင်ခွင့်တောင်းပါ", "ຫ້ອງສ່ວນຕົວ — ຂໍເຂົ້າຫ້ອງເພື່ອເບິ່ງ ແລະ ສົນທະນາ"],
+  roomGone: ["ห้องนี้ถูกลบแล้ว", "This room has been deleted", "Phòng này đã bị xóa", "បន្ទប់នេះត្រូវបានលុបហើយ", "ဤအခန်းကို ဖျက်လိုက်ပါပြီ", "ຫ້ອງນີ້ຖືກລຶບແລ້ວ"],
+  barVisitor: ["อ่านอย่างเดียว — เข้าสู่ระบบเพื่อขอเข้าห้องและร่วมสนทนา", "Read only — log in to request to join and chat", "Chỉ xem — hãy đăng nhập để xin vào phòng và trò chuyện", "អានតែប៉ុណ្ណោះ — សូមចូលប្រព័ន្ធដើម្បីស្នើចូលបន្ទប់ និងជជែក", "ဖတ်ရန်သာ — အကောင့်ဝင်ပြီး အခန်းဝင်ခွင့်တောင်းကာ စကားပြောပါ", "ອ່ານຢ່າງດຽວ — ເຂົ້າລະບົບເພື່ອຂໍເຂົ້າຫ້ອງ ແລະ ສົນທະນາ"],
+  vRowPv:   ["เลือกถามจากเมนูคำถามที่พบบ่อย", "Pick a question from the FAQ menu", "Chọn câu hỏi từ menu câu hỏi thường gặp", "ជ្រើសរើសសំណួរពីម៉ឺនុយសំណួរញឹកញាប់", "မကြာခဏမေးသောမေးခွန်းမီနူးမှ ရွေးပါ", "ເລືອກຄຳຖາມຈາກເມນູຄຳຖາມທີ່ພົບເລື້ອຍ"],
+  btnJoin:  ["ขอเข้าห้อง", "Request to join", "Xin vào phòng", "ស្នើចូលបន្ទប់", "အခန်းဝင်ခွင့်တောင်းရန်", "ຂໍເຂົ້າຫ້ອງ"],
+  joinSent: ["ส่งคำขอแล้ว", "Request sent", "Đã gửi yêu cầu", "បានផ្ញើសំណើ", "တောင်းဆိုမှု ပို့ပြီး", "ສົ່ງຄຳຂໍແລ້ວ"],
+};
+const T = k => (I18N[k] || [k])[LANG_IDX[LANG]] || (I18N[k] || [k])[0];
+function setLang(l) {
+  if (IS_ADMIN || !Object.prototype.hasOwnProperty.call(LANG_IDX, l) || l === LANG) return;
+  LANG = l; applyI18n();
+}
+function applyI18n() {
+  $("#input").placeholder = T("ph");
+  if (peer && !IS_ADMIN) { if (peer.kind !== "room") { peer.name = VISITOR ? T("aiLabel") : T("support"); $("#pname").textContent = peer.name; } renderMsgs(false); }
+  paintGuide(); paintLangBits();
+  if (MEMBER_LIST) {
+    $(".lhead h1").textContent = T("listTitle"); $("#search").placeholder = T("search");
+    if ($("#list").classList.contains("on")) renderMemberList();
+    if (peer && peer.kind === "room") { paintRoomBar(); $("#pst").textContent = roomStatusLine(); }
+  }
+}
+// ---- ภาษา: ปุ่ม 🌐 (สมาชิก/Visitor) · จำค่าที่เลือกเองไว้ ชนะ lang ที่แอปส่งมา ----
+const LANG_KEY = "sc_lang";
+const LANG_NATIVE = { th: "ไทย", en: "English", vi: "Tiếng Việt", kh: "ខ្មែរ", mm: "မြန်မာ", la: "ລາວ" };
+const storedLang = () => { try { return localStorage.getItem(LANG_KEY) || ""; } catch (_) { return ""; } };
+function paintLangBits() {
+  const lb = $("#langBtn"); if (!lb) return;
+  lb.classList.toggle("on", !IS_ADMIN);
+  lb.textContent = "🌐 " + LANG_NATIVE[LANG];
+  const lb2 = $("#langBtnL"); if (lb2) lb2.textContent = lb.textContent;
+  $("#vhintTx").textContent = T("vHint"); $("#vhintBtn").textContent = T("vLogin");
+}
+function pickLang() {
+  showMenu(Object.keys(LANG_NATIVE).map(k => [LANG_NATIVE[k] + (k === LANG ? "  ✓" : ""), () => { try { localStorage.setItem(LANG_KEY, k); } catch (_) { } setLang(k); }]));
+}
+
+// ---- ยืนยันตัวตน ----
+let initResolve = null, loginP = null, memberAvatar = "";
+let MEMBER_LIST = false, roomsCache = [], supportInfo = null, supAv = "", listBusy = false, roomSt = { status: "", locked: "", members: 0, readable: 1 };   // Member หน้าแรก + ห้องสนทนา (เฟส 2)
+let VISITOR = false, bootInit = null, vN = 0, vBusy = false, vSaved = null;   // Visitor: ไม่ล็อกอิน · ข้อความเก็บในหน้านี้เท่านั้น (id เล็ก ๆ ของฝั่งนี้)
+window.addEventListener("message", ev => {
+  const d = ev.data;
+  if ((IS_ADMIN && !EMBED_ADMIN) || !d || d.type !== "sc-init" || ev.source !== window.parent) return;   // แอดมินแบบ standalone ไม่รับ init จากภายนอก · แบบฝังรับจากแอปแม่เท่านั้น
+  if (d.lang && !storedLang()) setLang(d.lang);
+  if (initResolve) { const r = initResolve; initResolve = null; r(d); }
+});
+// แอปเปลี่ยนภาษา (ปุ่ม 🌐 ที่ header ของแอป) → เปลี่ยนสดโดยไม่ต้องโหลดแชทใหม่
+window.addEventListener("message", ev => {
+  const d = ev.data;
+  if (!d || d.type !== "sc-lang" || ev.source !== window.parent || !Object.prototype.hasOwnProperty.call(LANG_IDX, d.lang)) return;
+  try { localStorage.setItem(LANG_KEY, d.lang); } catch (_) { }
+  setLang(d.lang);
+});
+function getInit() {
+  return new Promise((res, rej) => {
+    initResolve = res;
+    try { parent.postMessage({ type: "sc-need-init" }, "*"); } catch (_) { }
+    setTimeout(() => { if (initResolve === res) { initResolve = null; rej(new Error(T("authFail"))); } }, 8000);
+  });
+}
+// ---- หน้าแอดมินส่งแผนที่รูปสมาชิก {uid:url} มาให้ (sc-avatars) ----
+window.addEventListener("message", ev => {
+  const d = ev.data;
+  if (!IS_ADMIN || !d || d.type !== "sc-avatars" || ev.source !== window.parent || !d.map || typeof d.map !== "object") return;
+  const m = {};
+  Object.keys(d.map).forEach(k => { const v = String(d.map[k] || ""); if (/^https:\/\//i.test(v)) m[String(k)] = v; });
+  AV_MAP = m;
+  if (peer) { const a = avatarOf(peer); if (a !== peer.avatar) { peer.avatar = a; paintHeadAv(); renderMsgs(false); } }
+  else if ($("#list").classList.contains("on")) renderList();
+});
+// ---- host สั่งหยุด/เดินต่อ (สมาชิก: overlay ปิด/เปิด · แอดมิน: สลับแผง) ----
+window.addEventListener("message", ev => {
+  const d = ev.data;
+  if (!d || d.type !== "sc-visible" || ev.source !== window.parent) return;
+  PAUSED = !d.on;
+  if (PAUSED) return;
+  requestAnimationFrame(autoGrow);
+  if (VISITOR && !MEMBER_LIST) { setTimeout(() => { const m = $("#msgs"); m.scrollTop = m.scrollHeight; }, 60); }
+  else if (peer) { pollChat(false); setTimeout(() => { const m = $("#msgs"); m.scrollTop = m.scrollHeight; }, 60); }
+  else if (IS_ADMIN && $("#list").classList.contains("on")) { loadList(); loadAdminRooms(); }
+  else if (MEMBER_LIST && $("#list").classList.contains("on")) loadMemberList(false);
+});
+async function rawPost(path, body) {
+  const r = await fetch(API + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(r.status === 401 ? T("authFail") : (d.error || "HTTP " + r.status));
+  return d;
+}
+function login() {
+  if (loginP) return loginP;
+  loginP = (async () => {
+    let d;
+    if (IS_ADMIN && EMBED_ADMIN) {
+      const init = bootInit || await getInit(); bootInit = null;
+      if (init.api) API = String(init.api).replace(/\/+$/, "");
+      const hc = init.chat;
+      if (!(hc && hc.token && hc.me && hc.exp_ms > Date.now() + 60000)) { try { parent.postMessage({ type: "sc-reset" }, "*"); } catch (_) { } throw new Error(T("authFail")); }   // แอปแลก token แอดมินไม่ได้ (session หมด/ไม่ใช่ root) → ให้แอปโหลดใหม่เป็นโหมดอื่น
+      d = hc;
+    } else if (IS_ADMIN) {
+      const key = adminKey || sessionStorage.getItem("sc_ak") || "";
+      if (!key) throw new Error("no-key");
+      d = await rawPost("/api/admin/session", { key });
+    } else {
+      const init = bootInit || await getInit(); bootInit = null;
+      if (init.visitor) { try { parent.postMessage({ type: "sc-reset" }, "*"); } catch (_) { } throw new Error(T("authFail")); }   // เซสชันสมาชิกหมดอายุกลางทาง → ให้แอปโหลดห้องใหม่เป็น Visitor
+      if (init.api) API = String(init.api).replace(/\/+$/, "");
+      memberAvatar = /^https:\/\//i.test(init.avatar || "") ? String(init.avatar) : "";
+      const hc = init.chat;   // chat token ที่แอปแลกไว้แล้ว (เหมือนผลของ /api/session) → ไม่ต้องให้ Worker เรียก GAS ซ้ำ
+      if (hc && hc.token && hc.me && hc.exp_ms > Date.now() + 60000) d = hc;
+      else {
+        if (!init.token) throw new Error(T("authFail"));
+        d = await rawPost("/api/session", { token: init.token });
+      }
+    }
+    chatToken = d.token; tokenExp = d.exp_ms; me = d.me;
+    if (IS_ADMIN) { ADM_PM = Array.isArray(d.pm) ? new Set(d.pm) : null; ADM_LEVEL = String(d.level || ""); applyAdminPerms(); }
+    syncMyAvatar();
+  })().finally(() => { loginP = null; });
+  return loginP;
+}
+
+// สมาชิก: ซิงก์รูปโปรไฟล์ของตัวเองไป Worker (ครั้งเดียวต่อค่า ใช้ให้แอดมินเห็นรูปสมาชิก)
+let _avSent = "";
+function syncMyAvatar() {
+  if (IS_ADMIN || !memberAvatar || memberAvatar === _avSent) return;
+  _avSent = memberAvatar;
+  api("/api/me-avatar", { method: "POST", body: { avatar: memberAvatar } }).catch(() => { _avSent = ""; });
+}
+
+// ================= State =================
+let peer = null;
+let msgs = new Map();
+let lastId = 0, lastUpd = 0, peerRead = 0, peerTyping = false;
+let replyTo = null, tmpN = 0, reportedRead = 0;
+let pollChatTimer = null, pollListTimer = null, busyChat = false, lastTypingSent = 0;
+let usersCache = [];
+let onlyUnread = false;
+let aiSt = { avail: false, disabled: 0, paused: false };   // สถานะ AI ของห้องที่เปิดอยู่ (จาก GET /api/messages)
+let PAUSED = false;   // host (แอป/แอดมิน) สั่งหยุดชั่วคราวตอนมุมมองนี้ถูกซ่อน: ไม่ poll ไม่ส่ง "อ่านแล้ว"
+
+// ================= Utils =================
+const pad = n => String(n).padStart(2, "0");
+const hm = ts => { const d = new Date(ts); return pad(d.getHours()) + ":" + pad(d.getMinutes()); };
+const dayKey = ts => { const d = new Date(ts); return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); };
+function colorOf(id) { let h = 0; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return COLORS[h % COLORS.length]; }
+function dayLabel(ts) {
+  const now = Date.now();
+  if (dayKey(ts) === dayKey(now)) return T("today");
+  if (dayKey(ts) === dayKey(now - 864e5)) return T("yday");
+  return new Date(ts).toLocaleDateString(LOCALES[LANG] || "th-TH", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+}
+function listTime(ts) {
+  if (!ts) return "";
+  if (dayKey(ts) === dayKey(Date.now())) return hm(ts) + " น.";
+  if (dayKey(ts) === dayKey(Date.now() - 864e5)) return T("yday");
+  const d = new Date(ts); return d.getDate() + "/" + (d.getMonth() + 1);
+}
+function toast(t) {
+  const el = $("#toast"); el.textContent = t; el.style.display = "block";
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.style.display = "none", 2200);
+}
+function mkAvatar(el, name, color, id, url) {
+  el.classList.add("avatar"); el.style.background = color || colorOf(id || name);
+  el.textContent = (name || "?").trim().charAt(0);
+  if (url && /^https:\/\//i.test(url)) {   // มีรูปโปรไฟล์ → ทับตัวอักษร · โหลดไม่ได้ก็กลับเป็นตัวอักษรเดิม
+    const im = document.createElement("img");
+    im.alt = ""; im.referrerPolicy = "no-referrer"; im.decoding = "async";   // [FIX-AV] ห้ามใส่ loading=lazy: img ที่ยังไม่อยู่ใน DOM จะไม่ถูกโหลดเลย → onload ไม่ทำงาน รูปจึงไม่ขึ้น
+    im.onload = () => { el.textContent = ""; el.appendChild(im); };
+    im.onerror = () => { im.remove(); };
+    im.src = url;
+  }
+}
+// ---- รูปโปรไฟล์ ----
+let AV_MAP = {};          // แอดมิน: {uid: url} ที่หน้าแอดมินส่งมา (จากข้อมูลสมาชิก) — ใช้เป็นแหล่งหลัก, ของ Worker เป็นสำรอง
+let supportAvatar = "";   // รูปทีมซัพพอร์ต (แอดมินเห็นในปุ่มโปรไฟล์)
+const avatarOf = u => (u && (AV_MAP[String(u.id)] || u.avatar)) || "";
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("on"));
+  $("#" + id).classList.add("on");
+}
+function fatal(msg) {
+  show("list");
+  $("#chatlist").innerHTML = ""; const e = document.createElement("div"); e.className = "empty"; e.textContent = msg;
+  $("#chatlist").appendChild(e);
+}
+
+async function api(path, opt = {}, retry = true) {
+  if (!chatToken || Date.now() > tokenExp - 60000) await login();
+  const r = await fetch(API + path, {
+    method: opt.method || "GET",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + chatToken },
+    body: opt.body ? JSON.stringify(opt.body) : undefined,
+  });
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401 && retry) { chatToken = ""; return api(path, opt, false); }
+  if (!r.ok) throw new Error(r.status === 401 ? T("authFail") : (d.error || "HTTP " + r.status));
+  return d;
+}
+
+// ================= Menu helper =================
+function showMenu(items) {
+  const menu = $("#menu"); menu.innerHTML = "";
+  items.forEach(([label, fn, red]) => {
+    const b = document.createElement("button"); b.textContent = label; if (red) b.className = "red";
+    b.onclick = () => { closeMenu(); fn(); }; menu.appendChild(b);
+  });
+  $("#menuOv").classList.add("on");
+}
+function closeMenu() { $("#menuOv").classList.remove("on"); }
+$("#menuOv").addEventListener("click", e => { if (e.target.id === "menuOv") closeMenu(); });
+$("#viewer").addEventListener("click", () => $("#viewer").classList.remove("on"));
+
+// ================= List =================
+function paintMyAv() {
+  const b = $("#bProfile"); if (!IS_ADMIN || !canDo("dmReply")) { b.style.display = "none"; return; }
+  b.style.display = "flex";
+  const el = $("#myav"); el.className = ""; el.style.background = ""; el.textContent = "";
+  mkAvatar(el, T("support"), "#d9a400", SUPPORT_ID, supportAvatar);
+}
+async function loadSupportProfile() {
+  if (!IS_ADMIN) return;
+  paintMyAv();
+  try { const d = await api("/api/support-profile"); supportAvatar = d.avatar || ""; paintMyAv(); } catch (_) { }
+}
+// ย่อ/ครอปรูปเป็นสี่เหลี่ยมจัตุรัส 256px (JPEG) ก่อนอัปโหลด
+function cropSquare(file, size = 256) {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas"); c.width = c.height = size;
+      const s = Math.min(img.width, img.height), sx = (img.width - s) / 2, sy = (img.height - s) / 2;
+      c.getContext("2d").drawImage(img, sx, sy, s, s, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => resolve(b), "image/jpeg", 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+async function changeSupportAvatar(file) {
+  if (!file || !/^image\/(png|jpe?g|webp)$/i.test(file.type)) { toast(T("badType")); return; }
+  const blob = await cropSquare(file);
+  if (!blob) { toast(T("badImg")); return; }
+  toast(T("upl") + "...");
+  try {
+    const sg = await api("/api/support-avatar/sign", { method: "POST" });
+    const fd = new FormData();
+    Object.keys(sg.fields).forEach(k => fd.append(k, sg.fields[k]));
+    fd.append("file", blob);
+    const r = await fetch(sg.upload_url, { method: "POST", body: fd });
+    const cl = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error((cl.error && cl.error.message) || "HTTP " + r.status);
+    const d = await api("/api/support-avatar/done", { method: "POST", body: { public_id: sg.fields.public_id, version: cl.version, format: cl.format } });
+    supportAvatar = d.avatar || ""; paintMyAv(); toast("เปลี่ยนรูปโปรไฟล์แล้ว");
+  } catch (e) { toast(T("sendFail") + ": " + e.message); }
+}
+async function clearSupportAvatar() {
+  try { await api("/api/support-avatar/clear", { method: "POST" }); supportAvatar = ""; paintMyAv(); toast("ลบรูปโปรไฟล์แล้ว"); }
+  catch (e) { toast(e.message); }
+}
+$("#bProfile").onclick = () => showMenu([
+  ["เปลี่ยนรูปโปรไฟล์ซัพพอร์ต", () => $("#avFile").click()],
+  ...(supportAvatar ? [["ลบรูปโปรไฟล์", clearSupportAvatar, true]] : []),
+]);
+$("#avFile").addEventListener("change", e => { const f = e.target.files[0]; e.target.value = ""; if (f) changeSupportAvatar(f); });
+
+function enterList() {
+  peer = null; clearInterval(pollChatTimer);
+  document.body.classList.remove("dmro");
+  show("list");
+  loadList(); loadAdminRooms(); loadSupportProfile();
+  clearInterval(pollListTimer);
+  pollListTimer = setInterval(() => { if (!document.hidden && !PAUSED && $("#list").classList.contains("on")) { loadList(); loadAdminRooms(); } }, 4000);
+}
+async function loadList() {
+  if (!canDo("dmView")) return;   // [PERMS] ไม่มีสิทธิ์ดูแชทส่วนตัว → ไม่ดึงรายชื่อ
+  try { usersCache = (await api("/api/users")).users; if (admTab === "rooms") paintNavBadge(); else renderList(); }   // แท็บห้อง: ไม่วาดรายการแชททับ
+  catch (e) { if (!usersCache.length) fatal(e.message); }
+}
+function previewOf(u) {
+  if (u.last_at == null) return "เริ่มแชทเลย";
+  if (u.last_deleted) return "ยกเลิกการส่งข้อความ";
+  if (u.last_type === "image") return "ส่งรูป";
+  if (u.last_type === "video") return "ส่งวิดีโอ";
+  if (u.last_type === "sticker") return "ส่งสติกเกอร์";
+  return u.last_content || "";
+}
+const PIN_SVG = '<svg width="13" height="13" viewBox="0 0 16 16" fill="#fff"><path d="M9.5 1.500l5 5-1.600.8-2.300 2.300.3 3.200-1 1-3-3-4 4-.8-.8 4-4-3-3 1-1 3.200.3 2.300-2.300z"/></svg>';
+// [BADGE] รายงานยอดข้อความค้างอ่านทั้งหมดให้แอปแม่ไปแสดงที่เมนู Chat (เฉพาะเมื่อยอดเปลี่ยน · Visitor ไม่ส่ง)
+let _unrep = -1;
+function reportUnread(n) {
+  if (VISITOR) return;
+  n = Math.max(0, n | 0); if (n === _unrep) return; _unrep = n;
+  try { parent.postMessage({ type: "sc-unread", n }, "*"); } catch (_) { }
+}
+const adminUnread = () => usersCache.reduce((s, u) => s + (u.unread || 0), 0) + (canDo("memberApprove") ? pendingQ.length : 0);
+function paintNavBadge() {
+  const total = usersCache.reduce((s, u) => s + (u.unread || 0), 0);
+  reportUnread(adminUnread());
+  const nb = $("#navBadge");
+  nb.style.display = total > 0 ? "flex" : "none"; nb.textContent = total > 99 ? "99+" : total;
+}
+function renderList() {
+  const q = $("#search").value.trim().toLowerCase();
+  const box = $("#chatlist"); box.innerHTML = "";
+  paintNavBadge();
+
+  const arr = usersCache.filter(u => (!q || u.name.toLowerCase().includes(q) || String(u.id).toLowerCase().includes(q)) && (!onlyUnread || u.unread > 0));
+  if (!arr.length) {
+    const e = document.createElement("div"); e.className = "empty";
+    e.textContent = onlyUnread ? "ไม่มีแชทที่ยังไม่อ่าน" : (usersCache.length ? "ไม่พบรายชื่อ" : "ยังไม่มีแชท");
+    box.appendChild(e); return;
+  }
+  arr.forEach(u => {
+    const it = document.createElement("div"); it.className = "item";
+    const wrap = document.createElement("div"); wrap.className = "avwrap";
+    const av = document.createElement("div"); mkAvatar(av, u.name, u.color, u.id, avatarOf(u)); wrap.appendChild(av);
+    if (SHOW_PIN_BADGE) { const pb = document.createElement("div"); pb.className = "pinb"; pb.innerHTML = PIN_SVG; wrap.appendChild(pb); }
+    const mid = document.createElement("div"); mid.className = "mid";
+    const nm = document.createElement("div"); nm.className = "nm"; nm.textContent = u.name;
+    const pv = document.createElement("div"); pv.className = "pv"; pv.textContent = previewOf(u);
+    mid.append(nm, pv);
+    const rt = document.createElement("div"); rt.className = "rt";
+    const tm = document.createElement("div"); tm.className = "tm"; tm.textContent = listTime(u.last_at);
+    rt.appendChild(tm);
+    if (u.unread > 0) { const b = document.createElement("div"); b.className = "badge"; b.textContent = u.unread > 99 ? "99+" : u.unread; rt.appendChild(b); }
+    it.append(wrap, mid, rt);
+    it.onclick = () => openChat(u);
+    box.appendChild(it);
+  });
+}
+$("#search").addEventListener("input", () => (MEMBER_LIST ? renderMemberList() : renderAdminCurrent()));
+$("#bUnread").onclick = () => { onlyUnread = !onlyUnread; $("#bUnread").classList.toggle("act", onlyUnread); renderList(); toast(onlyUnread ? "แสดงเฉพาะที่ยังไม่อ่าน" : "แสดงทั้งหมด"); };
+$("#bNew").onclick = () => { $("#search").focus(); };
+$("#bMore").onclick = () => showMenu([["รีเฟรช", () => { loadList(); toast("รีเฟรชแล้ว"); }], [onlyUnread ? "แสดงทั้งหมด" : "แสดงเฉพาะที่ยังไม่อ่าน", () => $("#bUnread").click()]]);
+document.querySelectorAll(".nav button").forEach(b => b.onclick = () => { if (b.dataset.tab !== "chat") toast("ยังไม่เปิดใช้งานในหน้านี้"); });
+
+// ================= Member หน้าแรก + ห้องสนทนา (เฟส 2) =================
+function memberPreview(o) {
+  if (!o || o.last_at == null) return T("startChat");
+  if (o.last_deleted) return T("unsend");
+  if (o.last_type === "image") return T("img");
+  if (o.last_type === "video") return T("vid");
+  if (o.last_type === "sticker") return T("stk");
+  return o.last_content || "";
+}
+function roomChip(r) {
+  if (r.status === "approved") return ["ok", T("stJoined")];
+  if (r.status === "pending") return ["warn", T("stPending")];
+  if (r.status === "blocked") return ["bad", T("stBlocked")];
+  return ["", r.readable ? T("stView") : T("stPrivate")];
+}
+function itemRow(o) {
+  const it = document.createElement("div"); it.className = "item";
+  const wrap = document.createElement("div"); wrap.className = "avwrap";
+  const av = document.createElement("div"); mkAvatar(av, o.name, o.color, o.id, o.avatar || ""); wrap.appendChild(av);
+  if (o.pin && SHOW_PIN_BADGE) { const pb = document.createElement("div"); pb.className = "pinb"; pb.innerHTML = PIN_SVG; wrap.appendChild(pb); }
+  const mid = document.createElement("div"); mid.className = "mid";
+  const nm = document.createElement("div"); nm.className = "nm"; nm.textContent = o.name;
+  if (o.chip) { const c = document.createElement("span"); c.className = ("chip " + o.chip[0]).trim(); c.textContent = o.chip[1]; nm.appendChild(c); }
+  const pv = document.createElement("div"); pv.className = "pv"; pv.textContent = o.preview;
+  mid.append(nm, pv);
+  const rt = document.createElement("div"); rt.className = "rt";
+  const tm = document.createElement("div"); tm.className = "tm"; tm.textContent = o.at ? listTime(o.at) : ""; rt.appendChild(tm);
+  if (o.unread > 0) { const b = document.createElement("div"); b.className = "badge"; b.textContent = o.unread > 99 ? "99+" : o.unread; rt.appendChild(b); }
+  it.append(wrap, mid, rt); it.onclick = o.onclick;
+  return it;
+}
+function renderMemberList() {
+  const q = $("#search").value.trim().toLowerCase();
+  const box = $("#chatlist"); box.innerHTML = "";
+  const sup = supportInfo || { unread: 0, last_at: null };
+  const supName = VISITOR ? T("aiLabel") : T("support");
+  let shown = 0;
+  if (!q || supName.toLowerCase().includes(q)) {
+    shown++;
+    box.appendChild(itemRow({ name: supName, color: "#d9a400", id: SUPPORT_ID, avatar: supAv, pin: true, preview: VISITOR ? T("vRowPv") : memberPreview(sup), at: VISITOR ? 0 : sup.last_at, unread: sup.unread,
+      onclick: VISITOR ? () => openVisitorAi() : () => openChat({ id: SUPPORT_ID, name: T("support"), color: "#d9a400", avatar: supAv }) }));
+  }
+  const rs = roomsCache.filter(r => !q || r.name.toLowerCase().includes(q));
+  if (!q || rs.length) {
+    const h = document.createElement("div"); h.className = "sec"; h.textContent = T("roomsHead"); box.appendChild(h);
+  }
+  rs.forEach(r => {
+    shown++;
+    box.appendChild(itemRow({ name: r.name, color: "", id: "room:" + r.id, chip: roomChip(r), preview: r.status === "blocked" ? T("barBlocked") : (r.last_at == null ? (r.descr || T("startChat")) : memberPreview(r)), at: r.last_at, unread: r.unread, onclick: () => openRoom(r) }));
+  });
+  if (!roomsCache.length && !q) { const e = document.createElement("div"); e.className = "empty"; e.textContent = T("noRooms"); box.appendChild(e); }
+  else if (!shown) { const e = document.createElement("div"); e.className = "empty"; e.textContent = T("noMatch"); box.appendChild(e); }
+}
+function startMemberHome() {
+  MEMBER_LIST = true; document.body.classList.add("member");
+  enterMemberList(true);
+}
+function enterMemberList(first) {
+  if (VISITOR && peer && peer.id === SUPPORT_ID) vSaved = msgs;   // Visitor กลับมาหน้ารายการ → เก็บบทสนทนา FAQ ไว้ใช้ต่อ
+  peer = null; clearInterval(pollChatTimer);
+  document.body.classList.remove("room", "ro", "dmro");
+  $(".lhead h1").textContent = T("listTitle"); $("#search").placeholder = T("search");
+  show("list");
+  if (roomsCache.length || supportInfo) renderMemberList();
+  loadMemberList(first);
+  clearInterval(pollListTimer);
+  pollListTimer = setInterval(() => { if (!document.hidden && !PAUSED && $("#list").classList.contains("on")) loadMemberList(false); }, VISITOR ? 10000 : 4000);
+}
+async function loadMemberList(first) {
+  if (listBusy) return; listBusy = true;
+  try {
+    const d = VISITOR ? await visitorRooms() : await api("/api/rooms");
+    roomsCache = d.rooms || []; supportInfo = d.support || { unread: 0, last_at: null };
+    reportUnread((supportInfo.unread || 0) + roomsCache.reduce((s, r) => s + (r.status === "approved" ? (r.unread || 0) : 0), 0));
+    if ($("#list").classList.contains("on")) renderMemberList();
+  } catch (e) {
+    if (first) {   // Worker ยังไม่มี /api/rooms → ถอยไปห้องซัพพอร์ตตรง ๆ แบบเฟส 1 (เซสชันไม่ผ่าน = แจ้ง error ตามเดิม)
+      if (e.message === T("authFail")) fatal(e.message);
+      else { MEMBER_LIST = false; document.body.classList.remove("member"); clearInterval(pollListTimer); openChat({ id: SUPPORT_ID, name: T("support"), color: "#d9a400" }); }
+    }
+  } finally { listBusy = false; }
+}
+function openRoom(r) {
+  peer = { id: "room:" + r.id, kind: "room", roomId: r.id, name: r.name, color: "", avatar: "" };
+  msgs = new Map(); lastId = 0; lastUpd = 0; peerRead = 0; peerTyping = false; reportedRead = 0;
+  roomSt = { status: r.status, locked: "", members: r.members, readable: r.readable, pending: r.pending || 0 };
+  setReply(null); $("#stickers").classList.remove("on");
+  aiSt = { avail: false, disabled: 0, paused: false }; paintAi();
+  guideReady = false; paintGuide();
+  paintHeadAv(); paintLangBits();
+  $("#pname").textContent = peer.name; $("#pst").textContent = roomStatusLine();
+  $("#msgs").innerHTML = ""; $("#input").value = ""; autoGrow();
+  $("#back").classList.remove("hide");
+  clearInterval(pollListTimer);
+  document.body.classList.remove("dmro"); document.body.classList.add("room");
+  paintRoomBar();
+  show("chat");
+  pollChat(true);
+  clearInterval(pollChatTimer);
+  pollChatTimer = setInterval(() => { if (!document.hidden && !PAUSED) pollChat(false); }, VISITOR ? 6000 : 3000);
+}
+function paintRoomBar() {
+  const st = roomSt.status, ro = (st !== "approved" && st !== "admin") || (st === "admin" && !canDo("roomPost"));
+  document.body.classList.toggle("ro", ro);
+  if (!ro) return;
+  let msg, btn = false;
+  if (st === "admin") msg = "คุณไม่มีสิทธิ์พิมพ์ในห้องในนามทีมงาน (อ่านได้อย่างเดียว)";
+  else if (st === "visitor") { msg = T("barVisitor"); btn = true; }
+  else if (st === "blocked" || roomSt.locked === "blocked") msg = T("barBlocked");
+  else if (st === "pending") msg = T("barPending");
+  else { msg = (roomSt.locked === "private" || !roomSt.readable) ? T("barPrivate") : T("barRead"); btn = true; }
+  $("#rbarTx").textContent = msg;
+  const b = $("#rbarBtn"); b.hidden = !btn; b.textContent = st === "visitor" ? T("vLogin") : T("btnJoin");
+}
+$("#rbarBtn").onclick = async () => {
+  if (!peer || peer.kind !== "room") return;
+  if (VISITOR) { try { parent.postMessage({ type: "sc-login" }, "*"); } catch (_) { } return; }   // Visitor: ไปเข้าสู่ระบบที่แอป
+  const b = $("#rbarBtn"); b.disabled = true;
+  try {
+    const d = await api(`/api/rooms/${peer.roomId}/join`, { method: "POST" });
+    roomSt.status = d.status; paintRoomBar(); toast(T("joinSent"));
+  } catch (e) { toast(e.message); }
+  finally { b.disabled = false; }
+};
+const roomStatusLine = () => T("membersN").replace("{n}", roomSt.members) + (IS_ADMIN && roomSt.pending ? " · " + roomSt.pending + " รออนุมัติ" : "");
+async function pollRoom(first) {
+  const pid = peer.id;
+  let d;
+  try { d = VISITOR ? await pubGet(`/api/public/rooms/${peer.roomId}/messages?after=${lastId}&upd=${lastUpd}`) : await api(`/api/rooms/${peer.roomId}/messages?after=${lastId}&upd=${lastUpd}`); }
+  catch (e) {
+    if (e.message === "ไม่พบห้อง") { toast(T("roomGone")); if (IS_ADMIN) { enterList(); setAdmTab("rooms"); } else enterMemberList(false); return; }   // ห้องถูกลบระหว่างเปิดอยู่
+    throw e;
+  }
+  if (!peer || peer.id !== pid) return;
+  let changed = first;
+  d.messages.forEach(m => {
+    const o = msgs.get(m.id);
+    if (!o || o.updated_at !== m.updated_at || o.deleted !== m.deleted) { msgs.set(m.id, m); changed = true; }
+    if (m.id > lastId) lastId = m.id;
+  });
+  lastUpd = Math.max(0, d.now - 2500);
+  const nst = { status: d.room.status, locked: d.locked || "", members: d.room.members, readable: d.room.readable, pending: d.room.pending || 0 };
+  if (nst.locked) { if (msgs.size) { msgs = new Map(); changed = true; } lastId = 0; lastUpd = 0; }   // ถูกล็อก (ส่วนตัว/บล็อก) → ล้างที่ค้างอยู่ · ปลดแล้วโหลดใหม่ตั้งแต่ต้น
+  if (nst.status !== roomSt.status || nst.locked !== roomSt.locked || nst.members !== roomSt.members || nst.pending !== roomSt.pending) {
+    roomSt = nst; paintRoomBar(); $("#pst").textContent = roomStatusLine();
+  }
+  if (changed) renderMsgs(first);
+  reportRead();
+}
+
+// ================= แอดมิน: ห้องสนทนา (เฟส 3) =================
+let admTab = "dm", adminRooms = [], pendingQ = [], admBusy = false;
+// [PERMS] ซ่อน/แสดงส่วนของแอดมินตามสิทธิ์ (เรียกทุกครั้งที่แลก token ใหม่)
+function applyAdminPerms() {
+  if (!IS_ADMIN) return;
+  const dm = canDo("dmView");
+  $("#tabDm").style.display = dm ? "" : "none";
+  if (!dm && admTab === "dm") { admTab = "rooms"; $("#tabDm").classList.remove("on"); $("#tabRooms").classList.add("on"); }
+  $("#mgBtn").style.display = canMg() ? "" : "none";
+  paintMyAv();
+}
+const mg = { roomId: 0, tab: "pending", members: [], gblocks: [], loaded: false };
+const MG_TABS = [["pending", "รออนุมัติ"], ["approved", "สมาชิก"], ["blocked", "ถูกบล็อก"], ["global", "ทั้งระบบ"]];   // "ทั้งระบบ" = บล็อกทุกห้อง (แชทซัพพอร์ตไม่กระทบ)
+const renderAdminCurrent = () => (admTab === "rooms" ? renderAdminRooms() : renderList());
+function paintTabBadge() {
+  reportUnread(adminUnread());
+  const b = $("#tabRoomsN"); b.textContent = pendingQ.length > 99 ? "99+" : pendingQ.length; b.classList.toggle("on", pendingQ.length > 0);
+}
+function setAdmTab(t) {
+  if (t === "dm" && !canDo("dmView")) t = "rooms";
+  admTab = t;
+  $("#tabDm").classList.toggle("on", t === "dm"); $("#tabRooms").classList.toggle("on", t === "rooms");
+  $("#search").placeholder = t === "rooms" ? "ค้นหาห้อง / สมาชิกที่ขอเข้า" : "ค้นหา";
+  renderAdminCurrent();
+  if (t === "rooms") loadAdminRooms();
+}
+$("#tabDm").onclick = () => setAdmTab("dm");
+$("#tabRooms").onclick = () => setAdmTab("rooms");
+async function loadAdminRooms() {
+  if (!IS_ADMIN || admBusy) return; admBusy = true;
+  try {
+    const [r, q] = await Promise.all([api("/api/rooms"), canDo("memberApprove") ? api("/api/admin/rooms/pending") : Promise.resolve({ pending: [] })]);
+    adminRooms = r.rooms || []; pendingQ = q.pending || [];
+    paintTabBadge();
+    if ($("#list").classList.contains("on") && admTab === "rooms") renderAdminRooms();
+  } catch (e) { if (!adminRooms.length && /Not Found/i.test(e.message)) $("#admTabs").style.display = "none"; }   // Worker เก่าไม่มีระบบห้อง → ซ่อนแท็บ
+  finally { admBusy = false; }
+}
+function secHead(text) { const h = document.createElement("div"); h.className = "sec"; h.textContent = text; return h; }
+function renderAdminRooms() {
+  const q = $("#search").value.trim().toLowerCase();
+  const box = $("#chatlist"); box.innerHTML = "";
+  const add = document.createElement("div"); add.className = "item addroom";
+  const aw = document.createElement("div"); aw.className = "avwrap"; const aa = document.createElement("div"); mkAvatar(aa, "+", "", "addroom"); aw.appendChild(aa);
+  const am = document.createElement("div"); am.className = "mid"; const an = document.createElement("div"); an.className = "nm"; an.textContent = "สร้างห้องใหม่"; am.appendChild(an);
+  add.append(aw, am); add.onclick = createRoomDialog; if (canDo("roomCreate")) box.appendChild(add);
+  const pq = pendingQ.filter(p => !q || p.name.toLowerCase().includes(q) || p.room_name.toLowerCase().includes(q) || String(p.id).toLowerCase().includes(q));
+  if (pq.length) { box.appendChild(secHead("คำขอเข้าห้องที่รออนุมัติ (" + pq.length + ")")); pq.forEach(p => box.appendChild(reqRow(p))); }
+  const rs = adminRooms.filter(r => !q || r.name.toLowerCase().includes(q));
+  box.appendChild(secHead("ห้องทั้งหมด (" + rs.length + ")"));
+  rs.forEach(r => box.appendChild(itemRow({
+    name: r.name, color: "", id: "room:" + r.id, chip: r.pending > 0 ? ["warn", r.pending + " คำขอ"] : (r.readable ? null : ["", T("stPrivate")]),
+    preview: r.last_at == null ? (r.descr || T("startChat")) : memberPreview(r), at: r.last_at, unread: r.unread, onclick: () => openRoom(r),
+  })));
+  if (!adminRooms.length) { const e = document.createElement("div"); e.className = "empty"; e.textContent = canDo("roomCreate") ? "ยังไม่มีห้องสนทนา\nกด “สร้างห้องใหม่” เพื่อเริ่มต้น" : "ยังไม่มีห้องสนทนา"; box.appendChild(e); }
+}
+function reqRow(p) {
+  const it = document.createElement("div"); it.className = "item req";
+  const wrap = document.createElement("div"); wrap.className = "avwrap"; const av = document.createElement("div"); mkAvatar(av, p.name, "", p.id, p.avatar || ""); wrap.appendChild(av);
+  const mid = document.createElement("div"); mid.className = "mid";
+  const nm = document.createElement("div"); nm.className = "nm"; nm.textContent = p.name;
+  const pv = document.createElement("div"); pv.className = "pv"; pv.textContent = "ขอเข้าห้อง “" + p.room_name + "” · " + listTime(p.requested_at);
+  mid.append(nm, pv);
+  const bt = document.createElement("div"); bt.className = "btns";
+  const ok = document.createElement("button"); ok.type = "button"; ok.className = "btn-s ok"; ok.textContent = "อนุมัติ";
+  const no = document.createElement("button"); no.type = "button"; no.className = "btn-s"; no.textContent = "ปฏิเสธ";
+  const act = async (action, msg) => {
+    ok.disabled = no.disabled = true;
+    try { await api(`/api/admin/rooms/${p.room_id}/members`, { method: "POST", body: { user: p.id, action } }); toast(msg); await loadAdminRooms(); }
+    catch (e) { toast(e.message); ok.disabled = no.disabled = false; }
+  };
+  ok.onclick = () => act("approve", "อนุมัติแล้ว"); no.onclick = () => act("reject", "ปฏิเสธแล้ว");
+  bt.append(ok, no); it.append(wrap, mid, bt);
+  return it;
+}
+
+// ---- กล่องข้อความกลาง (ฟอร์ม/ยืนยัน) — ไม่ใช้ confirm() เพราะ iframe ของแอปไม่อนุญาต modal ----
+function openDialog(o) {
+  $("#dlgTitle").textContent = o.title;
+  const body = $("#dlgBody"); body.innerHTML = "";
+  if (typeof o.body === "string") body.textContent = o.body; else if (o.body) body.appendChild(o.body);
+  $("#dlgErr").textContent = "";
+  const ok = $("#dlgOk"), no = $("#dlgNo");
+  ok.textContent = o.ok || "ตกลง"; no.textContent = "ยกเลิก"; ok.className = o.danger ? "danger" : "ok"; ok.disabled = false;
+  $("#dlgOv").classList.add("on");
+  const close = () => $("#dlgOv").classList.remove("on");
+  no.onclick = close;
+  ok.onclick = async () => {
+    ok.disabled = true; $("#dlgErr").textContent = "";
+    try { if (o.onOk) await o.onOk(); close(); }
+    catch (e) { $("#dlgErr").textContent = e.message || "ผิดพลาด"; ok.disabled = false; }
+  };
+  if (o.focus) setTimeout(() => o.focus.focus(), 50);
+}
+const askConfirm = (text, okLabel, danger, onOk) => openDialog({ title: "ยืนยัน", body: text, ok: okLabel, danger, onOk });
+function roomForm(room) {
+  const wrap = document.createElement("div"); wrap.style.cssText = "display:flex;flex-direction:column;gap:10px";
+  const name = document.createElement("input"); name.type = "text"; name.maxLength = 60; name.placeholder = "ชื่อห้อง"; name.value = room ? room.name : "";
+  const descr = document.createElement("textarea"); descr.maxLength = 200; descr.placeholder = "คำอธิบายห้อง (ไม่บังคับ)"; descr.value = room ? room.descr : "";
+  const lb = document.createElement("label"); lb.className = "chk";
+  const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = room ? room.readable === 1 : true;
+  const sp = document.createElement("span"); sp.textContent = "ให้สมาชิกที่ยังไม่ได้เข้าร่วมอ่านข้อความในห้องได้ (พิมพ์ไม่ได้จนกว่าจะอนุมัติ) · ปิดช่องนี้ = ห้องส่วนตัว เห็นเฉพาะคนที่อนุมัติแล้ว";
+  lb.append(cb, sp); wrap.append(name, descr, lb);
+  return { el: wrap, name, descr, cb };
+}
+function createRoomDialog() {
+  const f = roomForm(null);
+  openDialog({ title: "สร้างห้องใหม่", body: f.el, ok: "สร้างห้อง", focus: f.name, onOk: async () => {
+    const nm = f.name.value.trim(); if (!nm) throw new Error("ต้องตั้งชื่อห้อง");
+    await api("/api/admin/rooms", { method: "POST", body: { name: nm, descr: f.descr.value.trim(), readable: f.cb.checked } });
+    toast("สร้างห้องแล้ว"); await loadAdminRooms();
+  } });
+}
+function editRoomDialog(room) {
+  const f = roomForm(room);
+  openDialog({ title: "แก้ไขห้อง", body: f.el, ok: "บันทึก", focus: f.name, onOk: async () => {
+    const nm = f.name.value.trim(); if (!nm) throw new Error("ต้องตั้งชื่อห้อง");
+    const d = await api(`/api/admin/rooms/${room.id}/update`, { method: "POST", body: { name: nm, descr: f.descr.value.trim(), readable: f.cb.checked } });
+    toast("บันทึกแล้ว");
+    if (peer && peer.kind === "room" && peer.roomId === room.id) { peer.name = d.room.name; $("#pname").textContent = peer.name; roomSt.readable = d.room.readable; }
+    await loadAdminRooms(); if ($("#mgOv").classList.contains("on")) paintMg();
+  } });
+}
+function deleteRoomDialog(room) {
+  askConfirm("ลบห้อง “" + room.name + "” ถาวร?\nข้อความและรายชื่อสมาชิกทั้งหมดในห้องจะหายและกู้คืนไม่ได้", "ลบห้อง", true, async () => {
+    await api(`/api/admin/rooms/${room.id}/delete`, { method: "POST" });
+    toast("ลบห้องแล้ว"); closeMg();
+    if (peer && peer.kind === "room" && peer.roomId === room.id) enterList();
+    await loadAdminRooms(); setAdmTab("rooms");
+  });
+}
+
+// ---- จัดการสมาชิกในห้อง ----
+const curRoom = () => adminRooms.find(r => r.id === mg.roomId) || (peer && peer.kind === "room" && peer.roomId === mg.roomId ? { id: peer.roomId, name: peer.name, descr: "", readable: roomSt.readable } : null);
+const mgTabsAllowed = () => MG_TABS.filter(([k]) => k === "pending" ? canDo("memberApprove") : k === "global" ? canDo("globalBlock") : (canDo("memberApprove") || canDo("memberBlock")));
+async function openMg(roomId) {
+  const ts = mgTabsAllowed();
+  mg.roomId = roomId; mg.tab = ts.length ? ts[0][0] : "pending"; mg.members = []; mg.gblocks = []; mg.loaded = false;
+  $("#mgOv").classList.add("on"); paintMg();
+  try {
+    await mgLoad();
+    if (mg.tab === "pending" && !mg.members.some(m => m.status === "pending")) { const nx = ts.find(([k]) => k !== "pending"); if (nx) { mg.tab = nx[0]; paintMg(); } }
+  }
+  catch (e) { toast(e.message); }
+}
+function closeMg() { $("#mgOv").classList.remove("on"); }
+async function mgLoad() {
+  const [d, g] = await Promise.all([canMembers() ? api(`/api/admin/rooms/${mg.roomId}/members`) : Promise.resolve({ members: [] }), canDo("globalBlock") ? api("/api/admin/blocks") : Promise.resolve({ blocks: [] })]);
+  mg.members = d.members || []; mg.gblocks = g.blocks || []; mg.loaded = true; paintMg();
+}
+// บล็อก/ปลดบล็อกทั้งระบบ (ทุกห้อง)
+async function gAct(m, action) {
+  const run = async () => { await api("/api/admin/blocks", { method: "POST", body: { user: m.id, action } }); toast(action === "block" ? "บล็อกทั้งระบบแล้ว" : "ปลดบล็อกทั้งระบบแล้ว"); await mgLoad(); loadAdminRooms(); };
+  if (action === "block") askConfirm("บล็อก “" + m.name + "” ทั้งระบบ?\nจะอ่านและพิมพ์ในทุกห้องไม่ได้ (แชทกับซัพพอร์ตยังใช้ได้)", "ยืนยัน", true, run);
+  else { try { await run(); } catch (e) { toast(e.message); } }
+}
+async function mgAct(m, action, okMsg, confirmText, danger) {
+  const run = async () => { await api(`/api/admin/rooms/${mg.roomId}/members`, { method: "POST", body: { user: m.id, action } }); toast(okMsg); await mgLoad(); loadAdminRooms(); };
+  if (confirmText) askConfirm(confirmText, "ยืนยัน", danger, run);
+  else { try { await run(); } catch (e) { toast(e.message); } }
+}
+function paintMg() {
+  const room = curRoom(); if (!room) return;
+  const by = st => st === "global" ? mg.gblocks.map(b => ({ id: b.id, name: b.name, avatar: b.avatar, status: "global", requested_at: 0, decided_at: b.blocked_at })) : mg.members.filter(m => m.status === st);
+  $("#mgTitle").textContent = room.name;
+  if (!mg.loaded) { $("#mgSub").textContent = "กำลังโหลด…"; $("#mgTabs").innerHTML = ""; const e = document.createElement("div"); e.className = "empty"; e.textContent = "กำลังโหลด…"; $("#mgList").innerHTML = ""; $("#mgList").appendChild(e); return; }
+  $("#mgEdit").style.display = canDo("roomEdit") ? "" : "none"; $("#mgDel").style.display = canDo("roomDelete") ? "" : "none";
+  const allowed = mgTabsAllowed();
+  if (!allowed.some(([k]) => k === mg.tab)) mg.tab = allowed.length ? allowed[0][0] : "";
+  if (!allowed.length) { $("#mgSub").textContent = "คุณไม่มีสิทธิ์จัดการสมาชิกในห้องนี้"; $("#mgTabs").innerHTML = ""; $("#mgList").innerHTML = ""; return; }
+  $("#mgSub").textContent = by("approved").length + " สมาชิก · " + by("pending").length + " รออนุมัติ · " + by("blocked").length + " ถูกบล็อก · " + by("global").length + " ทั้งระบบ" + (room.readable ? "" : " · ห้องส่วนตัว");
+  const tabs = $("#mgTabs"); tabs.innerHTML = "";
+  allowed.forEach(([k, label]) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = mg.tab === k ? "on" : ""; b.textContent = label + " " + by(k).length;
+    b.onclick = () => { mg.tab = k; paintMg(); }; tabs.appendChild(b);
+  });
+  const box = $("#mgList"); box.innerHTML = "";
+  const rows = by(mg.tab);
+  if (!rows.length) { const e = document.createElement("div"); e.className = "empty"; e.textContent = { pending: "ไม่มีคำขอที่รออนุมัติ", approved: "ยังไม่มีสมาชิกที่อนุมัติแล้ว", blocked: "ไม่มีสมาชิกที่ถูกบล็อก", global: "ไม่มีสมาชิกที่ถูกบล็อกทั้งระบบ" }[mg.tab]; box.appendChild(e); return; }
+  rows.forEach(m => {
+    const r = document.createElement("div"); r.className = "mrow";
+    const av = document.createElement("div"); mkAvatar(av, m.name, "", m.id, m.avatar || "");
+    const mid = document.createElement("div"); mid.className = "mid";
+    const nm = document.createElement("div"); nm.className = "nm"; nm.textContent = m.name;
+    const sub = document.createElement("div"); sub.className = "sub"; sub.textContent = m.id + " · " + listTime(m.decided_at || m.requested_at) + (m.gblocked ? " · ถูกบล็อกทั้งระบบ" : "");
+    mid.append(nm, sub);
+    const bt = document.createElement("div"); bt.className = "btns";
+    const mk = (label, cls, fn) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn-s " + cls; b.textContent = label; b.onclick = fn; bt.appendChild(b); };
+    const cAp = canDo("memberApprove"), cBl = canDo("memberBlock"), cGb = canDo("globalBlock");
+    if (m.status === "global") {
+      if (cGb) mk("ปลดบล็อกทั้งระบบ", "ok", () => gAct(m, "unblock"));
+    } else if (m.status === "pending") {
+      if (cAp) mk("อนุมัติ", "ok", () => mgAct(m, "approve", "อนุมัติแล้ว"));
+      if (cAp) mk("ปฏิเสธ", "", () => mgAct(m, "reject", "ปฏิเสธแล้ว"));
+      if (cBl) mk("บล็อก", "bad", () => mgAct(m, "block", "บล็อกแล้ว", "บล็อก “" + m.name + "” จากห้องนี้?\nจะอ่านและพิมพ์ในห้องนี้ไม่ได้", true));
+    } else if (m.status === "approved") {
+      if (cAp) mk("ถอดออก", "", () => mgAct(m, "remove", "ถอดออกแล้ว", "ถอด “" + m.name + "” ออกจากห้อง?\nยังอ่านได้ตามเดิมถ้าห้องไม่เป็นส่วนตัว แต่ต้องขอเข้าห้องใหม่จึงจะพิมพ์ได้", true));
+      if (cBl) mk("บล็อก", "bad", () => mgAct(m, "block", "บล็อกแล้ว", "บล็อก “" + m.name + "” จากห้องนี้?\nจะอ่านและพิมพ์ในห้องนี้ไม่ได้", true));
+    } else {
+      if (cBl) mk("ปลดบล็อก", "ok", () => mgAct(m, "unblock", "ปลดบล็อกแล้ว"));
+    }
+    if (m.status !== "global" && cGb) mk(m.gblocked ? "ปลดบล็อกทั้งระบบ" : "บล็อกทั้งระบบ", m.gblocked ? "ok" : "bad", () => gAct(m, m.gblocked ? "unblock" : "block"));
+    r.append(av, mid, bt); box.appendChild(r);
+  });
+}
+$("#mgBtn").onclick = () => { if (peer && peer.kind === "room") openMg(peer.roomId); };
+$("#mgX").onclick = closeMg;
+$("#mgOv").addEventListener("click", e => { if (e.target.id === "mgOv") closeMg(); });
+$("#mgEdit").onclick = () => { const r = curRoom(); if (r) editRoomDialog(r); };
+$("#mgDel").onclick = () => { const r = curRoom(); if (r) deleteRoomDialog(r); };
+
+// ================= Chat =================
+function openChat(u) {
+  peer = { id: String(u.id), name: u.name || String(u.id), color: u.color || "", avatar: avatarOf(u) };
+  msgs = new Map(); lastId = 0; lastUpd = 0; peerRead = 0; peerTyping = false; reportedRead = 0;
+  setReply(null); $("#stickers").classList.remove("on");
+  aiSt = { avail: false, disabled: 0, paused: false }; paintAi();
+  guideReady = false; paintGuide();
+  paintHeadAv(); paintLangBits();
+  $("#pname").textContent = peer.name; $("#pst").textContent = "";
+  document.body.classList.remove("room", "ro");
+  const dmro = IS_ADMIN && !canDo("dmReply");   // [PERMS] ดูแชทได้แต่ตอบไม่ได้ → ซ่อนช่องพิมพ์
+  document.body.classList.toggle("dmro", dmro);
+  if (dmro) { $("#rbarTx").textContent = "คุณมีสิทธิ์ดูแชทเท่านั้น — ตอบกลับไม่ได้"; $("#rbarBtn").hidden = true; }
+  $("#msgs").innerHTML = ""; $("#input").value = ""; autoGrow();
+  $("#back").classList.toggle("hide", !!fixedPeer && !onBack);
+  clearInterval(pollListTimer);
+  show("chat");
+  autoGrow(); requestAnimationFrame(autoGrow);
+  pollChat(true);
+  clearInterval(pollChatTimer);
+  pollChatTimer = setInterval(() => { if (!document.hidden && !PAUSED) pollChat(false); }, 2000);
+}
+function paintHeadAv() {
+  const pav = $("#pav"); pav.className = ""; pav.style.background = ""; pav.textContent = "";
+  mkAvatar(pav, peer.name, peer.color, peer.id, peer.avatar);
+}
+$("#back").onclick = () => { if (MEMBER_LIST) enterMemberList(false); else if (fixedPeer) { if (onBack) onBack(); } else enterList(); };
+
+async function pollChat(first) {
+  if (!peer || busyChat) return;
+  if (VISITOR && peer.kind !== "room") return;   // Visitor แชท FAQ เป็นข้อความในหน้านี้ ไม่มีอะไรให้ poll
+  busyChat = true;
+  const pid = peer.id;
+  try {
+    if (peer.kind === "room") { await pollRoom(first); return; }
+    const d = await api(`/api/messages?peer=${encodeURIComponent(pid)}&after=${lastId}&upd=${lastUpd}`);
+    if (!peer || peer.id !== pid) return;
+    let changed = first;
+    d.messages.forEach(m => {
+      const o = msgs.get(m.id);
+      if (!o || o.updated_at !== m.updated_at || o.deleted !== m.deleted) { msgs.set(m.id, m); changed = true; }
+      if (m.id > lastId) lastId = m.id;
+    });
+    lastUpd = Math.max(0, d.now - 2500);
+    if (d.peer_read !== peerRead) { peerRead = d.peer_read; changed = true; }
+    if (typeof d.peer_avatar === "string") {
+      const na = (IS_ADMIN && AV_MAP[peer.id]) || d.peer_avatar;
+      if (na !== (peer.avatar || "")) { peer.avatar = na; if (peer.id === SUPPORT_ID) supAv = na; paintHeadAv(); changed = true; }
+    }
+    if (d.ai && (d.ai.avail !== aiSt.avail || d.ai.disabled !== aiSt.disabled || d.ai.paused !== aiSt.paused)) { aiSt = d.ai; paintAi(); }
+    if (d.typing !== peerTyping) { peerTyping = d.typing; $("#pst").textContent = d.typing ? T("typing") : ""; }
+    if (changed) renderMsgs(first);
+    if (first && !guideReady) { guideStart(); loadGuide(); }
+    reportRead();
+  } catch (e) { if (first) toast(e.message); }
+  finally { busyChat = false; }
+}
+
+function reportRead() {
+  if (!peer || document.hidden || PAUSED || VISITOR) return;
+  let mx = 0;
+  msgs.forEach(m => { if (!m.mine && m.id < 1e15 && m.id > mx) mx = m.id; });
+  if (mx > reportedRead) {
+    reportedRead = mx;
+    const isRoom = peer.kind === "room";
+    api(isRoom ? `/api/rooms/${peer.roomId}/read` : "/api/read", { method: "POST", body: isRoom ? { last_id: mx } : { peer: peer.id, last_id: mx } }).catch(() => { reportedRead = 0; });
+  }
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && !PAUSED) { reportRead(); if (peer) pollChat(false); } });
+
+function previewText(m) {
+  if (!m) return T("msg");
+  if (m.deleted) return T("unsend");
+  if (m.type === "image") return T("img");
+  if (m.type === "video") return T("vid");
+  return m.content;
+}
+
+// ---- ทำให้ลิงก์ในข้อความกดได้ (สร้างด้วย DOM เท่านั้น ไม่ใช้ innerHTML · รับเฉพาะ http/https) ----
+const URL_RE = /(?:https?:\/\/|www\.)[A-Za-z0-9\-._~:\/?#\[\]@!$&'()*+,;=%]+/gi;
+function linkifyInto(parent, text) {
+  const re = new RegExp(URL_RE.source, "gi");
+  let last = 0, m;
+  while ((m = re.exec(text))) {
+    let raw = m[0];
+    // ตัดเครื่องหมายท้ายประโยคที่ไม่ใช่ส่วนของลิงก์
+    while (raw && (/[.,;:!?'\]]$/.test(raw) || (raw.endsWith(")") && (raw.match(/\(/g) || []).length < (raw.match(/\)/g) || []).length))) raw = raw.slice(0, -1);
+    const href = /^www\./i.test(raw) ? "https://" + raw : raw;
+    let ok = false;
+    try { const u = new URL(href); ok = (u.protocol === "https:" || u.protocol === "http:") && u.hostname.includes("."); } catch (_) { }
+    re.lastIndex = m.index + Math.max(raw.length, 1);
+    if (!ok) continue;
+    if (m.index > last) parent.appendChild(document.createTextNode(text.slice(last, m.index)));
+    const a = document.createElement("a");
+    a.className = "lnk"; a.href = href; a.textContent = raw;
+    a.target = "_blank"; a.rel = "noopener noreferrer nofollow";
+    a.addEventListener("click", e => {
+      if (e.detail > 1) { e.preventDefault(); return; }                    // ดับเบิลคลิก = เมนูข้อความ ไม่เปิดลิงก์ซ้ำ
+      if (IS_ADMIN) {   // แอดมิน: ยืนยันก่อนเปิดลิงก์จากสมาชิก (กันฟิชชิง) — ใช้กล่องของเราเอง เพราะ confirm() ใช้ไม่ได้ใน iframe ที่แอปฝัง
+        e.preventDefault();
+        askConfirm(T("openLink") + "\n\n" + href, "เปิดลิงก์", false, async () => { window.open(href, "_blank", "noopener,noreferrer"); });
+      }
+    });
+    parent.appendChild(a);
+    last = m.index + raw.length;
+  }
+  if (last < text.length) parent.appendChild(document.createTextNode(text.slice(last)));
+}
+function renderMsgs(forceBottom) {
+  const box = $("#msgs");
+  const near = box.scrollHeight - box.scrollTop - box.clientHeight < 140;
+  box.innerHTML = "";
+  const arr = [...msgs.values()].sort((a, b) => a.id - b.id);
+  let prevDay = null, prevKey = null;
+
+  arr.forEach(m => {
+    const isMe = !!m.mine;
+    const dk = dayKey(m.created_at);
+    if (dk !== prevDay) {
+      const dv = document.createElement("div"); dv.className = "divider";
+      const sp = document.createElement("span"); sp.textContent = dayLabel(m.created_at);
+      dv.appendChild(sp); box.appendChild(dv); prevDay = dk; prevKey = null;
+    }
+    const sdr = m.sender || null;   // ห้องสนทนา: ผู้ส่งแต่ละข้อความ · แชทส่วนตัว: ไม่มี → ใช้ peer
+    const sn = sdr ? sdr.name : peer.name;
+    const gk = (isMe ? "me" : "other" + (sdr ? ":" + sdr.uid : "")) + (m.ai ? ":ai" : "");   // ข้อความ AI แยกกลุ่มจากข้อความเจ้าหน้าที่ เพื่อให้ป้ายถูกต้อง
+    const first = prevKey !== gk; prevKey = gk;
+
+    const row = document.createElement("div");
+    row.className = "row " + (isMe ? "me" : "other") + (first ? " first" : "");
+
+    if (!isMe) {
+      if (first) { const av = document.createElement("div"); if (sdr) mkAvatar(av, sdr.name, sdr.color, "u" + sdr.uid, sdr.avatar); else mkAvatar(av, peer.name, peer.color, peer.id, peer.avatar); row.appendChild(av); }
+      else { const ph = document.createElement("div"); ph.className = "ph"; row.appendChild(ph); }
+    }
+
+    const col = document.createElement("div"); col.className = "col";
+    if (!isMe && first) {
+      const n = document.createElement("div"); n.className = "pname"; n.textContent = sn; col.appendChild(n);
+    }
+
+    if (m.ai && first && !m.deleted) { const tg = document.createElement("div"); tg.className = "aitag"; tg.textContent = T("aiLabel"); col.appendChild(tg); }
+    const bw = document.createElement("div"); bw.className = "bwrap";
+    const bubble = document.createElement("div"); bubble.className = "bubble";
+    const pending = m.id >= 1e15;
+    if (pending) bubble.classList.add("pending");
+
+    if (m.deleted) {
+      bubble.classList.add("del");
+      bubble.textContent = isMe ? T("youUns") : T("theyUns").replace("{n}", sn);
+    } else {
+      if (m.reply_to) {
+        const o = msgs.get(m.reply_to);
+        const q = document.createElement("div"); q.className = "quote";
+        const qn = document.createElement("b"); qn.textContent = o ? (o.mine ? T("you") : (o.sender ? o.sender.name : peer.name)) : T("msg");
+        q.appendChild(qn); q.appendChild(document.createTextNode(previewText(o)));
+        bubble.appendChild(q);
+      }
+      if (m.type === "image") {
+        bubble.classList.add("img");
+        const url = m.src || m.content;   // src = ลิงก์ไฟล์จาก Worker · content แบบ data: = ข้อความรูปเก่า
+        const im = document.createElement("img"); im.src = url; im.alt = "";
+        im.onclick = () => { $("#vimg").src = url; $("#viewer").classList.add("on"); };
+        im.onload = () => { if (near || forceBottom) box.scrollTop = box.scrollHeight; };
+        bubble.appendChild(im);
+      } else if (m.type === "video") {
+        bubble.classList.add("img");
+        const v = document.createElement("video"); v.src = m.src || ""; v.controls = true; v.playsInline = true; v.preload = "metadata";
+        v.onloadedmetadata = () => { if (near || forceBottom) box.scrollTop = box.scrollHeight; };
+        bubble.appendChild(v);
+      } else if (m.type === "sticker") {
+        bubble.classList.add("sticker"); bubble.textContent = m.content;
+      } else {
+        linkifyInto(bubble, m.content);
+      }
+    }
+    if (pending && m.progress !== undefined) {
+      const pg = document.createElement("div"); pg.className = "prog"; pg.textContent = T("upl") + " " + m.progress + "%"; bubble.appendChild(pg);
+    }
+    if (!pending && !m.deleted) bindPress(bubble, m);
+
+    const meta = document.createElement("div"); meta.className = "meta";
+    if (isMe && !pending && m.id <= peerRead) { meta.appendChild(document.createTextNode(T("read"))); meta.appendChild(document.createElement("br")); }
+    meta.appendChild(document.createTextNode(hm(m.created_at)));
+
+    if (isMe) bw.append(meta, bubble); else bw.append(bubble, meta);
+    col.appendChild(bw); row.appendChild(col); box.appendChild(row);
+  });
+
+  if (!arr.length && !IS_ADMIN) { const e = document.createElement("div"); e.className = "empty"; e.textContent = T("empty"); box.appendChild(e); }
+  if (forceBottom || near) box.scrollTop = box.scrollHeight;
+}
+
+// ---- เมนูไกด์ไลน์ (สมาชิกเท่านั้น): หมวด → คำถามตัวอย่าง · กดแล้วส่งเป็นข้อความพร้อม qid/cat ให้ Worker ตอบตรงจาก FAQ ----
+let guideReady = false, guideCat = "", guideSub = "", guideAt = 0;
+const GUIDE_KEY = "sc_guide";
+const guideOn = () => !IS_ADMIN && !!peer && peer.id === SUPPORT_ID && GUIDE.length > 0;
+function paintGuide() {
+  const g = $("#guide"), on = guideOn();
+  g.classList.toggle("on", on);
+  if (!on) return;
+  $("#gtogTx").textContent = T("guide");
+  if (!GUIDE.some(c => c.id === guideCat)) { guideCat = GUIDE[0].id; guideSub = ""; }
+  const top = GUIDE.find(c => c.id === guideCat);
+  const cats = $("#gcats"), keep = cats.scrollLeft;
+  cats.innerHTML = "";
+  GUIDE.forEach(c => {
+    const b = document.createElement("button"); b.type = "button";
+    b.className = "gcat" + (c.id === guideCat ? " on" : "");
+    b.textContent = c.icon + " " + (c.name[LANG] || c.name.th);
+    b.onclick = () => { guideCat = c.id; guideSub = ""; paintGuide(); };
+    cats.appendChild(b);
+  });
+  cats.scrollLeft = keep;
+  // หมวดย่อย: ถ้าหมวดหลักมีคำถามของตัวเอง ให้เป็นแท็บแรก ตามด้วยหมวดย่อย
+  const subs = $("#gsubs"); subs.innerHTML = "";
+  const kids = top.children || [];
+  let cur = top;
+  if (kids.length) {
+    const tabs = (top.items.length ? [top] : []).concat(kids);
+    if (!tabs.some(k => k.id === guideSub)) guideSub = tabs[0].id;
+    tabs.forEach(k => {
+      const b = document.createElement("button"); b.type = "button";
+      b.className = "gcat sub" + (k.id === guideSub ? " on" : "");
+      b.textContent = (k.icon && k !== top ? k.icon + " " : "") + (k.name[LANG] || k.name.th);
+      b.onclick = () => { guideSub = k.id; paintGuide(); };
+      subs.appendChild(b);
+    });
+    cur = tabs.find(k => k.id === guideSub) || top;
+  }
+  subs.style.display = kids.length ? "flex" : "none";
+  const qs = $("#gqs"); qs.innerHTML = "";
+  cur.items.forEach(it => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "gq";
+    b.textContent = it.q[LANG] || it.q.th;
+    b.onclick = () => sendGuide(cur, it);
+    qs.appendChild(b);
+  });
+}
+// ดึงเมนูล่าสุดจาก Worker (แอดมินแก้เมนูแล้วสมาชิกเห็นทันทีที่เปิดห้อง/เปิดเมนู) · ล้มเหลว = ใช้เมนูสำรองที่ฝังไว้ ไม่แจ้ง error
+async function loadGuide() {
+  if (IS_ADMIN) return;
+  if (VISITOR) return loadVisitorMenu();
+  try {
+    const d = await api("/api/kb/menu");
+    if (d && Array.isArray(d.menu) && d.menu.length) { GUIDE = d.menu; guideAt = Date.now(); paintGuide(); }
+  } catch (_) { }
+}
+function setGuideOpen(open, save) {
+  $("#guide").classList.toggle("open", !!open);
+  $("#gtog").setAttribute("aria-expanded", open ? "true" : "false");
+  if (save) { try { localStorage.setItem(GUIDE_KEY, open ? "1" : "0"); } catch (_) { } }
+  setTimeout(() => { const m = $("#msgs"); m.scrollTop = m.scrollHeight; }, 50);
+}
+// ตั้งสถานะเริ่มต้นครั้งเดียวต่อการเปิดห้อง: ถ้าสมาชิกเคยเปิด/ปิดไว้ใช้ตามนั้น · ไม่เคย → ห้องที่ยังไม่มีข้อความเปิดไว้ ห้องที่คุยแล้วพับไว้
+function guideStart() {
+  guideReady = true;
+  if (!guideOn()) return;
+  let st = ""; try { st = localStorage.getItem(GUIDE_KEY) || ""; } catch (_) { }
+  setGuideOpen(st === "1" ? true : st === "0" ? false : msgs.size === 0, false);
+}
+function sendGuide(c, it) {
+  if (VISITOR) return visitorAsk(c, it);
+  setGuideOpen(false, false);   // พับเมนูเพื่อให้เห็นคำตอบ (ไม่บันทึกเป็นความชอบของสมาชิก)
+  sendMessage("text", it.q[LANG] || it.q.th, { qid: it.id, cat: c.id });
+}
+$("#gtog").onclick = () => { const o = !$("#guide").classList.contains("open"); setGuideOpen(o, true); if (o && Date.now() - guideAt > 60000) loadGuide(); };
+
+// ---- Visitor: ไม่ล็อกอิน · ถามได้เฉพาะเมนู FAQ · Worker ตอบตรงจาก FAQ (ไม่เก็บข้อความ ไม่เรียกโมเดล) ----
+function addLocal(o) {
+  const id = ++vN;
+  msgs.set(id, { id, deleted: 0, reply_to: null, created_at: Date.now(), updated_at: Date.now(), ...o });
+  renderMsgs(true);
+}
+async function loadVisitorMenu() {
+  try {
+    const r = await fetch(API + "/api/public/menu");
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d && Array.isArray(d.menu) && d.menu.length) { GUIDE = d.menu; guideAt = Date.now(); paintGuide(); }
+  } catch (_) { }   // ใช้เมนูสำรองที่ฝังไว้
+}
+async function visitorAsk(c, it) {
+  if (vBusy) return;
+  setGuideOpen(false, false);
+  addLocal({ mine: true, type: "text", content: it.q[LANG] || it.q.th });
+  vBusy = true;
+  try {
+    const r = await fetch(API + "/api/public/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ qid: it.id, lang: LANG }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d || !d.text) throw new Error((d && d.error) || "HTTP " + r.status);
+    addLocal({ mine: false, ai: 0, type: "text", content: d.text });
+  } catch (_) { addLocal({ mine: false, ai: 0, type: "text", content: T("vFail") }); }
+  finally { vBusy = false; }
+}
+// Visitor: ห้องที่เปิดให้อ่าน (readable=1) แสดงอ่านอย่างเดียว · ชื่อผู้ส่งถูกย่อโดย Worker เสมอ · ไม่มีห้องให้อ่าน/Worker ปิดไว้ (VISITOR_ROOMS=off) → เปิดแชท FAQ ตรง ๆ เหมือนเดิม
+async function pubGet(path) {
+  const r = await fetch(API + path);
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(r.status === 429 ? T("vFail") : (d.error || "HTTP " + r.status));
+  return d;
+}
+async function visitorRooms() {
+  const d = await pubGet("/api/public/rooms");
+  return { rooms: (d.rooms || []).map(r => ({ ...r, readable: 1 })), support: { unread: 0, last_at: null } };
+}
+async function startVisitor(init) {
+  VISITOR = true; document.body.classList.add("visitor");
+  if (init.api) API = String(init.api).replace(/\/+$/, "");
+  let d = null;
+  try { d = await visitorRooms(); } catch (_) { }
+  if (d && d.rooms.length) {
+    roomsCache = d.rooms; supportInfo = d.support;
+    MEMBER_LIST = true; document.body.classList.add("member");
+    enterMemberList(true);
+  } else openVisitorAi();
+}
+function openVisitorAi() {
+  peer = { id: SUPPORT_ID, name: T("aiLabel"), color: "#d9a400" };
+  peerRead = 0; peerTyping = false; reportedRead = 0;
+  setReply(null);
+  paintHeadAv(); paintLangBits();
+  $("#pname").textContent = peer.name; $("#pst").textContent = "";
+  document.body.classList.remove("room", "ro");
+  clearInterval(pollListTimer); clearInterval(pollChatTimer);
+  $("#msgs").innerHTML = "";
+  $("#back").classList.toggle("hide", !onBack && !MEMBER_LIST);
+  show("chat");
+  if (vSaved) { msgs = vSaved; renderMsgs(true); }
+  else { msgs = new Map(); lastId = 0; lastUpd = 0; addLocal({ mine: false, ai: 0, type: "text", content: T("vGreet") }); }
+  guideReady = true; paintGuide(); setGuideOpen(true, false);
+  loadVisitorMenu();
+}
+$("#langBtn").onclick = pickLang;
+$("#langBtnL").onclick = pickLang;
+$("#vhintBtn").onclick = () => { try { parent.postMessage({ type: "sc-login" }, "*"); } catch (_) { } };
+
+// ---- AI: สวิตช์รายห้อง (แอดมิน) · ไม่มีปุ่มคุยกับเจ้าหน้าที่ให้สมาชิกกดแล้ว — AI เป็นผู้ส่งต่อเองเท่านั้น ----
+function paintAi() {
+  const pill = $("#aiPill");
+  if (!IS_ADMIN || !aiSt.avail || !canDo("aiToggle")) { pill.style.display = "none"; return; }
+  pill.style.display = "block";
+  pill.className = "aipill " + (aiSt.disabled ? "" : aiSt.paused ? "pause" : "on");
+  pill.textContent = aiSt.disabled ? "AI ปิด" : aiSt.paused ? "AI พัก" : "AI เปิด";
+}
+async function setAiOn(on) {
+  if (!peer) return;
+  try { const d = await api("/api/ai/toggle", { method: "POST", body: { peer: peer.id, on } }); aiSt = d.ai; paintAi(); toast(on ? "เปิด AI ห้องนี้แล้ว" : "ปิด AI ห้องนี้แล้ว"); }
+  catch (e) { toast(e.message); }
+}
+$("#aiPill").onclick = () => {
+  if (!IS_ADMIN || !peer) return;
+  if (aiSt.disabled) showMenu([["เปิด AI ห้องนี้", () => setAiOn(true)]]);
+  else showMenu([...(aiSt.paused ? [["ให้ AI กลับมาตอบเลย", () => setAiOn(true)]] : []), ["ปิด AI ห้องนี้", () => setAiOn(false), true]]);
+};
+// ---- long press / right click menu ----
+function bindPress(el, m) {
+  let t;
+  const start = () => { t = setTimeout(() => openMenu(m), 450); };
+  const end = () => clearTimeout(t);
+  el.addEventListener("touchstart", start, { passive: true });
+  ["touchend", "touchmove", "touchcancel"].forEach(ev => el.addEventListener(ev, end, { passive: true }));
+  el.addEventListener("contextmenu", e => { e.preventDefault(); openMenu(m); });
+  el.addEventListener("dblclick", () => openMenu(m));
+}
+function openMenu(m) {
+  const items = VISITOR ? [] : [[T("reply"), () => setReply(m)]];
+  if (m.type === "text") items.push([T("copy"), async () => {
+    try { await navigator.clipboard.writeText(m.content); toast(T("copied")); }
+    catch (_) { const ta = document.createElement("textarea"); ta.value = m.content; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); toast(T("copied")); }
+  }]);
+  if (IS_ADMIN && canDo("msgDelete") && !m.mine && peer && peer.kind === "room" && !m.deleted) {   // แอดมินลบข้อความของสมาชิกในห้อง
+    const rid = peer.roomId;
+    items.push(["ลบข้อความ (แอดมิน)", () => askConfirm("ลบข้อความนี้ของสมาชิก?\nสมาชิกทุกคนในห้องจะเห็นว่าข้อความถูกลบ", "ลบ", true, async () => {
+      await api(`/api/admin/rooms/${rid}/messages/${m.id}/delete`, { method: "POST" });
+      const o = msgs.get(m.id); if (o) { o.deleted = 1; o.content = ""; renderMsgs(false); }
+      toast("ลบข้อความแล้ว");
+    }), true]);
+  }
+  if (m.mine) items.push([T("unsend"), async () => {
+    try { await api(`/api/messages/${m.id}/unsend`, { method: "POST" }); const o = msgs.get(m.id); if (o) { o.deleted = 1; o.content = ""; renderMsgs(false); } }
+    catch (e) { toast(e.message); }
+  }, true]);
+  if (!items.length) return;
+  showMenu(items);
+}
+
+// ---- reply ----
+function setReply(m) {
+  replyTo = m;
+  const bar = $("#replybar");
+  if (!m) { bar.classList.remove("on"); return; }
+  const rb = $("#rbtxt"); rb.innerHTML = "";
+  const b = document.createElement("b"); b.textContent = T("replyTo") + " " + (m.mine ? T("self") : (m.sender ? m.sender.name : peer.name));
+  rb.appendChild(b); rb.appendChild(document.createTextNode(previewText(m)));
+  bar.classList.add("on"); $("#input").focus();
+}
+$("#rbx").onclick = () => setReply(null);
+
+// ---- send ----
+async function sendMessage(type, content, extra) {
+  if (!peer) return;
+  const tid = 1e15 + (++tmpN);
+  const temp = { id: tid, mine: true, type, content, reply_to: replyTo ? replyTo.id : null, deleted: 0, created_at: Date.now(), updated_at: 0 };
+  msgs.set(tid, temp); renderMsgs(true);
+  const rid = temp.reply_to;
+  setReply(null);
+  try {
+    const d = peer.kind === "room"
+      ? await api(`/api/rooms/${peer.roomId}/messages`, { method: "POST", body: { type, content, reply_to: rid } })
+      : await api("/api/messages", { method: "POST", body: { to: peer.id, peer_name: peer.name, type, content, reply_to: rid, lang: IS_ADMIN ? undefined : LANG, qid: extra && extra.qid, cat: extra && extra.cat } });
+    msgs.delete(tid);
+    msgs.set(d.id, { ...temp, id: d.id, created_at: d.created_at, updated_at: d.created_at });
+    if (d.id > lastId) lastId = d.id;
+    renderMsgs(true);
+  } catch (e) { msgs.delete(tid); renderMsgs(true); toast(T("sendFail") + ": " + e.message); if (peer && peer.kind === "room") pollChat(false); }   // ห้อง: สิทธิ์อาจเปลี่ยน → ดึงสถานะใหม่
+}
+function sendText() {
+  const t = $("#input").value.trim(); if (!t) return;
+  $("#input").value = ""; autoGrow(); sendMessage("text", t);
+}
+$("#send").onclick = sendText;
+$("#input").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey && !/Mobi|Android/i.test(navigator.userAgent)) { e.preventDefault(); sendText(); }
+});
+function autoGrow() {
+  // [FIX-INPUT] scrollHeight=0 ตอนหน้าแชทยังซ่อน (display:none) และ box-sizing:border-box ต้องบวกเส้นขอบ 2px — ไม่งั้นช่องพิมพ์หดเหลือแถบเล็ก+มีลูกศรเลื่อน
+  const el = $("#input"); el.style.height = "auto";
+  const sh = el.scrollHeight;
+  el.style.height = Math.max(40, Math.min(sh + 2, 112)) + "px";
+  el.style.overflowY = sh + 2 > 112 ? "auto" : "hidden";
+  $("#send").classList.toggle("on", !!el.value.trim());
+}
+$("#input").addEventListener("input", () => {
+  autoGrow();
+  if (peer && peer.kind !== "room" && Date.now() - lastTypingSent > 2500 && $("#input").value.trim()) {
+    lastTypingSent = Date.now();
+    api("/api/typing", { method: "POST", body: { peer: peer.id } }).catch(() => { });
+  }
+});
+
+// ---- stickers ----
+(function () {
+  const box = $("#stickers");
+  STICKERS.forEach(s => {
+    const b = document.createElement("button"); b.textContent = s;
+    b.onclick = () => { sendMessage("sticker", s); box.classList.remove("on"); };
+    box.appendChild(b);
+  });
+})();
+$("#stBtn").onclick = () => { $("#stickers").classList.toggle("on"); setTimeout(() => { const m = $("#msgs"); m.scrollTop = m.scrollHeight; }, 50); };
+$("#input").addEventListener("focus", () => $("#stickers").classList.remove("on"));
+
+// ---- รูป / วิดีโอ → อัปโหลดขึ้น Cloudinary (Worker แค่ลงลายเซ็น) แล้วส่งเป็นลิงก์ ----
+function shrinkImage(file) {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height; const max = 1280;
+      if (Math.max(w, h) > max) { const r = max / Math.max(w, h); w = Math.round(w * r); h = Math.round(h * r); }
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      let q = 0.82;
+      const tryEnc = () => c.toBlob(b => {
+        if (b && b.size <= 1400000) return resolve(b);
+        if (q > 0.35) { q -= 0.1; return tryEnc(); }
+        resolve(null);
+      }, "image/jpeg", q);
+      tryEnc();
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); toast(T("badImg")); resolve(undefined); };
+    img.src = url;
+  });
+}
+async function uploadBlob(blob, onProg) {
+  const kind = blob.type.startsWith("video/") ? "video" : "image";
+  // 1) ขอลายเซ็นจาก Worker  2) อัปโหลดตรงไป Cloudinary  3) ให้ Worker ยืนยันผล
+  const dest = peer.kind === "room" ? "room=" + peer.roomId : "peer=" + encodeURIComponent(peer.id);   // ห้อง: ผูกไฟล์กับห้อง · ส่วนตัว: ผูกกับคู่สนทนา
+  const sg = await api("/api/upload-sign?" + dest + "&kind=" + kind, { method: "POST" });
+  const fd = new FormData();
+  Object.keys(sg.fields).forEach(k => fd.append(k, sg.fields[k]));
+  fd.append("file", blob);
+  const cl = await new Promise((resolve, reject) => {
+    const x = new XMLHttpRequest();
+    x.open("POST", sg.upload_url);
+    x.upload.onprogress = e => { if (e.lengthComputable) onProg(Math.round(e.loaded / e.total * 100)); };
+    x.onload = () => {
+      let d = {}; try { d = JSON.parse(x.responseText); } catch (_) { }
+      (x.status >= 200 && x.status < 300) ? resolve(d) : reject(new Error((d.error && d.error.message) || "HTTP " + x.status));
+    };
+    x.onerror = () => reject(new Error("network"));
+    x.send(fd);
+  });
+  return await api("/api/upload-done", { method: "POST", body: { file_id: sg.file_id, version: cl.version, format: cl.format } });
+}
+async function sendMedia(file) {
+  if (!peer) return;
+  let type, blob;
+  if (file.type.startsWith("image/")) {
+    type = "image"; blob = await shrinkImage(file);
+    if (blob === undefined) return;
+    if (!blob) { toast(T("bigImg")); return; }
+  } else if (VIDEO_OK.includes(file.type)) {
+    type = "video"; if (file.size > 25e6) { toast(T("bigVid")); return; } blob = file;
+  } else { toast(T("badType")); return; }
+
+  const tid = 1e15 + (++tmpN);
+  const temp = { id: tid, mine: true, type, content: "", src: URL.createObjectURL(blob), reply_to: replyTo ? replyTo.id : null, deleted: 0, created_at: Date.now(), updated_at: 0, progress: 0 };
+  msgs.set(tid, temp); renderMsgs(true);
+  const rid = temp.reply_to; setReply(null);
+  try {
+    if (!chatToken || Date.now() > tokenExp - 60000) await login();
+    let lastDraw = 0;
+    const up = await uploadBlob(blob, p => { temp.progress = p; const n = Date.now(); if (n - lastDraw > 250) { lastDraw = n; renderMsgs(false); } });
+    const d = peer.kind === "room"
+      ? await api(`/api/rooms/${peer.roomId}/messages`, { method: "POST", body: { type, content: up.content, reply_to: rid } })
+      : await api("/api/messages", { method: "POST", body: { to: peer.id, peer_name: peer.name, type, content: up.content, reply_to: rid } });
+    msgs.delete(tid);
+    const done = { ...temp, id: d.id, content: up.content, created_at: d.created_at, updated_at: d.created_at };
+    delete done.progress;
+    msgs.set(d.id, done);
+    if (d.id > lastId) lastId = d.id;
+    renderMsgs(true);
+  } catch (e) { msgs.delete(tid); renderMsgs(true); toast(T("sendFail") + ": " + e.message); if (peer && peer.kind === "room") pollChat(false); }   // ห้อง: สิทธิ์อาจเปลี่ยน → ดึงสถานะใหม่
+}
+$("#imgBtn").onclick = () => $("#file").click();
+$("#file").addEventListener("change", e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (f) sendMedia(f);
+});
+// ================= Public API (ให้ TCC เรียกใช้) =================
+// LineChat.open({id:"u456", name:"แอดมิน"})  → เปิดห้องแชทกับผู้ใช้นั้น
+// LineChat.list()                            → กลับหน้ารายการ
+window.LineChat = { open: u => openChat(u), list: () => enterList() };
+
+// ================= Init =================
+function startAdmin() {
+  enterList();
+  applyAdminPerms(); if (!canDo("dmView")) setAdmTab("rooms");
+  try { parent.postMessage({ type: "sc-need-avatars" }, "*"); } catch (_) { }
+  const u = P.get("uid");
+  if (u) openChat({ id: u, name: P.get("name") || u });
+}
+$("#lgBtn").onclick = async () => {
+  const k = $("#lgKey").value.trim(); if (!k) return;
+  adminKey = k; $("#lgErr").textContent = "";
+  try { chatToken = ""; await login(); sessionStorage.setItem("sc_ak", k); $("#lgKey").value = ""; startAdmin(); }
+  catch (e) { adminKey = ""; $("#lgErr").textContent = "ADMIN_KEY ไม่ถูกต้อง หรือเชื่อมต่อไม่ได้"; }
+};
+$("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn").click(); });
+
+(async function init() {
+  if (IS_ADMIN && EMBED_ADMIN) {
+    getInit().then(init => { bootInit = init; return login(); }).then(() => startAdmin()).catch(e => fatal(e.message));
+  } else if (IS_ADMIN) {
+    if (sessionStorage.getItem("sc_ak")) {
+      try { await login(); startAdmin(); return; } catch (_) { sessionStorage.removeItem("sc_ak"); }
+    }
+    show("login");
+  } else if (!IN_FRAME) {
+    fatal(T("fromApp"));
+  } else {
+    const sl = storedLang(); if (sl) setLang(sl);
+    getInit().then(init => {
+      if (init.visitor) startVisitor(init);
+      else { bootInit = init; startMemberHome(); }
+    }).catch(e => fatal(e.message));
+  }
+})();
+</script>
+</body>
+</html>

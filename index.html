@@ -4702,6 +4702,7 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
   // คืน HTML เนื้อหาของหน้า: ไทย/แอดมินแก้เอง → ค่าจาก CONTENT ตามเดิม · ภาษาอื่น + ยังเป็นค่าเริ่มต้นของไฟล์ → ฉบับแปล
   window.tccPageContent = function(key, html){
     var raw = (html!=null) ? html : ((typeof CONTENT!=='undefined' && CONTENT[key]) || '');
+    try{ if(tccLang()!=='th' && window.TccI18n){ var _tr=TccI18n.pageTr(key); if(_tr) return _tr; } }catch(e){}   // [I18N Phase 4] คำแปลที่แอดมินบันทึกใน DB มาก่อน
     var b = BUILD[key];
     if(!b || tccLang()==='th') return raw;
     var o = window.__tccCT0 && window.__tccCT0[key];
@@ -5830,6 +5831,7 @@ function jsq(s){return String(s==null?'':s).replace(/[\\'"<>&`\r\n\u2028\u2029]/
 function jsqUrl(u){u=String(u==null?'':u).trim();return jsq(/^https?:\/\//i.test(u)?u:'#');}
 
 function renderCard(it){
+  it=(window.TccI18n)?TccI18n.item(it):it;   // [I18N Phase 4] คำแปล Title/Subtitle ตามภาษาที่เลือก
   const y=it.y, z=it.z, lnk=it.l, img=it.i;
   const onclick=lnk?`onclick="window.open('${jsqUrl(lnk)}','_blank')"` :'';
   const dlnk=lnk?` data-link="1"`:'';
@@ -8195,7 +8197,8 @@ function renderContentItems(items){
 //  รูปแบบที่เก็บ (คอลัมน์ I18n): {"en":{"Title":"…","Subtitle":"…"},"vi":{…},"kh":{…},"mm":{…},"la":{…}} — ภาษาไทยอยู่ในคอลัมน์เดิม
 //  ตัวเลือกเสริมของ field: get:()=>string (อ่านต้นฉบับไทยจากฟังก์ชันแทน input) · mono:true (ช่องแบบโค้ด) · preview:true (แสดงตัวอย่าง HTML ใต้ช่อง)
 //  ตัวเลือกเสริมของ config:  request:async(langs,fields)=>{translations,warnings,errors} (ส่งแปลแบบกำหนดเอง เช่น แบ่งเนื้อหายาวเป็นหลายคำขอ)
-//  Backend: POST /api/admin/translate · POST /api/admin/i18n-setup (worker v4.4.0)
+//  ฝั่งสมาชิก (Phase 4): TccI18n.item(it) · TccI18n.card(c) · TccI18n.pageTr(key) · TccI18n.setPageTr(key,obj) · TccI18n.hasTr(list)
+//  Backend: POST /api/admin/translate · POST /api/admin/i18n-setup (worker v4.4.0+)
 // ═══════════════════════════════════════════════════════════════════
 window.TccI18n=(function(){
   const LANGS=[{k:'en',n:'English'},{k:'vi',n:'Tiếng Việt'},{k:'kh',n:'ខ្មែរ'},{k:'mm',n:'မြန်မာ'},{k:'la',n:'ລາວ'}];
@@ -8482,7 +8485,28 @@ window.TccI18n=(function(){
     }
   }
 
-  return {LANGS,build,mount,tab,touch,refresh,translate,collect,serialize,parse,pick,badge,noteRow,verify,verifyCols,setupColumns,send,checkStale,isStale};
+  // ══ Phase 4 — ฝั่งสมาชิก: เลือกคำแปลตามภาษาที่เลือก (ไม่มีคำแปล → ใช้ภาษาไทยเดิมเป็นรายช่อง) ══
+  const curLang=()=>((typeof window.tccLang==='function')?window.tccLang():'th');
+  const pcStore={};                                   // คีย์หน้าเนื้อหา → {en:'<html>',…}
+  function setPageTr(key,obj){                        // รับ {en:{Html:'…'}} (จากฟอร์มแอดมิน) หรือ {en:'…'} (จาก DB)
+    const o={};
+    if(obj&&typeof obj==='object') LANGS.forEach(({k})=>{ const v=obj[k]; const h=(v&&typeof v==='object')?v.Html:v; if(typeof h==='string'&&h.trim()) o[k]=h; });
+    if(Object.keys(o).length) pcStore[key]=o; else delete pcStore[key];
+  }
+  function pageTr(key){ const lg=curLang(); if(lg==='th') return ''; const h=pcStore[key]&&pcStore[key][lg]; return h?stripScripts(h):''; }
+  function item(it){                                  // Items: {t,s,n:{en:{Title,Subtitle}}}
+    const lg=curLang(), t=lg!=='th'&&it&&it.n&&it.n[lg];
+    if(!t||(!t.Title&&!t.Subtitle)) return it;
+    const o=Object.assign({},it); if(t.Title) o.t=t.Title; if(t.Subtitle) o.s=t.Subtitle; return o;
+  }
+  function card(c){                                   // Cafe Card: {title,content,n:{en:{Title,Content}}}
+    const lg=curLang(), t=lg!=='th'&&c&&c.n&&c.n[lg];
+    if(!t||(!t.Title&&!t.Content)) return c;
+    const o=Object.assign({},c); if(t.Title) o.title=stripScripts(t.Title); if(t.Content) o.content=stripScripts(t.Content); return o;
+  }
+  const hasTr=list=>!!(list||[]).some(x=>x&&x.n&&Object.keys(x.n).length);
+
+  return {LANGS,build,mount,tab,touch,refresh,translate,collect,serialize,parse,pick,badge,noteRow,verify,verifyCols,setupColumns,send,checkStale,isStale,setPageTr,pageTr,item,card,hasTr};
 })();
 
 // ─── ค่ากำหนดฟอร์มที่ใช้คอมโพเนนต์ ───
@@ -8494,6 +8518,27 @@ const TCC_CAFE_I18N={scope:'cafe',format:'html',fields:[
   {key:'Title',  label:'ชื่อ Card (Title)',  el:'cm-title',  kind:'input'},
   {key:'Content',label:'เนื้อหา (Content)',  el:'cm-content',kind:'textarea',rows:5,show:()=>((document.getElementById('cm-type')||{}).value!=='video')}
 ]};
+
+// ─── [I18N Phase 4] เปลี่ยนภาษา → วาดส่วนที่ใช้คำแปลจาก DB ใหม่ ───
+//     (Cafe ถูกรีเฟรชโดยตัวฟัง tcc-lang เดิมผ่าน refreshCafePanel · หน้าเนื้อหาส่วนใหญ่ผ่าน tccPageContent เดิม — ที่นี่เหลือ Items กับ Terms)
+function _tccI18nOnLang(){
+  try{   // Information: มีรายการที่มีคำแปล → วาดแผงใหม่ แต่คงแท็บและตำแหน่งเลื่อนเดิม
+    if(window.TccI18n&&TccI18n.hasTr(ITEMS)&&document.getElementById('panel_information')){
+      const act=document.querySelector('#panel_information .page-tab.active'), pg=act&&act.dataset.pg;
+      const sp=document.querySelector('#panel_information .scroll-panel'), top=sp?sp.scrollTop:0;
+      refreshInfoPanel();
+      if(pg) switchInfoPage(pg);
+      const sp2=document.querySelector('#panel_information .scroll-panel'); if(sp2) sp2.scrollTop=top;
+    }
+  }catch(e){ console.warn('[i18n items]',e); }
+  try{   // Terms: เนื้อหาจาก DB (ที่ไม่ใช่ค่าเริ่มต้นในไฟล์) → ใช้คำแปลของภาษานั้น ไม่มี = ภาษาไทย
+    const h=document.getElementById('tc-info-wrap-holder');
+    if(h&&window.TccI18n&&typeof CONTENT!=='undefined'&&window.__tccCT0&&CONTENT.termcondition!==window.__tccCT0.termcondition)
+      h.innerHTML=TccI18n.pageTr('termcondition')||CONTENT.termcondition;
+  }catch(e){ console.warn('[i18n terms]',e); }
+}
+document.addEventListener('tcc-lang',_tccI18nOnLang);
+
 
 let editItemIndex=-1;
 // alias สำหรับ backward compat
@@ -8738,6 +8783,7 @@ function _cafeVidToggle(uid){
 }
 
 function _renderCafeCard(c){
+  c = (window.TccI18n) ? TccI18n.card(c) : c;   // [I18N Phase 4] คำแปลจาก DB ก่อน
   c = (typeof tccCafeTr==='function') ? tccCafeTr(c) : c;
   if(c.type === 'video' && _isCldVideo(c.videoUrl)){
     var cv = c.videoUrl;
@@ -9737,6 +9783,7 @@ async function _pcSaveHtml(key, html, msg){
         if(savedId) _pcDataCache[key].id=savedId;
       }
       if(_tr!==null&&_pcDataCache[key]) _pcDataCache[key].tr=_tr;   // [I18N]
+      if(_tr!==null) TccI18n.setPageTr(key,_tr);   // [I18N Phase 4]
       CONTENT[key]=html;
       _pcApplyToPage(key,html);
       delete _cache[NOCO.tbl.pagecontent+''];
@@ -9783,7 +9830,7 @@ function _pcApplyToPage(key, html){
     if(key==='termcondition'){
       // อัปเดตเฉพาะเนื้อหาใน info-wrap — ไม่แตะ collapse structure และ tc-app-root
       const wrap=document.getElementById('tc-info-wrap-holder');
-      if(wrap) wrap.innerHTML=html;
+      if(wrap) wrap.innerHTML=(window.TccI18n&&TccI18n.pageTr(key))||html;   // [I18N Phase 4]
       // re-bind collapse toggle เผื่อ NocoDB ส่ง html ที่มี onclick ใหม่
       return;
     }
@@ -9816,6 +9863,7 @@ async function pageContentDelete(key){
       delete _pcDataCache[key];
       delete _cache[NOCO.tbl.pagecontent+''];
       // revert CONTENT to default
+      TccI18n.setPageTr(key,{});   // [I18N Phase 4] ลบแถว = ลบคำแปลด้วย
       CONTENT[key] = _pcGetDefaultContent(key);
       _pcApplyToPage(key, CONTENT[key]);
       showToast('🗑️ ลบออกจาก DB แล้ว — กลับใช้ค่าเริ่มต้น');
@@ -9855,6 +9903,7 @@ async function initPageContent(){
       // ── โหลด HTML content ของแต่ละหน้า ──────────────────────────
       if(r.PageKey && r.HtmlContent && CONTENT.hasOwnProperty(r.PageKey)){
         CONTENT[r.PageKey] = r.HtmlContent;
+        try{ TccI18n.setPageTr(r.PageKey, _pcRowTr(r)); }catch(e){}   // [I18N Phase 4] คำแปลต่อภาษา (ตั้งก่อน apply)
         _pcApplyToPage(r.PageKey, r.HtmlContent);
         _pcDataCache[r.PageKey] = { id:r.Id||r.id, HtmlContent:r.HtmlContent, UpdatedAt:r.UpdatedAt||'' };
       }

@@ -4300,6 +4300,28 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
 })();
 </script>
 
+<script id="tcc-i18n-infopages">
+/* =====================================================================
+   TCC i18n — ชื่อแท็บหน้าใน Information (th en vi kh mm la)
+   key = 'ipg.' + page key ตัวพิมพ์เล็ก  (หน้าที่แอดมินเพิ่มเอง: เพิ่ม key ในนี้ → แปลอัตโนมัติ · ไม่มี key = แสดงชื่อเดิม)
+   ภาษาไทยแสดง label เดิมจากแอดมินเสมอ (ค่า th ในนี้ไม่ถูกใช้แสดง)
+   ===================================================================== */
+(function(){
+  Object.assign(window.TCC_I18N, {
+    'ipg.home':       ['หน้าแรก','Home','Trang chủ','ទំព័រដើម','ပင်မစာမျက်နှာ','ໜ້າຫຼັກ'],
+    'ipg.trade':      ['การเทรด','Trading','Giao dịch','ការជួញដូរ','ကုန်သွယ်ခြင်း','ການຊື້ຂາຍ'],
+    'ipg.services':   ['บริการ','Services','Dịch vụ','សេវាកម្ម','ဝန်ဆောင်မှုများ','ບໍລິການ'],
+    'ipg.about':      ['เกี่ยวกับเรา','About Us','Về chúng tôi','អំពីយើង','ကျွန်ုပ်တို့အကြောင်း','ກ່ຽວກັບພວກເຮົາ'],
+    'ipg.contact':    ['ติดต่อเรา','Contact Us','Liên hệ','ទាក់ទងយើង','ဆက်သွယ်ရန်','ຕິດຕໍ່ພວກເຮົາ'],
+    'ipg.promotion':  ['Promotion','Promotion','Khuyến mãi','ប្រូម៉ូសិន','ပရိုမိုးရှင်း','ໂປຣໂມຊັນ'],
+    'ipg.activity':   ['Activity','Activities','Hoạt động','សកម្មភាព','လှုပ်ရှားမှုများ','ກິດຈະກຳ'],
+    'ipg.news':       ['News','News','Tin tức','ព័ត៌មាន','သတင်းများ','ຂ່າວ'],
+    'ipg.trader_team':['Trader_Team','Trader Team','Đội Trader','ក្រុមអ្នកជួញដូរ','ကုန်သွယ်သူအဖွဲ့','ທີມເທຣດເດີ']
+  });
+  try{ var e=window.tccI18nCheck&&window.tccI18nCheck(); if(e&&e.length&&window.console) console.warn('[TCC i18n infopages]',e); }catch(_){}
+})();
+</script>
+
 <script id="tcc-i18n-payreg">
 /* =====================================================================
    TCC i18n — คำแปลหน้า Payment + Register (th en vi kh mm la)
@@ -5824,6 +5846,21 @@ function _getInfoPages(){
   return INFO_PAGES;
 }
 
+// ชื่อแท็บหน้า Information → ภาษาที่เลือก: ใช้คำแปลใน TCC_I18N คีย์ 'ipg.<key ตัวพิมพ์เล็ก>' (บล็อก tcc-i18n-infopages)
+// ภาษาไทย / ไม่มีคำแปล = ใช้ label เดิมที่แอดมินตั้ง · คง emoji นำหน้าจาก label เดิม
+function _infoPageLabel(pg){
+  const label=String((pg&&pg.label)||'');
+  try{
+    const lg=(typeof window.tccLang==='function')?window.tccLang():'th';
+    if(lg==='th') return label;
+    const k='ipg.'+String((pg.id!=null?pg.id:pg.key)||'').toLowerCase();
+    if(!window.TCC_I18N||!window.TCC_I18N[k]||typeof window.tccT!=='function') return label;
+    const m=label.match(/^(\S+)\s+\S/);
+    const emoji=(m&&!/[\p{L}\p{N}]/u.test(m[1]))?m[1]+' ':'';
+    return emoji+window.tccT(k);
+  }catch(e){ return label; }
+}
+
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 // jsq: escape ค่าที่ฝังใน inline handler แบบ '...' (onclick="fn('${jsq(x)}')") — ทุกอักขระอันตรายกลายเป็น \xNN จึงหลุดออกจากสตริง/อัตริบิวต์ไม่ได้
@@ -5895,7 +5932,7 @@ function renderItemsPage(pageId){
 function buildInformationHTML(){
   const pages = _getInfoPages();
   const tabs=pages.map((pg,i)=>
-    `<button class="page-tab${i===0?' active':''}" data-pg="${pg.id}" onclick="switchInfoPage('${jsq(pg.id)}')">${pg.label}</button>`
+    `<button class="page-tab${i===0?' active':''}" data-pg="${pg.id}" onclick="switchInfoPage('${jsq(pg.id)}')">${_infoPageLabel(pg)}</button>`
   ).join('');
   const subs=pages.map((pg,i)=>
     `<div class="info-subpage${i===0?'':' hidden'}" id="isp_${pg.id}">${renderItemsPage(pg.id)}</div>`
@@ -8522,6 +8559,10 @@ const TCC_CAFE_I18N={scope:'cafe',format:'html',fields:[
 // ─── [I18N Phase 4] เปลี่ยนภาษา → วาดส่วนที่ใช้คำแปลจาก DB ใหม่ ───
 //     (Cafe ถูกรีเฟรชโดยตัวฟัง tcc-lang เดิมผ่าน refreshCafePanel · หน้าเนื้อหาส่วนใหญ่ผ่าน tccPageContent เดิม — ที่นี่เหลือ Items กับ Terms)
 function _tccI18nOnLang(){
+  try{   // ชื่อแท็บหน้า (หน้าแรก/การเทรด/…): เปลี่ยนตามภาษาเสมอ ไม่ขึ้นกับว่ามีคำแปล Items หรือไม่
+    const byId={}; _getInfoPages().forEach(p=>{ byId[p.id]=p; });
+    document.querySelectorAll('#panel_information .page-tab').forEach(b=>{ const p=byId[b.dataset.pg]; if(p) b.textContent=_infoPageLabel(p); });
+  }catch(e){ console.warn('[i18n page tabs]',e); }
   try{   // Information: มีรายการที่มีคำแปล → วาดแผงใหม่ แต่คงแท็บและตำแหน่งเลื่อนเดิม
     if(window.TccI18n&&TccI18n.hasTr(ITEMS)&&document.getElementById('panel_information')){
       const act=document.querySelector('#panel_information .page-tab.active'), pg=act&&act.dataset.pg;

@@ -5335,6 +5335,16 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
     return null;
   }
   window.tccMemberToken=function(){ return readTok('tcc_member','token'); };
+  // [NV6] เซสชันแอดมินใช้งานได้หรือไม่ (มี token ใน sessionStorage และยังไม่หมดอายุ)
+  window.tccAdminSessionOk=function(){ return !!readTok('tcc_session','sessionToken'); };
+  // [NV6] เซสชันแอดมินหมดอายุ/ไม่ถูกต้อง → ล้าง session + กลับหน้าล็อกอิน + แจ้งเตือน (กันแจ้งซ้ำภายใน 3 วิ)
+  var _expAt=0;
+  window.tccAdminExpired=function(msg){
+    if(Date.now()-_expAt<3000) return; _expAt=Date.now();
+    try{ sessionStorage.removeItem('tcc_session'); }catch(e){}
+    try{ if(typeof doLogout==='function') doLogout(); }catch(e){}
+    try{ if(typeof tccNotif==='function') tccNotif('warn','เซสชันหมดอายุ',msg||'กรุณาเข้าสู่ระบบใหม่',9000); }catch(e){}
+  };
   window.fetch=function(input,init){
     var url=typeof input==='string'?input:(input&&input.url)||'';
     if(url.indexOf(BASE)!==0) return callRaw(input,init);
@@ -5343,18 +5353,23 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
     try{
       init=Object.assign({},init||{});
       var h=new Headers(init.headers||(typeof input!=='string'&&input.headers)||{});
+      var isMember=/^\/api\/(me\/|claims\/)/.test(path);
+      var method=String(init.method||(typeof input!=='string'&&input.method)||'GET').toUpperCase();
+      // [NV6] คำขอฝั่งแอดมิน (แก้ข้อมูล / AI แปล / เตรียมคอลัมน์) — ต้องใช้ token แอดมินเสมอ
+      var adminPath=!isMember&&(/^\/api\/admin\//.test(path)||/^\/api\/auth\/admins/.test(path)||(/^\/api\/noco\//.test(path)&&method!=='GET'&&method!=='HEAD'));
       if(!h.has('Authorization')){
-        var isMember=/^\/api\/(me\/|claims\/)/.test(path);
         var t=isMember?readTok('tcc_member','token'):readTok('tcc_session','sessionToken');
         if(t){ h.set('Authorization','Bearer '+t); kind=isMember?'member':'admin'; }
-      }
+        else if(adminPath) kind='admin-noauth';   // [NV6] token หาย/หมดอายุ แต่หน้ายังโชว์ว่าล็อกอิน → เดิมเงียบ ๆ ได้ 401 ซ้ำ ๆ
+      }else if(adminPath) kind='admin';
       init.headers=flatHeaders(h);
     }catch(e){}
     return callRaw(input,init).then(function(r){
       if(r.status===401 && kind && !/^\/api\/auth\/login/.test(path)){
         try{
           if(kind==='member'){ sessionStorage.removeItem('tcc_member'); window.dispatchEvent(new Event('tcc-member-expired')); }
-          else{ sessionStorage.removeItem('tcc_session'); if(typeof doLogout==='function'){ doLogout(); if(typeof tccNotif==='function') tccNotif('warn','เซสชันหมดอายุ','กรุณาเข้าสู่ระบบใหม่'); } }
+          else if(kind==='admin-noauth'){ if(typeof currentAdmin!=='undefined'&&currentAdmin) window.tccAdminExpired(); }
+          else window.tccAdminExpired();
         }catch(e){}
       }
       return r;
@@ -8063,7 +8078,7 @@ async function _savePageNameTr(key,tr){
   if(json.length>40000) throw new Error('ข้อมูลชื่อหน้ายาวเกินลิมิตของเซลล์');
   if(rowId){
     const r=await fetch(`${WORKER_URL}/api/noco/${tid}/${rowId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({HtmlContent:json})});
-    if(!r.ok) throw new Error('PATCH '+r.status);
+    if(!r.ok) throw _bulkHttpErr(r);
   }else{
     const d=await nocoPost(tid,{PageKey:'__pages_i18n__',HtmlContent:json});
     rowId=d&&(d.Id||d.id||d.rowId);
@@ -8435,10 +8450,14 @@ window.TccI18n=(function(){
     t.content.querySelectorAll('*').forEach(n=>{ [...n.attributes].forEach(a=>{ if(/^on/i.test(a.name)||/^\s*javascript:/i.test(a.value)) n.removeAttribute(a.name); }); });
     const d=document.createElement('div'); d.appendChild(t.content); return d.innerHTML;
   }
+  const AUTH_MSG='เซสชันแอดมินหมดอายุหรือไม่ถูกต้อง — กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่ (ถ้ามีข้อความที่แก้ค้างไว้ ให้คัดลอกเก็บก่อน)';
+  const authErr=()=>Object.assign(new Error(AUTH_MSG),{auth:true});
   async function send(cfg,langs,fields){                                            // ส่งแปล 1 คำขอไปที่ worker
+    if(typeof window.tccAdminSessionOk==='function'&&!window.tccAdminSessionOk()) throw authErr();   // [NV6] ไม่มี token → ไม่ยิง (กันเสียเวลา/ได้ Unauthorized เปล่า ๆ)
     const r=await fetch(WORKER_URL+'/api/admin/translate',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({scope:cfg.scope,format:cfg.format||'text',langs,fields})});
     const d=await r.json().catch(()=>({}));
+    if(r.status===401) throw authErr();
     if(!r.ok) throw new Error(d.error||('HTTP '+r.status));
     return d;
   }
@@ -8598,9 +8617,11 @@ window.TccI18n=(function(){
       if(!ok) return;
     }
     st.busy=true; setBusy(id,true);
-    note(id,'','⏳ AI กำลังแปล '+langs.length+' ภาษา… (ประมาณ 5–30 วินาที)');
+    const _t0=Date.now();
+    const _tick=()=>note(id,'','⏳ AI กำลังแปล '+langs.length+' ภาษา… ผ่านไป '+Math.floor((Date.now()-_t0)/1000)+' วินาที (ปกติ 5–30 วินาที · อย่าปิดหน้าต่างนี้)');
+    _tick(); const _timer=setInterval(_tick,1000);
     try{
-      const d=await (cfg.request?cfg.request(langs,fields):send(cfg,langs,fields));
+      let d; try{ d=await (cfg.request?cfg.request(langs,fields):send(cfg,langs,fields)); } finally{ clearInterval(_timer); }
       const tr=d.translations||{}, wn=d.warnings||{}, er=d.errors||{};
       if(cfg.format==='html') Object.keys(tr).forEach(lg=>Object.keys(tr[lg]).forEach(k=>{ tr[lg][k]=stripScripts(tr[lg][k]); }));
       langs.forEach(lg=>{ delete st.warn[lg]; delete st.err[lg]; });
@@ -8714,7 +8735,9 @@ window.TccI18n=(function(){
       Object.keys(S).forEach(id=>paint(id));
       if(typeof tccNotif==='function') tccNotif('success','เตรียมคอลัมน์คำแปลแล้ว',(added?'เพิ่ม '+added+' คอลัมน์ · ':'มีครบแล้ว · ')+'หากบันทึกคำแปลแล้วไม่ติด ให้รอประมาณ 5 นาที',6000);
     }catch(e){
-      if(typeof tccNotif==='function') tccNotif('error','เตรียมคอลัมน์ไม่สำเร็จ',esc(e.message||String(e)),7000);
+      const m0=String(e&&e.message||e), m1=/unauthorized|HTTP 401/i.test(m0)?'เซสชันแอดมินหมดอายุ — กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง':m0;
+      if(/unauthorized|HTTP 401/i.test(m0)&&typeof window.tccAdminExpired==='function') window.tccAdminExpired();
+      if(typeof tccNotif==='function') tccNotif('error','เตรียมคอลัมน์ไม่สำเร็จ',esc(m1),7000);
     }
   }
 
@@ -8761,6 +8784,25 @@ const TCC_BULK_LANGS=['ms','id','zh'];
 const TCC_BULK_NAMES={ms:'Bahasa Melayu',id:'Bahasa Indonesia',zh:'简体中文'};
 let _bulkBusy=false;
 const _bulkSleep=ms=>new Promise(r=>setTimeout(r,ms));
+// [NV6] error จากการบันทึก: 401 = เซสชันหมดอายุ (มี flag auth ให้ยกเลิกงานทั้งชุด) · 403 = ไม่มีสิทธิ์
+function _bulkHttpErr(r){
+  const e=new Error(r.status===401?'เซสชันแอดมินหมดอายุหรือไม่ถูกต้อง — กรุณาเข้าสู่ระบบใหม่':(r.status===403?'ไม่มีสิทธิ์แก้ไขข้อมูล (403)':'PATCH '+r.status));
+  if(r.status===401) e.auth=true; return e;
+}
+// [NV6] ตรวจสิทธิ์ก่อนเริ่ม — เซสชันหมดอายุ/ถูกเพิกถอน → แจ้งชัดเจนและพากลับหน้าล็อกอิน (ไม่เสียโควตา AI เปล่า ๆ)
+async function _bulkAuthCheck(){
+  let s=null; try{ s=JSON.parse(sessionStorage.getItem('tcc_session')||'null'); }catch(e){}
+  if(!s||!s.sessionToken||!s.exp||Date.now()>=s.exp){ window.tccAdminExpired('เซสชันแอดมินหมดอายุ — เข้าสู่ระบบแอดมินใหม่ แล้วกดปุ่ม “🌐 แปล 3 ภาษาใหม่ทั้งหมด” อีกครั้ง'); return false; }
+  _bulkBtnText('⏳ กำลังตรวจสอบสิทธิ์…');
+  let ok=true;
+  try{
+    const r=await fetch(WORKER_URL+'/api/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionToken:s.sessionToken})});
+    if(r.ok){ const d=await r.json().catch(()=>({})); if(d&&d.valid===false) ok=false; }
+  }catch(e){ /* เครือข่ายมีปัญหา → ปล่อยให้ขั้นตอนถัดไปแจ้งผลเอง */ }
+  _bulkBtnText('🌐 แปล 3 ภาษาใหม่ทั้งหมด');
+  if(!ok) window.tccAdminExpired('เซสชันแอดมินถูกยกเลิกหรือหมดอายุ — เข้าสู่ระบบแอดมินใหม่ แล้วกดปุ่ม “🌐 แปล 3 ภาษาใหม่ทั้งหมด” อีกครั้ง');
+  return ok;
+}
 const _bulkHas=(tr,lg,k)=>!!(tr&&tr[lg]&&String(tr[lg][k]==null?'':tr[lg][k]).trim());
 
 // รวมงานที่ต้องแปล (ยังไม่เรียก AI)
@@ -8775,7 +8817,7 @@ function _bulkCollect(langs){
       apply(lg,k,v){ const n=it.n=(it.n&&typeof it.n==='object')?it.n:{}; n[lg]=n[lg]||{}; if(String(n[lg][k]||'').trim()) return false; n[lg][k]=v; return true; },
       async persist(){ const s2=JSON.stringify(it.n); if(s2.length>45000) throw new Error('คำแปลยาวเกินลิมิตของเซลล์');
         const r=await fetch(`${WORKER_URL}/api/noco/${NOCO.tbl.items}/${it._nocoId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({I18n:s2})});
-        if(!r.ok) throw new Error('PATCH '+r.status); }});
+        if(!r.ok) throw _bulkHttpErr(r); }});
   });
   (typeof CAFE_CARDS!=='undefined'?CAFE_CARDS:[]).forEach(c=>{
     if(!c||!c._nocoId) return;
@@ -8786,7 +8828,7 @@ function _bulkCollect(langs){
       apply(lg,k,v){ const n=c.n=(c.n&&typeof c.n==='object')?c.n:{}; n[lg]=n[lg]||{}; if(String(n[lg][k]||'').trim()) return false; n[lg][k]=v; return true; },
       async persist(){ const s2=JSON.stringify(c.n); if(s2.length>45000) throw new Error('คำแปลยาวเกินลิมิตของเซลล์');
         const r=await fetch(`${WORKER_URL}/api/noco/${NOCO.tbl.cafe}/${c._nocoId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({I18n:s2})});
-        if(!r.ok) throw new Error('PATCH '+r.status); }});
+        if(!r.ok) throw _bulkHttpErr(r); }});
   });
   Object.keys(_pcDataCache||{}).forEach(key=>{
     if(key.startsWith('__')) return;
@@ -8807,19 +8849,26 @@ function _bulkCollect(langs){
   return jobs;
 }
 
-async function _bulkSend(cfg,langs,fields,log){        // เจอ "คำขอถี่เกินไป" (429) → รอแล้วลองใหม่
+const _bulkFmt=sec=>{ sec=Math.max(0,Math.floor(sec)); return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0'); };
+
+async function _bulkSend(cfg,langs,fields,ui){        // เจอ "คำขอถี่เกินไป" (429) → รอ (แสดงนับถอยหลัง) แล้วลองใหม่
   for(let a=0;;a++){
     try{ return await TccI18n.send(cfg,langs,fields); }
     catch(e){
       const m=String(e&&e.message||e);
-      if(a<12&&/ถี่เกินไป|429|rate/i.test(m)){ log('⏳ ระบบจำกัดจำนวนคำขอแปล — รอ 60 วินาทีแล้วทำต่ออัตโนมัติ…'); await _bulkSleep(60000); continue; }
+      if(a<12&&/ถี่เกินไป|429|rate/i.test(m)){
+        ui.log('⏳ ระบบจำกัดจำนวนคำขอแปล — รอ 60 วินาทีแล้วทำต่ออัตโนมัติ');
+        const keep=ui.phase;
+        for(let s=60;s>0;s--){ if(ui.stopped) throw new Error('หยุดโดยผู้ใช้'); ui.status('⏳ รอคิวคำขอแปล (ระบบจำกัดจำนวน) — ทำต่ออัตโนมัติใน '+s+' วินาที'); await _bulkSleep(1000); }
+        ui.status(keep); continue;
+      }
       throw e;
     }
   }
 }
 
 // แปลทีละชุด (รวมหลายรายการต่อคำขอ ≤12 ช่อง ≤7,000 ตัวอักษร) แล้วบันทึกทีละรายการ
-async function _bulkRunBatches(list,cfg,ui){
+async function _bulkRunBatches(list,cfg,ui,label){
   const groups={}; list.forEach(j=>{ const gk=j.miss.join(','); (groups[gk]=groups[gk]||[]).push(j); });
   for(const gk of Object.keys(groups)){
     const g=groups[gk], miss=gk.split(','); let i=0;
@@ -8833,20 +8882,26 @@ async function _bulkRunBatches(list,cfg,ui){
         ks.forEach(k=>{ fields['f'+batch.length+'_'+k]=j.th[k]; }); nF+=ks.length; chars+=len; batch.push(j); i++;
       }
       if(!batch.length) continue;
+      ui.status('🤖 AI กำลังแปล '+label+' — รายการที่ '+(ui.done+1)+(batch.length>1?'–'+(ui.done+batch.length):'')+' จาก '+ui.total+' → '+miss.map(l=>TCC_BULK_NAMES[l]||l).join(' / '));
       try{
-        const d=await _bulkSend(cfg,miss,fields,ui.log), tr=d.translations||{}, er=d.errors||{}, wn=d.warnings||{};
+        const d=await _bulkSend(cfg,miss,fields,ui), tr=d.translations||{}, er=d.errors||{}, wn=d.warnings||{};
         for(let bi=0;bi<batch.length;bi++){
+          if(ui.stopped&&bi>0) break;
           const j=batch[bi]; let changed=false;
           miss.forEach(lg=>{ if(er[lg]||!tr[lg]) return;
             Object.keys(j.th).forEach(k=>{ let v=tr[lg]['f'+bi+'_'+k]; if(typeof v!=='string'||!v.trim()) return;
               if(cfg.format==='html') v=TccI18n.stripScripts(v); if(j.apply(lg,k,v.trim())) changed=true; }); });
-          if(changed){ try{ await j.persist(); ui.saved++; ui.log('✅ '+j.name); }catch(e){ ui.fail++; ui.log('❌ '+j.name+': บันทึกไม่สำเร็จ — '+(e&&e.message||e)); } }
+          if(changed){ ui.status('💾 กำลังบันทึก '+j.name+' ลงชีต…'); try{ await j.persist(); ui.saved++; ui.log('✅ '+j.name); }catch(e){ if(e&&e.auth) throw e; ui.fail++; ui.log('❌ '+j.name+': บันทึกไม่สำเร็จ — '+(e&&e.message||e)); } }
           else{ ui.fail++; ui.log('⚠️ '+j.name+': ไม่ได้คำแปล'); }
           ui.done++; ui.tick();
         }
-        Object.keys(er).forEach(lg=>ui.log('⚠️ '+(TCC_BULK_NAMES[lg]||lg)+': '+er[lg]+' (รันปุ่มนี้ซ้ำเพื่อแปลเฉพาะที่ยังขาด)'));
+        Object.keys(er).forEach(lg=>ui.log('⚠️ '+(TCC_BULK_NAMES[lg]||lg)+': '+er[lg]+' (กดปุ่มนี้ซ้ำเพื่อแปลเฉพาะที่ยังขาด)'));
         const wl=Object.keys(wn).map(lg=>(TCC_BULK_NAMES[lg]||lg)); if(wl.length) ui.log('ℹ️ ควรตรวจคำแปลภายหลัง ('+wl.join(', ')+') — ตัวเลข/ลิงก์/โครงสร้างอาจไม่ตรงต้นฉบับ');
-      }catch(e){ batch.forEach(()=>{ ui.done++; ui.fail++; }); ui.tick(); ui.log('❌ แปลชุดนี้ไม่สำเร็จ ('+batch.length+' รายการ): '+(e&&e.message||e)); }
+      }catch(e){
+        if(e&&e.auth){ ui.authFail=true; ui.stopped=true; ui.log('🔒 '+e.message); return; }   // [NV6]
+        if(ui.stopped) return;
+        batch.forEach(()=>{ ui.done++; ui.fail++; }); ui.tick(); ui.log('❌ แปลชุดนี้ไม่สำเร็จ ('+batch.length+' รายการ): '+(e&&e.message||e));
+      }
     }
   }
 }
@@ -8858,9 +8913,10 @@ async function _bulkRunPages(list,ui){
     if(ui.stopped) return;
     try{
       const chunks=_pcChunkHtml(String(j.c.HtmlContent),6000), parts={}, errs={};
-      for(const ch of chunks){
+      for(let ci=0;ci<chunks.length;ci++){
         if(ui.stopped) return;
-        const d=await _bulkSend({scope:'pagecontent',format:'html'},j.miss,{Html:ch},ui.log);
+        ui.status('🤖 AI กำลังแปล '+j.name+(chunks.length>1?' (ส่วน '+(ci+1)+'/'+chunks.length+')':'')+' — หน้าที่ '+(ui.done+1)+' จาก '+ui.total+' → '+j.miss.map(l=>TCC_BULK_NAMES[l]||l).join(' / '));
+        const d=await _bulkSend({scope:'pagecontent',format:'html'},j.miss,{Html:chunks[ci]},ui);
         j.miss.forEach(lg=>{ if(d.errors&&d.errors[lg]) errs[lg]=d.errors[lg]; else if(d.translations&&d.translations[lg]) (parts[lg]=parts[lg]||[]).push(d.translations[lg].Html||''); });
       }
       const body={}, expect={};
@@ -8871,38 +8927,65 @@ async function _bulkRunPages(list,ui){
       Object.keys(errs).forEach(lg=>ui.log('⚠️ '+j.name+' ('+(TCC_BULK_NAMES[lg]||lg)+'): '+errs[lg]));
       if(!Object.keys(body).length){ ui.fail++; ui.log('⚠️ '+j.name+': ไม่ได้คำแปล'); }
       else{
+        ui.status('💾 กำลังบันทึก '+j.name+' ลงชีต…');
         const r=await fetch(`${WORKER_URL}/api/noco/${NOCO.tbl.pagecontent}/${j.c.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-        if(!r.ok) throw new Error('PATCH '+r.status);
+        if(!r.ok) throw _bulkHttpErr(r);
         j.c.tr=j.c.tr||{}; Object.keys(body).forEach(k=>{ j.c.tr[k.replace('HtmlContent_','')]={Html:body[k]}; });
         try{ if(typeof TccI18n.setPageTr==='function') TccI18n.setPageTr(j.key,j.c.tr); }catch(e){}
         ui.saved++; ui.log('✅ '+j.name);
         if(!verified){ verified=true; const v=await TccI18n.verifyCols('pagecontent',NOCO.tbl.pagecontent,j.c.id,expect); if(v!==true) ui.log(String(v).replace(/<[^>]*>/g,'')); }
       }
-    }catch(e){ ui.fail++; ui.log('❌ '+j.name+': '+(e&&e.message||e)); }
+    }catch(e){
+      if(e&&e.auth){ ui.authFail=true; ui.stopped=true; ui.log('🔒 '+e.message); return; }   // [NV6]
+      if(ui.stopped) return; ui.fail++; ui.log('❌ '+j.name+': '+(e&&e.message||e)); }
     ui.done++; ui.tick();
   }
 }
 
+// ── หน้าต่างสถานะ: แถบความคืบหน้า + สถานะงานปัจจุบัน (หมุน + นับวินาที) + บันทึก + ย่อเป็นปุ่มลอย ──
+function _bulkBtnText(t){ document.querySelectorAll('button[onclick="tccBulkTranslateNew()"]').forEach(b=>{ b.textContent=t; }); }
+function _bulkReopen(){ const m=document.getElementById('tcc-bulk-modal'); if(m) m.style.display='flex'; const p=document.getElementById('tcc-bulk-pill'); if(p) p.style.display='none'; }
 function _bulkUi(total){
-  const old=document.getElementById('tcc-bulk-modal'); if(old) old.remove();
+  if(!document.getElementById('tcc-bulk-css')){
+    const st=document.createElement('style'); st.id='tcc-bulk-css';
+    st.textContent='@keyframes tccSpin{to{transform:rotate(360deg)}}.tcc-bulk-spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(240,185,11,.3);border-top-color:var(--gold);border-radius:50%;animation:tccSpin .8s linear infinite;vertical-align:-2px;margin-right:7px;}';
+    document.head.appendChild(st);
+  }
+  ['tcc-bulk-modal','tcc-bulk-pill'].forEach(id=>{ const o=document.getElementById(id); if(o) o.remove(); });
   const m=document.createElement('div'); m.id='tcc-bulk-modal';
   m.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px;';
-  m.innerHTML='<div style="background:#131820;border:1px solid var(--border);border-radius:14px;width:min(580px,100%);max-height:86vh;display:flex;flex-direction:column;padding:16px;">'
+  m.innerHTML='<div style="background:#131820;border:1px solid var(--border);border-radius:14px;width:min(600px,100%);max-height:88vh;display:flex;flex-direction:column;padding:16px;">'
     +'<div style="font-weight:700;color:var(--gold);margin-bottom:4px;">🌐 AI แปล 3 ภาษาใหม่ทั้งหมด</div>'
-    +'<div style="font-size:.74rem;color:var(--text-dim);margin-bottom:10px;">Bahasa Melayu · Bahasa Indonesia · 简体中文 — แปลเฉพาะภาษาที่ยังว่าง ไม่ทับคำแปลเดิม · กรุณาอย่าปิดหน้านี้จนกว่าจะเสร็จ</div>'
+    +'<div style="font-size:.74rem;color:var(--text-dim);margin-bottom:10px;">Bahasa Melayu · Bahasa Indonesia · 简体中文 — แปลเฉพาะภาษาที่ยังว่าง ไม่ทับคำแปลเดิม · กด “ย่อ” เพื่อทำงานอื่นระหว่างรอได้ (อย่ารีเฟรชหรือปิดหน้านี้)</div>'
+    +'<div id="tcc-bulk-status" style="font-size:.84rem;font-weight:600;color:var(--gold);background:rgba(240,185,11,.08);border:1px solid rgba(240,185,11,.3);border-radius:8px;padding:9px 11px;margin-bottom:10px;line-height:1.5;"></div>'
     +'<div style="height:8px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:6px;"><div id="tcc-bulk-fill" style="height:100%;width:0;background:var(--gold);transition:width .3s;"></div></div>'
-    +'<div id="tcc-bulk-cnt" style="font-size:.76rem;color:var(--text);margin-bottom:8px;">0 / '+total+'</div>'
-    +'<div id="tcc-bulk-log" style="flex:1;min-height:120px;overflow:auto;font-size:.74rem;line-height:1.65;color:var(--text-dim);white-space:pre-wrap;border:1px solid var(--border);border-radius:8px;padding:8px;"></div>'
-    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;"><button class="btn btn-outline btn-sm" id="tcc-bulk-stop">⏹ หยุด</button><button class="btn btn-gold btn-sm" id="tcc-bulk-close" disabled>ปิด</button></div></div>';
+    +'<div id="tcc-bulk-cnt" style="font-size:.76rem;color:var(--text);margin-bottom:8px;"></div>'
+    +'<div id="tcc-bulk-log" style="flex:1;min-height:130px;overflow:auto;font-size:.73rem;line-height:1.65;color:var(--text-dim);white-space:pre-wrap;border:1px solid var(--border);border-radius:8px;padding:8px;"></div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;"><button class="btn btn-outline btn-sm" id="tcc-bulk-min">➖ ย่อ</button><button class="btn btn-outline btn-sm" id="tcc-bulk-stop">⏹ หยุด</button><button class="btn btn-gold btn-sm" id="tcc-bulk-close" disabled>ปิด</button></div></div>';
   document.body.appendChild(m);
-  const ui={stopped:false,done:0,saved:0,fail:0,total};
-  const logEl=m.querySelector('#tcc-bulk-log');
-  ui.log=t=>{ logEl.textContent+=(logEl.textContent?'\n':'')+t; logEl.scrollTop=logEl.scrollHeight; };
-  ui.tick=()=>{ m.querySelector('#tcc-bulk-fill').style.width=Math.min(100,Math.round(ui.done/Math.max(1,total)*100))+'%'; m.querySelector('#tcc-bulk-cnt').textContent=ui.done+' / '+total+' · บันทึกแล้ว '+ui.saved+' · ไม่สำเร็จ '+ui.fail; };
-  m.querySelector('#tcc-bulk-stop').onclick=()=>{ ui.stopped=true; ui.log('⏹ ขอหยุด — จะหยุดหลังคำขอที่กำลังทำอยู่เสร็จ'); };
-  m.querySelector('#tcc-bulk-close').onclick=()=>m.remove();
-  ui.finish=()=>{ m.querySelector('#tcc-bulk-stop').disabled=true; m.querySelector('#tcc-bulk-close').disabled=false; };
-  return ui;
+  const pill=document.createElement('div'); pill.id='tcc-bulk-pill';
+  pill.style.cssText='position:fixed;right:14px;bottom:14px;z-index:9001;display:none;cursor:pointer;background:#131820;border:1px solid var(--gold);color:var(--gold);border-radius:20px;padding:8px 14px;font-size:.78rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.6);';
+  pill.onclick=_bulkReopen; document.body.appendChild(pill);
+
+  const ui={stopped:false,finished:false,done:0,saved:0,fail:0,total,phase:'',t0:Date.now(),stepT0:Date.now(),timer:null};
+  const $m=sel=>m.querySelector(sel), logEl=$m('#tcc-bulk-log'), stEl=$m('#tcc-bulk-status');
+  const hms=()=>new Date().toLocaleTimeString('th-TH',{hour12:false});
+  ui.log=t=>{ logEl.textContent+=(logEl.textContent?'\n':'')+'['+hms()+'] '+t; logEl.scrollTop=logEl.scrollHeight; };
+  ui.render=()=>{
+    const el=Math.floor((Date.now()-ui.t0)/1000), step=Math.floor((Date.now()-ui.stepT0)/1000);
+    stEl.innerHTML=(ui.finished?'':'<span class="tcc-bulk-spin"></span>')+(ui.phase||'')+(ui.finished?'':' <span style="opacity:.65;font-weight:400;">· ขั้นนี้ '+step+' วิ</span>');
+    $m('#tcc-bulk-cnt').textContent=ui.done+' / '+total+' รายการ · บันทึกแล้ว '+ui.saved+' · ไม่สำเร็จ '+ui.fail+' · ใช้เวลา '+_bulkFmt(el);
+    pill.textContent=ui.finished?'✅ แปลเสร็จแล้ว — บันทึก '+ui.saved+' (กดดูผล)':'🌐 กำลังแปล '+ui.done+'/'+total+' · '+_bulkFmt(el)+' (กดดูสถานะ)';
+    if(!ui.finished) _bulkBtnText('⏳ กำลังแปล '+ui.done+'/'+total+'…');
+  };
+  ui.status=(t,keep)=>{ ui.phase=t; if(!keep) ui.stepT0=Date.now(); ui.render(); };
+  ui.tick=()=>{ $m('#tcc-bulk-fill').style.width=Math.min(100,Math.round(ui.done/Math.max(1,total)*100))+'%'; ui.render(); };
+  ui.timer=setInterval(ui.render,1000);
+  $m('#tcc-bulk-min').onclick=()=>{ m.style.display='none'; pill.style.display='block'; };
+  $m('#tcc-bulk-stop').onclick=()=>{ ui.stopped=true; ui.status('⏹ กำลังหยุด… (หลังคำขอที่ทำอยู่เสร็จ)'); ui.log('⏹ ขอหยุด'); };
+  $m('#tcc-bulk-close').onclick=()=>{ m.remove(); pill.remove(); };
+  ui.finish=txt=>{ ui.finished=true; clearInterval(ui.timer); ui.phase=txt; $m('#tcc-bulk-stop').disabled=true; $m('#tcc-bulk-min').disabled=true; $m('#tcc-bulk-close').disabled=false; $m('#tcc-bulk-fill').style.width=(ui.stopped?$m('#tcc-bulk-fill').style.width:'100%'); ui.render(); _bulkBtnText('🌐 แปล 3 ภาษาใหม่ทั้งหมด'); if(pill.style.display==='block'){ pill.style.borderColor='#22c55e'; pill.style.color='#22c55e'; } };
+  ui.render(); return ui;
 }
 
 // ตรวจว่าชีตมีคอลัมน์เก็บคำแปลแล้ว (ไม่งั้นแปลไปก็ไม่ถูกเก็บ → เสียโควตา AI เปล่า)
@@ -8916,32 +8999,68 @@ async function _bulkMissingCols(jobs){
   return miss;
 }
 
+// เตรียมคอลัมน์ (ถ้ายังไม่มี) แล้วรอแคชหัวตารางของ worker (~5 นาที) พร้อมแสดงนับถอยหลัง · เริ่มแปลต่อให้อัตโนมัติเมื่อพร้อม
+async function _bulkEnsureCols(jobs,ui){
+  ui.status('🔎 กำลังตรวจสอบคอลัมน์คำแปลในชีต…');
+  let miss=await _bulkMissingCols(jobs);
+  if(!miss.length){ ui.log('✅ ชีตพร้อม — เริ่มแปล'); return true; }
+  ui.log('🛠️ ยังไม่เห็นคอลัมน์: '+miss.join(', '));
+  ui.status('🛠️ กำลังเพิ่มคอลัมน์คำแปลในชีต…');
+  try{
+    const r=await fetch(WORKER_URL+'/api/admin/i18n-setup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({apply:true})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(d.error||('HTTP '+r.status));
+    const bad=(d.sheets||[]).filter(s=>s.error); if(bad.length) throw new Error(bad.map(s=>s.sheet+': '+s.error).join(' | '));
+    const added=(d.sheets||[]).reduce((n,s)=>n+((s.added||[]).length),0);
+    ui.log(added?'✅ เพิ่ม '+added+' คอลัมน์ในชีตแล้ว':'ℹ️ ในชีตมีคอลัมน์ครบแล้ว — รอระบบอ่านหัวตารางใหม่');
+  }catch(e){
+    const m0=String(e&&e.message||e);
+    if(/unauthorized|HTTP 401/i.test(m0)){ ui.authFail=true; ui.log('🔒 เซสชันแอดมินหมดอายุหรือไม่ถูกต้อง — เตรียมคอลัมน์ไม่ได้'); }
+    else ui.log('❌ เตรียมคอลัมน์ไม่สำเร็จ: '+m0);
+    return false;
+  }
+  const t0=Date.now(), maxMs=7*60*1000; let lastPoll=0;
+  while(Date.now()-t0<maxMs){
+    if(ui.stopped) return false;
+    ui.status('⏳ รอระบบอัปเดตแคชหัวตาราง (ปกติประมาณ 5 นาที) — จะเริ่มแปลให้อัตโนมัติ · เหลือไม่เกิน '+_bulkFmt((maxMs-(Date.now()-t0))/1000),true);
+    if(Date.now()-lastPoll>=20000){
+      lastPoll=Date.now(); miss=await _bulkMissingCols(jobs);
+      if(!miss.length){ ui.log('✅ ระบบเห็นคอลัมน์ใหม่แล้ว — เริ่มแปล'); return true; }
+    }
+    await _bulkSleep(1000);
+  }
+  ui.log('⚠️ รอเกิน 7 นาทีแล้วระบบยังไม่เห็นคอลัมน์ ('+miss.join(', ')+') — ลองกดปุ่มนี้อีกครั้งภายหลัง');
+  return false;
+}
+
+window.addEventListener('beforeunload',e=>{ if(_bulkBusy){ e.preventDefault(); e.returnValue=''; } });
+
 async function tccBulkTranslateNew(){
-  if(_bulkBusy) return;
+  if(_bulkBusy){ _bulkReopen(); return; }          // กำลังแปลอยู่ → เปิดหน้าต่างสถานะกลับมา
   const langs=TCC_BULK_LANGS.slice();
   const jobs=_bulkCollect(langs);
   const total=jobs.items.length+jobs.cafe.length+jobs.pages.length+jobs.names.length;
   if(!total){ showToast('✅ ทุกรายการมีคำแปล ms / id / zh ครบแล้ว'); return; }
+  if(!(await _bulkAuthCheck())) return;            // [NV6] เซสชันแอดมินต้องยังใช้ได้ก่อนเริ่ม
   const ok=await tccConfirm('🌐','แปล 3 ภาษาใหม่ทั้งหมด?',
     'พบรายการที่ยังไม่มีคำแปล — Items '+jobs.items.length+' · Cafe '+jobs.cafe.length+' · เนื้อหาหน้า '+jobs.pages.length+' · ชื่อหน้า '+jobs.names.length
-    +' · AI จะแปลเฉพาะภาษาที่ยังว่าง (ไม่ทับคำแปลเดิม) แล้วบันทึกลงชีตให้อัตโนมัติ ใช้เวลาประมาณ 2–10 นาที','เริ่มแปล',false);
+    +' · AI จะแปลเฉพาะภาษาที่ยังว่าง (ไม่ทับคำแปลเดิม) แล้วบันทึกลงชีตให้อัตโนมัติ ถ้าชีตยังไม่มีคอลัมน์ ระบบจะเพิ่มให้และรอแคชประมาณ 5 นาทีก่อนเริ่มแปล · ใช้เวลารวมประมาณ 3–15 นาที','เริ่มแปล',false);
   if(!ok) return;
-  const miss=await _bulkMissingCols(jobs);
-  if(miss.length){
-    const go=await tccConfirm('🛠️','ชีตยังไม่มีคอลัมน์เก็บคำแปล','ต้องเตรียมคอลัมน์ก่อน: '+miss.join(', ')+' — กด "เตรียมคอลัมน์" แล้วรอประมาณ 5 นาที จากนั้นกดปุ่มแปลอีกครั้ง','เตรียมคอลัมน์',false);
-    if(go) await TccI18n.setupColumns();
-    return;
-  }
   _bulkBusy=true;
   const ui=_bulkUi(total);
+  ui.log('เริ่มงาน: Items '+jobs.items.length+' · Cafe '+jobs.cafe.length+' · เนื้อหาหน้า '+jobs.pages.length+' · ชื่อหน้า '+jobs.names.length);
   try{
-    if(jobs.items.length){ ui.log('— Items ('+jobs.items.length+')'); await _bulkRunBatches(jobs.items,{scope:'items',format:'text'},ui); }
-    if(jobs.cafe.length&&!ui.stopped){ ui.log('— Cafe Cards ('+jobs.cafe.length+')'); await _bulkRunBatches(jobs.cafe,{scope:'cafe',format:'html'},ui); }
-    if(jobs.pages.length&&!ui.stopped){ ui.log('— เนื้อหาหน้า ('+jobs.pages.length+')'); await _bulkRunPages(jobs.pages,ui); }
-    if(jobs.names.length&&!ui.stopped){ ui.log('— ชื่อหน้า ('+jobs.names.length+')'); await _bulkRunBatches(jobs.names,{scope:'items',format:'text'},ui); }
+    if(await _bulkEnsureCols(jobs,ui)){
+      if(jobs.items.length){ ui.log('— Items ('+jobs.items.length+')'); await _bulkRunBatches(jobs.items,{scope:'items',format:'text'},ui,'Items'); }
+      if(jobs.cafe.length&&!ui.stopped){ ui.log('— Cafe Cards ('+jobs.cafe.length+')'); await _bulkRunBatches(jobs.cafe,{scope:'cafe',format:'html'},ui,'Cafe Cards'); }
+      if(jobs.pages.length&&!ui.stopped){ ui.log('— เนื้อหาหน้า ('+jobs.pages.length+')'); await _bulkRunPages(jobs.pages,ui); }
+      if(jobs.names.length&&!ui.stopped){ ui.log('— ชื่อหน้า ('+jobs.names.length+')'); await _bulkRunBatches(jobs.names,{scope:'items',format:'text'},ui,'ชื่อหน้า'); }
+    }
   }catch(e){ ui.log('❌ '+(e&&e.message||e)); }
-  ui.log((ui.stopped?'⏹ หยุดแล้ว':'🏁 เสร็จสิ้น')+' — บันทึก '+ui.saved+' · ไม่สำเร็จ '+ui.fail+(ui.fail?' · กดปุ่มนี้ซ้ำเพื่อแปลเฉพาะรายการที่ยังขาด':''));
-  ui.finish(); _bulkBusy=false;
+  const summary0=(ui.stopped?'⏹ หยุดแล้ว':(ui.done>=total?'🏁 เสร็จสิ้น':'⚠️ จบการทำงานโดยยังไม่ได้แปล'))+' — บันทึก '+ui.saved+' · ไม่สำเร็จ '+ui.fail+(ui.fail||ui.done<total?' · กดปุ่ม “🌐 แปล 3 ภาษาใหม่ทั้งหมด” ซ้ำเพื่อทำเฉพาะรายการที่ยังขาด':'');
+  const summary=ui.authFail?'🔒 หยุดเพราะเซสชันแอดมินหมดอายุ — เข้าสู่ระบบแอดมินใหม่ แล้วกดปุ่ม “🌐 แปล 3 ภาษาใหม่ทั้งหมด” อีกครั้ง (รายการที่บันทึกแล้วจะไม่ถูกแปลซ้ำ) · บันทึก '+ui.saved+' · ไม่สำเร็จ '+ui.fail:summary0;
+  ui.log(summary); ui.finish(summary); _bulkBusy=false;
+  if(ui.authFail){ try{ window.tccAdminExpired(); }catch(e){} }
   try{ if(NOCO.tbl.items) _cacheBust(NOCO.tbl.items); if(NOCO.tbl.cafe) _cacheBust(NOCO.tbl.cafe); if(NOCO.tbl.pagecontent) _cacheBust(NOCO.tbl.pagecontent); }catch(e){}
   try{ if(typeof loadContentItems==='function'&&document.getElementById('cn-sub-items')) loadContentItems(); }catch(e){}
   try{ if(typeof refreshCafePanel==='function') refreshCafePanel(); }catch(e){}

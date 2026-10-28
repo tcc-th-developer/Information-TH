@@ -7490,6 +7490,7 @@ function buildSystemPanel(){
           <div class="card-icon">📋</div><span class="card-title">จัดการเนื้อหา (Information Items)</span>
           <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;">
             <button class="btn btn-outline btn-sm" onclick="seedItemsToNoco()" title="อัปโหลด ITEMS ทั้งหมดขึ้น NocoDB">☁️ Seed NocoDB</button>
+            <button class="btn btn-outline btn-sm" onclick="tccBulkTranslateNew()" title="AI แปล Bahasa Melayu / Bahasa Indonesia / 简体中文 ให้ทุกรายการที่ยังไม่มีคำแปล (Items · Cafe · เนื้อหาหน้า · ชื่อหน้า) — ไม่ทับคำแปลเดิม">🌐 แปล 3 ภาษาใหม่ทั้งหมด</button>
             <button class="btn btn-outline btn-sm" onclick="loadContentItems()">🔄 รีเฟรช</button>
             <button class="btn btn-gold btn-sm" onclick="openAddContentItemModal()">➕ เพิ่ม Item</button>
           </div>
@@ -8455,6 +8456,7 @@ window.TccI18n=(function(){
 .tcc-i18n-tab.ok i{background:#22c55e;}.tcc-i18n-tab.warn i{background:#f0b90b;}.tcc-i18n-tab.err i{background:#f6465d;}
 .tcc-i18n-ai{padding:6px 12px;background:rgba(240,185,11,.14);border:1px solid rgba(240,185,11,.45);border-radius:8px;color:var(--gold);cursor:pointer;font-size:.76rem;font-weight:600;font-family:inherit;white-space:nowrap;}
 .tcc-i18n-ai:disabled,.tcc-i18n-re:disabled{opacity:.5;cursor:not-allowed;}
+.tcc-i18n-new{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.45);color:#22c55e;}
 .tcc-i18n-note{font-size:.74rem;color:var(--text-dim);margin-top:8px;line-height:1.5;}
 .tcc-i18n-note.er{color:#f87171;}.tcc-i18n-note.ok{color:#22c55e;}
 .tcc-i18n-note button,.tcc-i18n-colwarn button{margin-left:6px;padding:2px 10px;background:rgba(240,185,11,.14);border:1px solid rgba(240,185,11,.4);border-radius:6px;color:var(--gold);cursor:pointer;font-size:.72rem;font-family:inherit;}
@@ -8486,9 +8488,9 @@ window.TccI18n=(function(){
     return v||thValue;
   }
   function badge(n,inline){
-    const c=Object.keys(parse(n)).length;
-    const col=c>=5?'#22c55e':(c>0?'var(--gold)':'var(--text-dim)');
-    return `<span title="คำแปล ${c}/5 ภาษา" style="font-size:.64rem;color:${col};${inline?'margin-left:6px;':'display:block;margin-top:2px;'}">🌐${inline?' '+c+'/5':c}</span>`;
+    const c=Object.keys(parse(n)).length, T=LANGS.length;
+    const col=c>=T?'#22c55e':(c>0?'var(--gold)':'var(--text-dim)');
+    return `<span title="คำแปล ${c}/${T} ภาษา" style="font-size:.64rem;color:${col};${inline?'margin-left:6px;':'display:block;margin-top:2px;'}">🌐${inline?' '+c+'/'+T:c}</span>`;
   }
   // จำว่าชีตมีคอลัมน์ I18n หรือยัง จากแถวที่โหลดมา (worker คืนคีย์เฉพาะคอลัมน์ที่มีในชีต)
   function noteRow(scope,row,col){ if(row&&typeof row==='object') colOk[scope]=((col||'I18n') in row); }
@@ -8504,6 +8506,7 @@ window.TccI18n=(function(){
       <div class="tcc-i18n-bar">
         <div class="tcc-i18n-tabs">${tabs}</div>
         <button type="button" class="tcc-i18n-ai" data-i18n-btn="${id}" id="${id}-ai" onclick="TccI18n.translate('${id}')">🤖 ให้ AI แปลจากภาษาไทย</button>
+        <button type="button" class="tcc-i18n-ai tcc-i18n-new" data-i18n-btn="${id}" id="${id}-ai-new" title="แปลเฉพาะภาษาที่ยังไม่มีคำแปล (เช่น 3 ภาษาใหม่) — ไม่ทับของเดิม" onclick="TccI18n.translateMissing('${id}')">🆕 แปลเฉพาะภาษาที่ยังว่าง</button>
       </div>
       <div class="tcc-i18n-colwarn" id="${id}-colwarn" style="display:none;"></div>
       <div class="tcc-i18n-note" id="${id}-note">กรอกภาษาไทยก่อน แล้วกด "ให้ AI แปล" — ตรวจ/แก้คำแปลในแต่ละแท็บได้ก่อนบันทึก · ภาษาที่ไม่มีคำแปลจะแสดงเป็นภาษาไทย</div>
@@ -8619,6 +8622,21 @@ window.TccI18n=(function(){
     }
   }
 
+  // ── แปลเฉพาะภาษาที่ยังว่าง (เช่น 3 ภาษาใหม่ ms/id/zh) — ไม่แตะภาษาที่มีคำแปลแล้ว ──
+  function missingLangs(id){
+    const st=S[id]; if(!st) return [];
+    const need=st.cfg.fields.filter(f=>visible(f)&&thai(f).trim());
+    return LANGS.map(l=>l.k).filter(lg=>need.some(f=>{ const el=$(fid(id,lg,f.key)); return !(el&&el.value.trim()); }));
+  }
+  function translateMissing(id){
+    const st=S[id]; if(!st||st.busy||!$(id+'-box')) return;
+    const need=st.cfg.fields.filter(f=>visible(f)&&thai(f).trim());
+    if(!need.length) return translate(id);                       // ยังไม่มีภาษาไทย → ให้ translate() แจ้งเตือนตามปกติ
+    const miss=missingLangs(id);
+    if(!miss.length){ note(id,'ok','✅ ทุกภาษามีคำแปลครบแล้ว — ไม่มีภาษาที่ต้องแปลเพิ่ม'); return; }
+    return translate(id,miss);
+  }
+
   // ── รวมค่าที่กรอกในแท็บภาษาอื่น → object / JSON สำหรับคอลัมน์ I18n ──
   function collect(id){
     const st=S[id]; if(!st||!$(id+'-box')) return null;     // ฟอร์มไม่ได้เปิดอยู่ → null = ไม่แตะคอลัมน์ I18n
@@ -8721,7 +8739,7 @@ window.TccI18n=(function(){
   }
   const hasTr=list=>!!(list||[]).some(x=>x&&x.n&&Object.keys(x.n).length);
 
-  return {LANGS,build,mount,tab,touch,refresh,translate,collect,serialize,parse,pick,badge,noteRow,verify,verifyCols,setupColumns,send,checkStale,isStale,setPageTr,pageTr,item,card,hasTr};
+  return {LANGS,build,mount,tab,touch,refresh,translate,translateMissing,missingLangs,stripScripts,collect,serialize,parse,pick,badge,noteRow,verify,verifyCols,setupColumns,send,checkStale,isStale,setPageTr,pageTr,item,card,hasTr};
 })();
 
 // ─── ค่ากำหนดฟอร์มที่ใช้คอมโพเนนต์ ───
@@ -8733,6 +8751,202 @@ const TCC_CAFE_I18N={scope:'cafe',format:'html',fields:[
   {key:'Title',  label:'ชื่อ Card (Title)',  el:'cm-title',  kind:'input'},
   {key:'Content',label:'เนื้อหา (Content)',  el:'cm-content',kind:'textarea',rows:5,show:()=>((document.getElementById('cm-type')||{}).value!=='video')}
 ]};
+
+// ═══════════════════════════════════════════════════════════════════
+//  🌐 [I18N Bulk] แปลภาษาที่ยังว่าง (ค่าเริ่มต้น ms / id / zh) ให้ "ทุกรายการที่มีอยู่แล้ว" ในครั้งเดียว
+//  ครอบคลุม: Items · Cafe Cards · เนื้อหาหน้า (PageContent) · ชื่อหน้า — แปลเฉพาะภาษาที่ยังว่าง ไม่ทับคำแปลเดิม
+//  ปุ่ม: หน้าแอดมิน Information Items → "🌐 แปล 3 ภาษาใหม่ทั้งหมด" · ใช้ worker เดิม POST /api/admin/translate
+// ═══════════════════════════════════════════════════════════════════
+const TCC_BULK_LANGS=['ms','id','zh'];
+const TCC_BULK_NAMES={ms:'Bahasa Melayu',id:'Bahasa Indonesia',zh:'简体中文'};
+let _bulkBusy=false;
+const _bulkSleep=ms=>new Promise(r=>setTimeout(r,ms));
+const _bulkHas=(tr,lg,k)=>!!(tr&&tr[lg]&&String(tr[lg][k]==null?'':tr[lg][k]).trim());
+
+// รวมงานที่ต้องแปล (ยังไม่เรียก AI)
+function _bulkCollect(langs){
+  const jobs={items:[],cafe:[],pages:[],names:[]};
+  (typeof ITEMS!=='undefined'?ITEMS:[]).forEach(it=>{
+    if(!it||!it._nocoId) return;
+    const th={}; const t=String(it.t||'').trim(), s=String(it.s||'').trim(); if(t) th.Title=t; if(s) th.Subtitle=s;
+    const keys=Object.keys(th); if(!keys.length) return;
+    const miss=langs.filter(lg=>keys.some(k=>!_bulkHas(it.n,lg,k))); if(!miss.length) return;
+    jobs.items.push({name:'Item "'+t.slice(0,30)+'"',th,miss,
+      apply(lg,k,v){ const n=it.n=(it.n&&typeof it.n==='object')?it.n:{}; n[lg]=n[lg]||{}; if(String(n[lg][k]||'').trim()) return false; n[lg][k]=v; return true; },
+      async persist(){ const s2=JSON.stringify(it.n); if(s2.length>45000) throw new Error('คำแปลยาวเกินลิมิตของเซลล์');
+        const r=await fetch(`${WORKER_URL}/api/noco/${NOCO.tbl.items}/${it._nocoId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({I18n:s2})});
+        if(!r.ok) throw new Error('PATCH '+r.status); }});
+  });
+  (typeof CAFE_CARDS!=='undefined'?CAFE_CARDS:[]).forEach(c=>{
+    if(!c||!c._nocoId) return;
+    const th={}; const t=String(c.title||'').trim(), b=String(c.content||'').trim(); if(t) th.Title=t; if(b&&c.type!=='video') th.Content=b;
+    const keys=Object.keys(th); if(!keys.length) return;
+    const miss=langs.filter(lg=>keys.some(k=>!_bulkHas(c.n,lg,k))); if(!miss.length) return;
+    jobs.cafe.push({name:'Cafe "'+t.slice(0,30)+'"',th,miss,
+      apply(lg,k,v){ const n=c.n=(c.n&&typeof c.n==='object')?c.n:{}; n[lg]=n[lg]||{}; if(String(n[lg][k]||'').trim()) return false; n[lg][k]=v; return true; },
+      async persist(){ const s2=JSON.stringify(c.n); if(s2.length>45000) throw new Error('คำแปลยาวเกินลิมิตของเซลล์');
+        const r=await fetch(`${WORKER_URL}/api/noco/${NOCO.tbl.cafe}/${c._nocoId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({I18n:s2})});
+        if(!r.ok) throw new Error('PATCH '+r.status); }});
+  });
+  Object.keys(_pcDataCache||{}).forEach(key=>{
+    if(key.startsWith('__')) return;
+    const c=_pcDataCache[key]; if(!c||!c.id||!String(c.HtmlContent||'').trim()) return;
+    const miss=langs.filter(lg=>!(c.tr&&c.tr[lg]&&String(c.tr[lg].Html||'').trim())); if(!miss.length) return;
+    jobs.pages.push({key,c,name:'หน้า '+key,miss});
+  });
+  const IDX=['th','en','vi','kh','mm','la','ms','id','zh'];
+  (typeof _CONTENT_PAGES!=='undefined'?_CONTENT_PAGES:[]).forEach(pg=>{
+    const kl=String(pg.key).toLowerCase(), saved=_PAGE_TR[kl]||{}, dict=(window.TCC_I18N&&window.TCC_I18N['ipg.'+kl])||[];
+    const miss=langs.filter(lg=>!saved[lg]&&!dict[IDX.indexOf(lg)]); if(!miss.length) return;
+    const src=String(saved.th||_splitPageLabel(_pageBaseLabel(pg)).name||_pageNameSrc(pg.key)).trim(); if(!src) return;
+    const newTr={};
+    jobs.names.push({name:'ชื่อหน้า '+pg.key,th:{Name:src},miss,
+      apply(lg,k,v){ v=String(v).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim().slice(0,60); if(!v) return false; newTr[lg]=v; return true; },
+      async persist(){ await _savePageNameTr(pg.key,Object.assign({},_PAGE_TR[kl]||{},newTr)); }});
+  });
+  return jobs;
+}
+
+async function _bulkSend(cfg,langs,fields,log){        // เจอ "คำขอถี่เกินไป" (429) → รอแล้วลองใหม่
+  for(let a=0;;a++){
+    try{ return await TccI18n.send(cfg,langs,fields); }
+    catch(e){
+      const m=String(e&&e.message||e);
+      if(a<12&&/ถี่เกินไป|429|rate/i.test(m)){ log('⏳ ระบบจำกัดจำนวนคำขอแปล — รอ 60 วินาทีแล้วทำต่ออัตโนมัติ…'); await _bulkSleep(60000); continue; }
+      throw e;
+    }
+  }
+}
+
+// แปลทีละชุด (รวมหลายรายการต่อคำขอ ≤12 ช่อง ≤7,000 ตัวอักษร) แล้วบันทึกทีละรายการ
+async function _bulkRunBatches(list,cfg,ui){
+  const groups={}; list.forEach(j=>{ const gk=j.miss.join(','); (groups[gk]=groups[gk]||[]).push(j); });
+  for(const gk of Object.keys(groups)){
+    const g=groups[gk], miss=gk.split(','); let i=0;
+    while(i<g.length){
+      if(ui.stopped) return;
+      const batch=[], fields={}; let nF=0, chars=0;
+      while(i<g.length){
+        const j=g[i], ks=Object.keys(j.th), len=ks.reduce((n,k)=>n+j.th[k].length,0);
+        if(len>7500){ ui.log('⏭️ ข้าม '+j.name+' — ข้อความยาวเกิน เปิดแก้ไขแล้วกด "ให้ AI แปล" ในฟอร์มแทน'); ui.done++; ui.fail++; ui.tick(); i++; continue; }
+        if(batch.length&&(nF+ks.length>12||chars+len>7000)) break;
+        ks.forEach(k=>{ fields['f'+batch.length+'_'+k]=j.th[k]; }); nF+=ks.length; chars+=len; batch.push(j); i++;
+      }
+      if(!batch.length) continue;
+      try{
+        const d=await _bulkSend(cfg,miss,fields,ui.log), tr=d.translations||{}, er=d.errors||{}, wn=d.warnings||{};
+        for(let bi=0;bi<batch.length;bi++){
+          const j=batch[bi]; let changed=false;
+          miss.forEach(lg=>{ if(er[lg]||!tr[lg]) return;
+            Object.keys(j.th).forEach(k=>{ let v=tr[lg]['f'+bi+'_'+k]; if(typeof v!=='string'||!v.trim()) return;
+              if(cfg.format==='html') v=TccI18n.stripScripts(v); if(j.apply(lg,k,v.trim())) changed=true; }); });
+          if(changed){ try{ await j.persist(); ui.saved++; ui.log('✅ '+j.name); }catch(e){ ui.fail++; ui.log('❌ '+j.name+': บันทึกไม่สำเร็จ — '+(e&&e.message||e)); } }
+          else{ ui.fail++; ui.log('⚠️ '+j.name+': ไม่ได้คำแปล'); }
+          ui.done++; ui.tick();
+        }
+        Object.keys(er).forEach(lg=>ui.log('⚠️ '+(TCC_BULK_NAMES[lg]||lg)+': '+er[lg]+' (รันปุ่มนี้ซ้ำเพื่อแปลเฉพาะที่ยังขาด)'));
+        const wl=Object.keys(wn).map(lg=>(TCC_BULK_NAMES[lg]||lg)); if(wl.length) ui.log('ℹ️ ควรตรวจคำแปลภายหลัง ('+wl.join(', ')+') — ตัวเลข/ลิงก์/โครงสร้างอาจไม่ตรงต้นฉบับ');
+      }catch(e){ batch.forEach(()=>{ ui.done++; ui.fail++; }); ui.tick(); ui.log('❌ แปลชุดนี้ไม่สำเร็จ ('+batch.length+' รายการ): '+(e&&e.message||e)); }
+    }
+  }
+}
+
+// เนื้อหาหน้า (HTML ยาว) — แบ่งเป็นกลุ่มแล้วแปลทีละกลุ่ม
+async function _bulkRunPages(list,ui){
+  let verified=false;
+  for(const j of list){
+    if(ui.stopped) return;
+    try{
+      const chunks=_pcChunkHtml(String(j.c.HtmlContent),6000), parts={}, errs={};
+      for(const ch of chunks){
+        if(ui.stopped) return;
+        const d=await _bulkSend({scope:'pagecontent',format:'html'},j.miss,{Html:ch},ui.log);
+        j.miss.forEach(lg=>{ if(d.errors&&d.errors[lg]) errs[lg]=d.errors[lg]; else if(d.translations&&d.translations[lg]) (parts[lg]=parts[lg]||[]).push(d.translations[lg].Html||''); });
+      }
+      const body={}, expect={};
+      j.miss.forEach(lg=>{ if(errs[lg]||!parts[lg]||parts[lg].length!==chunks.length) return;
+        const h=TccI18n.stripScripts(parts[lg].join('\n')); if(!h.trim()) return;
+        if(h.length>45000){ ui.log('⚠️ '+j.name+' ('+(TCC_BULK_NAMES[lg]||lg)+'): ยาวเกินลิมิตเซลล์ 45,000 ตัวอักษร — ข้าม'); return; }
+        body['HtmlContent_'+lg]=h; expect['HtmlContent_'+lg]=h; });
+      Object.keys(errs).forEach(lg=>ui.log('⚠️ '+j.name+' ('+(TCC_BULK_NAMES[lg]||lg)+'): '+errs[lg]));
+      if(!Object.keys(body).length){ ui.fail++; ui.log('⚠️ '+j.name+': ไม่ได้คำแปล'); }
+      else{
+        const r=await fetch(`${WORKER_URL}/api/noco/${NOCO.tbl.pagecontent}/${j.c.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        if(!r.ok) throw new Error('PATCH '+r.status);
+        j.c.tr=j.c.tr||{}; Object.keys(body).forEach(k=>{ j.c.tr[k.replace('HtmlContent_','')]={Html:body[k]}; });
+        try{ if(typeof TccI18n.setPageTr==='function') TccI18n.setPageTr(j.key,j.c.tr); }catch(e){}
+        ui.saved++; ui.log('✅ '+j.name);
+        if(!verified){ verified=true; const v=await TccI18n.verifyCols('pagecontent',NOCO.tbl.pagecontent,j.c.id,expect); if(v!==true) ui.log(String(v).replace(/<[^>]*>/g,'')); }
+      }
+    }catch(e){ ui.fail++; ui.log('❌ '+j.name+': '+(e&&e.message||e)); }
+    ui.done++; ui.tick();
+  }
+}
+
+function _bulkUi(total){
+  const old=document.getElementById('tcc-bulk-modal'); if(old) old.remove();
+  const m=document.createElement('div'); m.id='tcc-bulk-modal';
+  m.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML='<div style="background:#131820;border:1px solid var(--border);border-radius:14px;width:min(580px,100%);max-height:86vh;display:flex;flex-direction:column;padding:16px;">'
+    +'<div style="font-weight:700;color:var(--gold);margin-bottom:4px;">🌐 AI แปล 3 ภาษาใหม่ทั้งหมด</div>'
+    +'<div style="font-size:.74rem;color:var(--text-dim);margin-bottom:10px;">Bahasa Melayu · Bahasa Indonesia · 简体中文 — แปลเฉพาะภาษาที่ยังว่าง ไม่ทับคำแปลเดิม · กรุณาอย่าปิดหน้านี้จนกว่าจะเสร็จ</div>'
+    +'<div style="height:8px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:6px;"><div id="tcc-bulk-fill" style="height:100%;width:0;background:var(--gold);transition:width .3s;"></div></div>'
+    +'<div id="tcc-bulk-cnt" style="font-size:.76rem;color:var(--text);margin-bottom:8px;">0 / '+total+'</div>'
+    +'<div id="tcc-bulk-log" style="flex:1;min-height:120px;overflow:auto;font-size:.74rem;line-height:1.65;color:var(--text-dim);white-space:pre-wrap;border:1px solid var(--border);border-radius:8px;padding:8px;"></div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;"><button class="btn btn-outline btn-sm" id="tcc-bulk-stop">⏹ หยุด</button><button class="btn btn-gold btn-sm" id="tcc-bulk-close" disabled>ปิด</button></div></div>';
+  document.body.appendChild(m);
+  const ui={stopped:false,done:0,saved:0,fail:0,total};
+  const logEl=m.querySelector('#tcc-bulk-log');
+  ui.log=t=>{ logEl.textContent+=(logEl.textContent?'\n':'')+t; logEl.scrollTop=logEl.scrollHeight; };
+  ui.tick=()=>{ m.querySelector('#tcc-bulk-fill').style.width=Math.min(100,Math.round(ui.done/Math.max(1,total)*100))+'%'; m.querySelector('#tcc-bulk-cnt').textContent=ui.done+' / '+total+' · บันทึกแล้ว '+ui.saved+' · ไม่สำเร็จ '+ui.fail; };
+  m.querySelector('#tcc-bulk-stop').onclick=()=>{ ui.stopped=true; ui.log('⏹ ขอหยุด — จะหยุดหลังคำขอที่กำลังทำอยู่เสร็จ'); };
+  m.querySelector('#tcc-bulk-close').onclick=()=>m.remove();
+  ui.finish=()=>{ m.querySelector('#tcc-bulk-stop').disabled=true; m.querySelector('#tcc-bulk-close').disabled=false; };
+  return ui;
+}
+
+// ตรวจว่าชีตมีคอลัมน์เก็บคำแปลแล้ว (ไม่งั้นแปลไปก็ไม่ถูกเก็บ → เสียโควตา AI เปล่า)
+async function _bulkMissingCols(jobs){
+  const miss=[];
+  try{
+    if(jobs.items.length&&NOCO.tbl.items){ const r=await nocoGet(NOCO.tbl.items,'&fresh=1'); if(r&&r.length&&!('I18n' in r[0])) miss.push('Items.I18n'); }
+    if(jobs.cafe.length&&NOCO.tbl.cafe){ const r=await nocoGet(NOCO.tbl.cafe,'&fresh=1'); if(r&&r.length&&!('I18n' in r[0])) miss.push('CafeCards.I18n'); }
+    if(jobs.pages.length&&NOCO.tbl.pagecontent){ const r=await nocoGet(NOCO.tbl.pagecontent,'&fresh=1'); if(r&&r.length&&!('HtmlContent_zh' in r[0]&&'HtmlContent_ms' in r[0]&&'HtmlContent_id' in r[0])) miss.push('PageContent.HtmlContent_ms/id/zh'); }
+  }catch(e){ console.warn('[bulk cols]',e); }
+  return miss;
+}
+
+async function tccBulkTranslateNew(){
+  if(_bulkBusy) return;
+  const langs=TCC_BULK_LANGS.slice();
+  const jobs=_bulkCollect(langs);
+  const total=jobs.items.length+jobs.cafe.length+jobs.pages.length+jobs.names.length;
+  if(!total){ showToast('✅ ทุกรายการมีคำแปล ms / id / zh ครบแล้ว'); return; }
+  const ok=await tccConfirm('🌐','แปล 3 ภาษาใหม่ทั้งหมด?',
+    'พบรายการที่ยังไม่มีคำแปล — Items '+jobs.items.length+' · Cafe '+jobs.cafe.length+' · เนื้อหาหน้า '+jobs.pages.length+' · ชื่อหน้า '+jobs.names.length
+    +' · AI จะแปลเฉพาะภาษาที่ยังว่าง (ไม่ทับคำแปลเดิม) แล้วบันทึกลงชีตให้อัตโนมัติ ใช้เวลาประมาณ 2–10 นาที','เริ่มแปล',false);
+  if(!ok) return;
+  const miss=await _bulkMissingCols(jobs);
+  if(miss.length){
+    const go=await tccConfirm('🛠️','ชีตยังไม่มีคอลัมน์เก็บคำแปล','ต้องเตรียมคอลัมน์ก่อน: '+miss.join(', ')+' — กด "เตรียมคอลัมน์" แล้วรอประมาณ 5 นาที จากนั้นกดปุ่มแปลอีกครั้ง','เตรียมคอลัมน์',false);
+    if(go) await TccI18n.setupColumns();
+    return;
+  }
+  _bulkBusy=true;
+  const ui=_bulkUi(total);
+  try{
+    if(jobs.items.length){ ui.log('— Items ('+jobs.items.length+')'); await _bulkRunBatches(jobs.items,{scope:'items',format:'text'},ui); }
+    if(jobs.cafe.length&&!ui.stopped){ ui.log('— Cafe Cards ('+jobs.cafe.length+')'); await _bulkRunBatches(jobs.cafe,{scope:'cafe',format:'html'},ui); }
+    if(jobs.pages.length&&!ui.stopped){ ui.log('— เนื้อหาหน้า ('+jobs.pages.length+')'); await _bulkRunPages(jobs.pages,ui); }
+    if(jobs.names.length&&!ui.stopped){ ui.log('— ชื่อหน้า ('+jobs.names.length+')'); await _bulkRunBatches(jobs.names,{scope:'items',format:'text'},ui); }
+  }catch(e){ ui.log('❌ '+(e&&e.message||e)); }
+  ui.log((ui.stopped?'⏹ หยุดแล้ว':'🏁 เสร็จสิ้น')+' — บันทึก '+ui.saved+' · ไม่สำเร็จ '+ui.fail+(ui.fail?' · กดปุ่มนี้ซ้ำเพื่อแปลเฉพาะรายการที่ยังขาด':''));
+  ui.finish(); _bulkBusy=false;
+  try{ if(NOCO.tbl.items) _cacheBust(NOCO.tbl.items); if(NOCO.tbl.cafe) _cacheBust(NOCO.tbl.cafe); if(NOCO.tbl.pagecontent) _cacheBust(NOCO.tbl.pagecontent); }catch(e){}
+  try{ if(typeof loadContentItems==='function'&&document.getElementById('cn-sub-items')) loadContentItems(); }catch(e){}
+  try{ if(typeof refreshCafePanel==='function') refreshCafePanel(); }catch(e){}
+  try{ if(typeof _renderContentPageTabs==='function') _renderContentPageTabs(); }catch(e){}
+}
 
 // ─── [I18N Phase 4] เปลี่ยนภาษา → วาดส่วนที่ใช้คำแปลจาก DB ใหม่ ───
 //     (Cafe ถูกรีเฟรชโดยตัวฟัง tcc-lang เดิมผ่าน refreshCafePanel · หน้าเนื้อหาส่วนใหญ่ผ่าน tccPageContent เดิม — ที่นี่เหลือ Items กับ Terms)

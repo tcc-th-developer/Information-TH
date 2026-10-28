@@ -5840,7 +5840,7 @@ function _getInfoPages(){
   // เพราะ buildInformationHTML ถูกเรียกก่อน _CONTENT_PAGES declaration
   try{
     if(typeof _CONTENT_PAGES !== 'undefined' && _CONTENT_PAGES && _CONTENT_PAGES.length){
-      return _CONTENT_PAGES.map(pg=>({id: pg.key, label: pg.label}));
+      return _CONTENT_PAGES.map(pg=>({id: pg.key, label: _pageBaseLabel(pg)}));
     }
   }catch(e){}
   return INFO_PAGES;
@@ -5849,6 +5849,20 @@ function _getInfoPages(){
 // ชื่อแท็บหน้า Information → ภาษาที่เลือก
 //   ลำดับ: (1) ชื่อที่แอดมินบันทึกไว้ตอนสร้างหน้า (_PAGE_TR · แถว __pages_i18n__ ในชีต PageContent) → (2) คำแปลใน TCC_I18N คีย์ 'ipg.<key ตัวพิมพ์เล็ก>'
 //   (3) ไม่มี / ภาษาไทย = ใช้ label เดิมที่แอดมินตั้ง · คง emoji นำหน้าจาก label เดิม · คืนค่าเป็นข้อความล้วน (ผู้เรียก innerHTML ต้อง esc())
+// label ภาษาไทยของหน้า (ใช้ทั้งแอดมินและฝั่งสมาชิก) = emoji + ชื่อไทย · ถ้าแอดมินแก้ไว้ (_PAGE_TR[key].emoji/.th) ใช้ค่านั้น ไม่งั้นใช้ label เดิม
+function _splitPageLabel(label){
+  const s=String(label||''), m=s.match(/^(\S+)\s+(.+)$/);
+  return (m&&!/[\p{L}\p{N}]/u.test(m[1]))?{emoji:m[1],name:m[2]}:{emoji:'',name:s};
+}
+function _pageBaseLabel(pg){
+  const label=String((pg&&pg.label)||'');
+  try{
+    const o=(_PAGE_TR||{})[String((pg.key!=null?pg.key:pg.id)||'').toLowerCase()];
+    if(!o||(!o.th&&!o.emoji)) return label;
+    const b=_splitPageLabel(label);
+    return ((o.emoji||b.emoji)+' '+(o.th||b.name)).trim();
+  }catch(e){ return label; }
+}
 var _PAGE_TR_LANGS=[{k:'en',n:'English'},{k:'vi',n:'Tiếng Việt'},{k:'kh',n:'ខ្មែរ'},{k:'mm',n:'မြန်မာ'},{k:'la',n:'ລາວ'}];
 var _PAGE_TR={};   // { 'promotions': {en,vi,kh,mm,la} }
 function _pageTrNormalize(o){
@@ -5858,6 +5872,8 @@ function _pageTrNormalize(o){
     const v=o[k]; if(!v||typeof v!=='object') return;
     const t={};
     _PAGE_TR_LANGS.forEach(({k:lg})=>{ const s=String(v[lg]==null?'':v[lg]).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(); if(s) t[lg]=s.slice(0,60); });
+    const th=String(v.th==null?'':v.th).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(); if(th) t.th=th.slice(0,60);                 // ชื่อไทยที่แอดมินแก้
+    const em=Array.from(String(v.emoji==null?'':v.emoji).replace(/\s+/g,'')).slice(0,4).join(''); if(em&&!/[<>&"']/.test(em)) t.emoji=em;   // emoji ที่แอดมินแก้
     if(Object.keys(t).length) out[String(k).toLowerCase()]=t;
   });
   return out;
@@ -7888,8 +7904,13 @@ function _renderContentPageTabs(){
             title="ลบหน้านี้"
             style="margin-left:5px;opacity:.6;font-size:.72rem;line-height:1;cursor:pointer;vertical-align:middle;"
             onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.6'">✕</span>`;
+        const editBtn =
+          `<span onclick="event.stopPropagation();openEditPageModal('${jsq(pg.key)}')"
+            title="แก้ไขชื่อ / ไอคอน / ชื่อหลายภาษา ของหน้านี้"
+            style="margin-left:6px;opacity:.6;font-size:.72rem;line-height:1;cursor:pointer;vertical-align:middle;"
+            onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.6'">✏️</span>`;
         return `<button id="cpf-btn-${pg.key}" class="clp-view-btn${_contentPageFilter===pg.key?' active':''}"
-          onclick="setContentPageFilter('${jsq(pg.key)}')">${pg.label}${delBtn}</button>`;
+          onclick="setContentPageFilter('${jsq(pg.key)}')">${esc(_pageBaseLabel(pg))}${editBtn}${delBtn}</button>`;
       }).join('')
     + `<button onclick="openAddPageModal()"
         style="padding:4px 12px;background:rgba(240,185,11,.1);border:1px dashed rgba(240,185,11,.4);
@@ -7914,7 +7935,9 @@ function _doDeletePage(key){
   _syncPagesToSheet().catch(e=>console.warn('_syncPagesToSheet:', e));
 }
 
-function openAddPageModal(){
+// modal ร่วมของ "เพิ่มหน้าใหม่" / "แก้ไขหน้า"
+//   o: {title, saveText, onSave, emoji, key, keyReadonly, withTh, th, tr}
+function _openPageModal(o){
   const existing = document.getElementById('add-page-modal');
   if(existing) existing.remove();
   const m = document.createElement('div');
@@ -7923,39 +7946,62 @@ function openAddPageModal(){
   const trRows = _PAGE_TR_LANGS.map(l=>`
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
           <span style="width:76px;flex:none;font-size:.72rem;color:var(--text-dim);">${l.n}</span>
-          <input class="finput" id="new-page-tr-${l.k}" maxlength="60" placeholder="${l.n}" style="flex:1;min-width:0;padding:6px 8px;font-size:.82rem;">
+          <input class="finput" id="new-page-tr-${l.k}" maxlength="60" placeholder="${l.n}" value="${esc((o.tr&&o.tr[l.k])||'')}" style="flex:1;min-width:0;padding:6px 8px;font-size:.82rem;">
         </div>`).join('');
+  const keyInput = o.keyReadonly
+    ? `<input class="finput" id="new-page-key" value="${esc(o.key||'')}" readonly style="opacity:.6;cursor:not-allowed;">`
+    : `<input class="finput" id="new-page-key" placeholder="เช่น promotions" oninput="this.value=this.value.replace(/\\s/g,'')">`;
+  const thInput = o.withTh ? `
+      <div class="fg" style="margin-bottom:12px;">
+        <label class="flbl">ชื่อหน้า (ภาษาไทย — แสดงในแท็บ)</label>
+        <input class="finput" id="edit-page-th" maxlength="60" value="${esc(o.th||'')}" placeholder="เช่น โปรโมชั่น">
+      </div>` : '';
   m.innerHTML = `
     <div style="background:var(--bg,#0b0e11);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:380px;width:100%;max-height:92vh;overflow-y:auto;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <span style="color:var(--gold);font-size:1rem;font-weight:700;">➕ เพิ่มหน้าใหม่</span>
+        <span style="color:var(--gold);font-size:1rem;font-weight:700;">${o.title}</span>
         <button onclick="document.getElementById('add-page-modal').remove()" style="background:none;border:none;color:var(--text-dim);font-size:1.3rem;cursor:pointer;">✕</button>
       </div>
       <div class="fg" style="margin-bottom:10px;">
         <label class="flbl">Emoji ไอคอน (1 ตัว)</label>
-        <input class="finput" id="new-page-emoji" placeholder="🌟" maxlength="4" value="📄"
+        <input class="finput" id="new-page-emoji" placeholder="🌟" maxlength="4" value="${esc(o.emoji||'📄')}"
           style="font-size:1.4rem;text-align:center;width:72px;">
       </div>
       <div class="fg" style="margin-bottom:12px;">
-        <label class="flbl">ชื่อหน้า (key ภาษาอังกฤษ ไม่มีช่องว่าง)</label>
-        <input class="finput" id="new-page-key" placeholder="เช่น promotions" oninput="this.value=this.value.replace(/\\s/g,'')">
-      </div>
+        <label class="flbl">${o.keyReadonly?'key ของหน้า (แก้ไม่ได้ — Item ผูกกับ key นี้)':'ชื่อหน้า (key ภาษาอังกฤษ ไม่มีช่องว่าง)'}</label>
+        ${keyInput}
+      </div>${thInput}
       <div style="margin-bottom:14px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.03);">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;">
           <span class="flbl" style="margin:0;">ชื่อหน้าตามภาษา (แสดงในแท็บฝั่งสมาชิก)</span>
           <button type="button" id="add-page-ai" onclick="_addPageTranslate()" style="flex:none;padding:5px 10px;background:rgba(240,185,11,.14);border:1px solid rgba(240,185,11,.45);border-radius:8px;color:var(--gold);cursor:pointer;font-size:.74rem;font-weight:600;">🤖 ให้ AI แปล</button>
         </div>
         ${trRows}
-        <div style="font-size:.7rem;color:var(--text-dim);line-height:1.5;margin-top:4px;">ต้องมีครบทุกภาษาก่อนบันทึก — ถ้าเว้นว่าง ระบบจะให้ AI แปลให้ก่อน แล้วให้ตรวจ/แก้ไขอีกครั้งก่อนกดเพิ่มหน้า</div>
+        <div style="font-size:.7rem;color:var(--text-dim);line-height:1.5;margin-top:4px;">ต้องมีครบทุกภาษาก่อนบันทึก — ถ้าเว้นว่าง ระบบจะให้ AI แปลให้ก่อน แล้วให้ตรวจ/แก้ไขอีกครั้งก่อนกดบันทึก</div>
       </div>
       <div style="display:flex;gap:8px;">
-        <button class="btn-gold" id="add-page-save" onclick="_doAddPage()" style="flex:2;padding:10px;">💾 เพิ่มหน้า</button>
+        <button class="btn-gold" id="add-page-save" onclick="${o.onSave}" style="flex:2;padding:10px;">${o.saveText}</button>
         <button onclick="document.getElementById('add-page-modal').remove()" style="flex:1;padding:10px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;">ยกเลิก</button>
       </div>
       <div id="add-page-msg" style="margin-top:8px;font-size:.8rem;color:#f6465d;line-height:1.5;"></div>
     </div>`;
   document.body.appendChild(m);
-  document.getElementById('new-page-key').focus();
+  const f=document.getElementById(o.withTh?'edit-page-th':'new-page-key'); if(f) f.focus();
+}
+
+function openAddPageModal(){
+  _openPageModal({title:'➕ เพิ่มหน้าใหม่', saveText:'💾 เพิ่มหน้า', onSave:'_doAddPage()', emoji:'📄', keyReadonly:false, withTh:false, tr:{}});
+}
+
+// แก้ไขหน้า: เฉพาะ emoji · ชื่อไทย · ชื่อ 5 ภาษา (เนื้อหา/Item ในหน้าแก้ที่เดิมได้อยู่แล้ว · key เปลี่ยนไม่ได้)
+function openEditPageModal(key){
+  const pg=_CONTENT_PAGES.find(p=>p.key===key); if(!pg){ alert('ไม่พบหน้า '+key); return; }
+  const kl=String(key).toLowerCase();
+  const b=_splitPageLabel(_pageBaseLabel(pg));
+  const dict=(window.TCC_I18N&&window.TCC_I18N['ipg.'+kl])||[];            // คำแปลที่มีมากับระบบ (หน้า default) ใช้เป็นค่าเริ่มต้นในฟอร์ม
+  const saved=_PAGE_TR[kl]||{}, tr={};
+  _PAGE_TR_LANGS.forEach((l,i)=>{ tr[l.k]=saved[l.k]||dict[i+1]||''; });
+  _openPageModal({title:'✏️ แก้ไขหน้า', saveText:'💾 บันทึก', onSave:"_doEditPage('"+jsq(key)+"')", emoji:b.emoji||'📄', key, keyReadonly:true, withTh:true, th:b.name, tr});
 }
 
 // ข้อความต้นฉบับสำหรับ AI: key → คำอ่านได้ ('Trader_Team'→'Trader Team', 'tradeNews'→'trade News')
@@ -7972,12 +8018,15 @@ const _apVal=lg=>((document.getElementById('new-page-tr-'+lg)||{}).value||'').tr
 // ให้ AI แปลชื่อหน้า (ทุกภาษา หรือเฉพาะที่ระบุ) → เติมลงช่อง · ใช้ worker เดิม /api/admin/translate (scope items)
 async function _addPageTranslate(only){
   if(_apBusyFlag) return false;
+  const thEl=document.getElementById('edit-page-th');          // โหมดแก้ไข: แปลจากชื่อไทย · โหมดเพิ่ม: แปลจาก key
   const key=(document.getElementById('new-page-key')||{}).value;
-  if(!String(key||'').trim()){ _apMsg('⚠️ กรอกชื่อหน้า (key) ก่อน แล้วค่อยกด "ให้ AI แปล"','er'); return false; }
+  const srcText=thEl?String(thEl.value||'').trim():_pageNameSrc(String(key||'').trim());
+  if(!srcText){ _apMsg(thEl?'⚠️ กรอกชื่อหน้า (ภาษาไทย) ก่อน แล้วค่อยกด "ให้ AI แปล"':'⚠️ กรอกชื่อหน้า (key) ก่อน แล้วค่อยกด "ให้ AI แปล"','er'); return false; }
   const langs=(Array.isArray(only)&&only.length)?only:_PAGE_TR_LANGS.map(l=>l.k);
+  if(!(Array.isArray(only)&&only.length)&&langs.some(lg=>_apVal(lg))&&!confirm('ให้ AI แปลทับชื่อที่กรอกไว้แล้วใช่ไหม?')) return false;
   _apBusy(true); _apMsg('⏳ AI กำลังแปลชื่อหน้า '+langs.length+' ภาษา… (ประมาณ 5–30 วินาที)','');
   try{
-    const d=await TccI18n.send({scope:'items',format:'text'},langs,{Name:_pageNameSrc(String(key).trim())});
+    const d=await TccI18n.send({scope:'items',format:'text'},langs,{Name:srcText});
     const tr=d.translations||{}, er=d.errors||{};
     langs.forEach(lg=>{
       const v=tr[lg]&&tr[lg].Name, el=document.getElementById('new-page-tr-'+lg);
@@ -8047,6 +8096,32 @@ async function _doAddPage(){
   try{ await _syncPagesToSheet(); }catch(e){ console.warn('_syncPagesToSheet error:', e); }
   document.getElementById('add-page-modal')?.remove();
   _apBusy(false);
+}
+
+async function _doEditPage(key){
+  if(_apBusyFlag) return;
+  const emoji=((document.getElementById('new-page-emoji')||{}).value||'').trim();
+  const th=((document.getElementById('edit-page-th')||{}).value||'').trim();
+  if(!th){ _apMsg('⚠️ กรุณากรอกชื่อหน้า (ภาษาไทย)','er'); return; }
+  // ต้องมีชื่อครบทุกภาษาก่อนบันทึก → ช่องที่ว่างให้ AI แปลจากชื่อไทย แล้วหยุดให้ตรวจก่อนกดบันทึกอีกครั้ง
+  let missing=_PAGE_TR_LANGS.map(l=>l.k).filter(lg=>!_apVal(lg));
+  if(missing.length){
+    if(!(await _addPageTranslate(missing))) return;
+    missing=_PAGE_TR_LANGS.map(l=>l.k).filter(lg=>!_apVal(lg));
+    if(missing.length) _apMsg('❌ ยังขาดชื่อภาษา: '+missing.map(lg=>(_PAGE_TR_LANGS.find(l=>l.k===lg)||{}).n||lg).join(', ')+' — กด "ให้ AI แปล" ซ้ำ หรือกรอกเอง (ยังไม่ได้บันทึก)','er');
+    else _apMsg('✅ AI แปลครบทุกภาษาแล้ว — ตรวจ/แก้ไขชื่อ แล้วกด "บันทึก" อีกครั้ง','ok');
+    return;
+  }
+  const tr={th}; if(emoji) tr.emoji=emoji;
+  _PAGE_TR_LANGS.forEach(l=>{ tr[l.k]=_apVal(l.k); });
+  _apBusy(true); _apMsg('⏳ กำลังบันทึก...','');
+  try{ await _savePageNameTr(key,tr); }
+  catch(e){ _apBusy(false); _apMsg('❌ บันทึกไม่สำเร็จ: '+(e&&e.message||e)+' — ลองกดอีกครั้ง','er'); return; }
+  _renderContentPageTabs();
+  try{ if(typeof refreshInfoPanel==='function') refreshInfoPanel(); }catch(e){ console.warn('refreshInfoPanel:',e); }
+  document.getElementById('add-page-modal')?.remove();
+  _apBusy(false);
+  if(typeof showToast==='function') showToast('✅ บันทึกชื่อหน้าแล้ว');
 }
 
 // rebuild <select> options ในโมดอลเพิ่ม/แก้ไข item ถ้าเปิดอยู่

@@ -2401,7 +2401,7 @@ input[type=number].tc-inp::-webkit-inner-spin-button{-webkit-appearance:none;mar
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{font-family:-apple-system,"Sarabun","Noto Sans Thai","Hiragino Sans",sans-serif;background:#000;color:var(--tx);display:flex;justify-content:center}
+body{font-family:-apple-system,"Sarabun","Noto Sans Thai","Hiragino Sans","PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;background:#000;color:var(--tx);display:flex;justify-content:center}
 .app{position:relative;width:100%;max-width:440px;height:100dvh;background:var(--bg);overflow:hidden}
 .screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
 .screen.on{display:flex}
@@ -3761,7 +3761,7 @@ function paintGuide() {
   GUIDE.forEach(c => {
     const b = document.createElement("button"); b.type = "button";
     b.className = "gcat" + (c.id === guideCat ? " on" : "");
-    b.textContent = c.icon + " " + (c.name[LANG] || c.name.th);
+    b.textContent = c.icon + " " + (c.name[LANG] || c.name.en || c.name.th);
     b.onclick = () => { guideCat = c.id; guideSub = ""; paintGuide(); };
     cats.appendChild(b);
   });
@@ -3776,7 +3776,7 @@ function paintGuide() {
     tabs.forEach(k => {
       const b = document.createElement("button"); b.type = "button";
       b.className = "gcat sub" + (k.id === guideSub ? " on" : "");
-      b.textContent = (k.icon && k !== top ? k.icon + " " : "") + (k.name[LANG] || k.name.th);
+      b.textContent = (k.icon && k !== top ? k.icon + " " : "") + (k.name[LANG] || k.name.en || k.name.th);
       b.onclick = () => { guideSub = k.id; paintGuide(); };
       subs.appendChild(b);
     });
@@ -3786,7 +3786,7 @@ function paintGuide() {
   const qs = $("#gqs"); qs.innerHTML = "";
   cur.items.forEach(it => {
     const b = document.createElement("button"); b.type = "button"; b.className = "gq";
-    b.textContent = it.q[LANG] || it.q.th;
+    b.textContent = it.q[LANG] || it.q.en || it.q.th;
     b.onclick = () => sendGuide(cur, it);
     qs.appendChild(b);
   });
@@ -3816,7 +3816,7 @@ function guideStart() {
 function sendGuide(c, it) {
   if (VISITOR) return visitorAsk(c, it);
   setGuideOpen(false, false);   // พับเมนูเพื่อให้เห็นคำตอบ (ไม่บันทึกเป็นความชอบของสมาชิก)
-  sendMessage("text", it.q[LANG] || it.q.th, { qid: it.id, cat: c.id });
+  sendMessage("text", it.q[LANG] || it.q.en || it.q.th, { qid: it.id, cat: c.id });
 }
 $("#gtog").onclick = () => { const o = !$("#guide").classList.contains("open"); setGuideOpen(o, true); if (o && Date.now() - guideAt > 60000) loadGuide(); };
 
@@ -3836,7 +3836,7 @@ async function loadVisitorMenu() {
 async function visitorAsk(c, it) {
   if (vBusy) return;
   setGuideOpen(false, false);
-  addLocal({ mine: true, type: "text", content: it.q[LANG] || it.q.th });
+  addLocal({ mine: true, type: "text", content: it.q[LANG] || it.q.en || it.q.th });
   vBusy = true;
   try {
     const r = await fetch(API + "/api/public/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ qid: it.id, lang: LANG }) });

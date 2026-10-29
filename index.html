@@ -2401,7 +2401,7 @@ input[type=number].tc-inp::-webkit-inner-spin-button{-webkit-appearance:none;mar
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{font-family:-apple-system,"Sarabun","Noto Sans Thai","Hiragino Sans","PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;background:#000;color:var(--tx);display:flex;justify-content:center}
+body{font-family:-apple-system,"Sarabun","Noto Sans Thai","Hiragino Sans",sans-serif;background:#000;color:var(--tx);display:flex;justify-content:center}
 .app{position:relative;width:100%;max-width:440px;height:100dvh;background:var(--bg);overflow:hidden}
 .screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
 .screen.on{display:flex}
@@ -2519,6 +2519,14 @@ svg{display:block}
 .guide.open .gbody{display:block}
 .gcats{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .gcats::-webkit-scrollbar{display:none}
+/* [v3.9.1] เดสก์ท็อป: แถบหมวดเลื่อนซ้าย-ขวาได้ (ล้อเมาส์ · ลากด้วยเมาส์ · แถบเลื่อนบาง) */
+@media (hover:hover) and (pointer:fine){
+  .gcats{scrollbar-width:thin;scrollbar-color:var(--line) transparent;cursor:grab;padding-bottom:6px}
+  .gcats::-webkit-scrollbar{display:block;height:6px}
+  .gcats::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+  .gcats.dragging{cursor:grabbing;user-select:none}
+  .gcats.dragging .gcat{pointer-events:none}
+}
 .gcat{flex-shrink:0;border:1px solid var(--surface2);background:var(--surface);color:#fff;border-radius:16px;padding:6px 12px;font-size:13px;white-space:nowrap}
 .gcat.on{border-color:var(--green);color:var(--green);background:rgba(6,199,85,.12)}
 .gsubs{display:none;padding-top:0}
@@ -3749,6 +3757,24 @@ function renderMsgs(forceBottom) {
 let guideReady = false, guideCat = "", guideSub = "", guideAt = 0;
 const GUIDE_KEY = "sc_guide";
 const guideOn = () => !IS_ADMIN && !!peer && peer.id === SUPPORT_ID && GUIDE.length > 0;
+// [v3.9.1] เลื่อนแถบหมวดบนเดสก์ท็อป: ล้อเมาส์ (แนวตั้ง → แนวนอน) + ลากด้วยเมาส์ · มือถือยังปัดนิ้วได้ตามเดิม
+function enableHScroll(el) {
+  if (!el || el._hs) return; el._hs = 1;
+  el.addEventListener("wheel", e => {
+    if (el.scrollWidth <= el.clientWidth || e.deltaX) return;
+    el.scrollLeft += e.deltaY; e.preventDefault();
+  }, { passive: false });
+  let down = false, moved = false, sx = 0, sl = 0;
+  el.addEventListener("pointerdown", e => { if (e.pointerType !== "mouse" || e.button !== 0) return; down = true; moved = false; sx = e.clientX; sl = el.scrollLeft; });
+  window.addEventListener("pointermove", e => {
+    if (!down) return;
+    const dx = e.clientX - sx;
+    if (!moved && Math.abs(dx) > 4) { moved = true; el.classList.add("dragging"); }
+    if (moved) el.scrollLeft = sl - dx;
+  });
+  const end = () => { if (!down) return; down = false; if (moved) setTimeout(() => el.classList.remove("dragging"), 0); };
+  window.addEventListener("pointerup", end); window.addEventListener("pointercancel", end);
+}
 function paintGuide() {
   const g = $("#guide"), on = guideOn();
   g.classList.toggle("on", on);
@@ -3757,11 +3783,12 @@ function paintGuide() {
   if (!GUIDE.some(c => c.id === guideCat)) { guideCat = GUIDE[0].id; guideSub = ""; }
   const top = GUIDE.find(c => c.id === guideCat);
   const cats = $("#gcats"), keep = cats.scrollLeft;
+  enableHScroll(cats); enableHScroll($("#gsubs"));
   cats.innerHTML = "";
   GUIDE.forEach(c => {
     const b = document.createElement("button"); b.type = "button";
     b.className = "gcat" + (c.id === guideCat ? " on" : "");
-    b.textContent = c.icon + " " + (c.name[LANG] || c.name.en || c.name.th);
+    b.textContent = c.icon + " " + (c.name[LANG] || c.name.th);
     b.onclick = () => { guideCat = c.id; guideSub = ""; paintGuide(); };
     cats.appendChild(b);
   });
@@ -3776,7 +3803,7 @@ function paintGuide() {
     tabs.forEach(k => {
       const b = document.createElement("button"); b.type = "button";
       b.className = "gcat sub" + (k.id === guideSub ? " on" : "");
-      b.textContent = (k.icon && k !== top ? k.icon + " " : "") + (k.name[LANG] || k.name.en || k.name.th);
+      b.textContent = (k.icon && k !== top ? k.icon + " " : "") + (k.name[LANG] || k.name.th);
       b.onclick = () => { guideSub = k.id; paintGuide(); };
       subs.appendChild(b);
     });
@@ -3786,7 +3813,7 @@ function paintGuide() {
   const qs = $("#gqs"); qs.innerHTML = "";
   cur.items.forEach(it => {
     const b = document.createElement("button"); b.type = "button"; b.className = "gq";
-    b.textContent = it.q[LANG] || it.q.en || it.q.th;
+    b.textContent = it.q[LANG] || it.q.th;
     b.onclick = () => sendGuide(cur, it);
     qs.appendChild(b);
   });
@@ -3816,7 +3843,7 @@ function guideStart() {
 function sendGuide(c, it) {
   if (VISITOR) return visitorAsk(c, it);
   setGuideOpen(false, false);   // พับเมนูเพื่อให้เห็นคำตอบ (ไม่บันทึกเป็นความชอบของสมาชิก)
-  sendMessage("text", it.q[LANG] || it.q.en || it.q.th, { qid: it.id, cat: c.id });
+  sendMessage("text", it.q[LANG] || it.q.th, { qid: it.id, cat: c.id });
 }
 $("#gtog").onclick = () => { const o = !$("#guide").classList.contains("open"); setGuideOpen(o, true); if (o && Date.now() - guideAt > 60000) loadGuide(); };
 
@@ -3836,7 +3863,7 @@ async function loadVisitorMenu() {
 async function visitorAsk(c, it) {
   if (vBusy) return;
   setGuideOpen(false, false);
-  addLocal({ mine: true, type: "text", content: it.q[LANG] || it.q.en || it.q.th });
+  addLocal({ mine: true, type: "text", content: it.q[LANG] || it.q.th });
   vBusy = true;
   try {
     const r = await fetch(API + "/api/public/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ qid: it.id, lang: LANG }) });

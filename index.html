@@ -8080,7 +8080,8 @@ async function _addPageTranslate(only){
     const tr=d.translations||{}, er=d.errors||{};
     langs.forEach(lg=>{
       const v=tr[lg]&&tr[lg].Name, el=document.getElementById('new-page-tr-'+lg);
-      if(el&&v) el.value=String(v).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim().slice(0,60);
+      if(el&&v){ if(TccI18n.thaiLeft(srcText,v,false)){ er[lg]=er[lg]||'ยังเป็นภาษาไทย'; return; }   // [FIX-AITR]
+        el.value=String(v).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim().slice(0,60); }
     });
     const bad=Object.keys(er);
     if(bad.length) _apMsg('⚠️ แปลไม่สำเร็จ: '+bad.map(lg=>(_PAGE_TR_LANGS.find(l=>l.k===lg)||{}).n||lg).join(', ')+' — กดแปลซ้ำ หรือกรอกเอง','er');
@@ -8471,6 +8472,13 @@ window.TccI18n=(function(){
   const visible=f=>!f.show||f.show();
   const thai=f=>f.get?String(f.get()||''):((($(f.el)||{}).value)||'');          // ต้นฉบับไทยของ field
   const stripScripts=s=>String(s==null?'':s).replace(/<script[\s\S]*?<\/script>/gi,'');   // กัน <script> หลุดมาจากผล AI
+  // [FIX-AITR] ผลแปลที่ยังเป็นภาษาไทย (AI คืนต้นฉบับ/แปลไม่ครบ) ไม่ถือว่าแปลแล้ว — ตรงกับ trThaiLeft() ใน worker
+  const thaiN=s=>(String(s==null?'':s).match(/[\u0E01-\u0E5B]/g)||[]).length;
+  function thaiLeft(src,out,html){
+    const sn=thaiN(src); if(!sn) return false;
+    if(String(out).trim()===String(src).trim()) return true;
+    const n=thaiN(out); return html?(n>=3&&n>=sn*0.03):n>=3;
+  }
   function safeHtml(h){                                                             // ใช้เฉพาะแสดงตัวอย่างในแอดมิน
     const t=document.createElement('template'); t.innerHTML=String(h||'');
     t.content.querySelectorAll('script,iframe,object,embed').forEach(n=>n.remove());
@@ -8607,6 +8615,7 @@ window.TccI18n=(function(){
       b.classList.remove('ok','warn','err');
       if(st.err[k]){ b.classList.add('err'); b.title=st.err[k]; }
       else if(st.warn[k]){ b.classList.add('warn'); b.title=st.warn[k].map(w=>WARN_TXT[w]||w).join(' · '); }
+      else if(st.cfg.fields.some(f=>{ if(!visible(f)) return false; const el=$(fid(id,k,f.key)); return !!el&&thaiN(el.value)>=3&&thaiLeft(thai(f),el.value,st.cfg.format==='html'); })){ b.classList.add('warn'); b.title='ยังมีข้อความภาษาไทยค้าง — ยังแปลไม่ครบ'; }   // [FIX-AITR]
       else{ if(filled) b.classList.add('ok'); b.title=''; }
     });
     st.cfg.fields.forEach(f=>{ if(!f.preview) return; LANGS.forEach(({k})=>{ const el=$(fid(id,k,f.key)), pv=$(`${id}-pv-${k}-${f.key}`); if(pv&&el) pv.innerHTML=safeHtml(el.value); }); });
@@ -8638,7 +8647,7 @@ window.TccI18n=(function(){
     cfg.fields.forEach(f=>{ if(!visible(f)) return; const v=thai(f).trim(); fields[f.key]=v; if(v) any=true; });
     if(!any){ note(id,'er','กรอกข้อความภาษาไทยก่อน แล้วค่อยกด "ให้ AI แปล"'); return; }
     const langs=(only&&only.length)?only:LANGS.map(l=>l.k);
-    const hasOld=langs.some(lg=>cfg.fields.some(f=>{ const el=$(fid(id,lg,f.key)); return el&&el.value.trim(); }));
+    const hasOld=langs.some(lg=>cfg.fields.some(f=>{ const el=$(fid(id,lg,f.key)); return el&&el.value.trim()&&!thaiLeft(fields[f.key]||'',el.value,cfg.format==='html'); }));   // [FIX-AITR] ช่องที่ยังเป็นไทยค้างไม่นับเป็นคำแปลเดิม
     if(hasOld&&typeof tccConfirm==='function'){
       const ok=await tccConfirm('🤖','ให้ AI แปลทับคำแปลเดิม?','คำแปลที่กรอกหรือแก้ไว้ในภาษาที่เลือกจะถูกแทนที่ด้วยผลจาก AI','แปลทับ',false);
       if(!ok) return;
@@ -8649,14 +8658,20 @@ window.TccI18n=(function(){
     _tick(); const _timer=setInterval(_tick,1000);
     try{
       let d; try{ d=await (cfg.request?cfg.request(langs,fields):send(cfg,langs,fields)); } finally{ clearInterval(_timer); }
-      const tr=d.translations||{}, wn=d.warnings||{}, er=d.errors||{};
+      const tr=d.translations||{}, wn=d.warnings||{}, er=Object.assign({},d.errors||{});
       if(cfg.format==='html') Object.keys(tr).forEach(lg=>Object.keys(tr[lg]).forEach(k=>{ tr[lg][k]=stripScripts(tr[lg][k]); }));
+      // [FIX-AITR] ช่องที่ AI คืนมายังเป็นภาษาไทย = ยังไม่ได้แปล → ไม่ใส่ลงช่อง · นับเป็นแปลไม่สำเร็จ (ให้กดแปลซ้ำเฉพาะภาษานั้น)
+      Object.keys(tr).forEach(lg=>{
+        const left=[]; Object.keys(tr[lg]).forEach(k=>{ if(thaiLeft(fields[k]||'',tr[lg][k],cfg.format==='html')){ left.push(k); delete tr[lg][k]; } });
+        if(left.length&&!er[lg]) er[lg]='แปลไม่ครบ — ช่อง '+left.join(', ')+' ยังเป็นภาษาไทย';
+        if(!Object.keys(tr[lg]).length) delete tr[lg];
+      });
       langs.forEach(lg=>{ delete st.warn[lg]; delete st.err[lg]; });
       Object.keys(tr).forEach(lg=>cfg.fields.forEach(f=>{ const el=$(fid(id,lg,f.key)); if(el&&f.key in tr[lg]) el.value=tr[lg][f.key]; }));
       Object.keys(wn).forEach(lg=>{ st.warn[lg]=wn[lg]; });
       Object.keys(er).forEach(lg=>{ st.err[lg]=er[lg]; });
       st.snap=thaiSnap(id); st.stale=false;
-      const okN=Object.keys(tr).length, badLangs=Object.keys(er);
+      const okN=Object.keys(tr).filter(lg=>!er[lg]).length, badLangs=Object.keys(er);   // [FIX-AITR] นับเฉพาะภาษาที่แปลครบจริง
       let h=(badLangs.length?'⚠️':'✅')+` แปลแล้ว ${okN}/${langs.length} ภาษา — ตรวจ/แก้ไขในแต่ละแท็บก่อนกดบันทึก`;
       const wl=Object.keys(wn).map(lg=>`${esc(langName(lg))}: ${esc(wn[lg].map(w=>WARN_TXT[w]||w).join(', '))}`);
       if(wl.length) h+='<br>⚠️ ควรตรวจ — '+wl.join(' · ');
@@ -8674,7 +8689,7 @@ window.TccI18n=(function(){
   function missingLangs(id){
     const st=S[id]; if(!st) return [];
     const need=st.cfg.fields.filter(f=>visible(f)&&thai(f).trim());
-    return LANGS.map(l=>l.k).filter(lg=>need.some(f=>{ const el=$(fid(id,lg,f.key)); return !(el&&el.value.trim()); }));
+    return LANGS.map(l=>l.k).filter(lg=>need.some(f=>{ const el=$(fid(id,lg,f.key)); return !(el&&el.value.trim())||thaiLeft(thai(f),el.value,st.cfg.format==='html'); }));   // [FIX-AITR] ยังเป็นไทยค้าง = ยังไม่ได้แปล
   }
   function translateMissing(id){
     const st=S[id]; if(!st||st.busy||!$(id+'-box')) return;
@@ -8789,7 +8804,7 @@ window.TccI18n=(function(){
   }
   const hasTr=list=>!!(list||[]).some(x=>x&&x.n&&Object.keys(x.n).length);
 
-  return {LANGS,build,mount,tab,touch,refresh,translate,translateMissing,missingLangs,stripScripts,collect,serialize,parse,pick,badge,noteRow,verify,verifyCols,setupColumns,send,checkStale,isStale,setPageTr,pageTr,item,card,hasTr};
+  return {LANGS,build,mount,tab,touch,refresh,translate,translateMissing,missingLangs,thaiLeft,stripScripts,collect,serialize,parse,pick,badge,noteRow,verify,verifyCols,setupColumns,send,checkStale,isStale,setPageTr,pageTr,item,card,hasTr};
 })();
 
 // ─── ค่ากำหนดฟอร์มที่ใช้คอมโพเนนต์ ───
@@ -8917,6 +8932,7 @@ async function _bulkRunBatches(list,cfg,ui,label){
           const j=batch[bi]; let changed=false;
           miss.forEach(lg=>{ if(er[lg]||!tr[lg]) return;
             Object.keys(j.th).forEach(k=>{ let v=tr[lg]['f'+bi+'_'+k]; if(typeof v!=='string'||!v.trim()) return;
+              if(TccI18n.thaiLeft(j.th[k],v,cfg.format==='html')) return;   // [FIX-AITR] ยังเป็นไทย = ไม่ได้แปล → ไม่บันทึกลงชีต
               if(cfg.format==='html') v=TccI18n.stripScripts(v); if(j.apply(lg,k,v.trim())) changed=true; }); });
           if(changed){ ui.status('💾 กำลังบันทึก '+j.name+' ลงชีต…'); try{ await j.persist(); ui.saved++; ui.log('✅ '+j.name); }catch(e){ if(e&&e.auth) throw e; ui.fail++; ui.log('❌ '+j.name+': บันทึกไม่สำเร็จ — '+(e&&e.message||e)); } }
           else{ ui.fail++; ui.log('⚠️ '+j.name+': ไม่ได้คำแปล'); }

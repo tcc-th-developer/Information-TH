@@ -21503,12 +21503,78 @@ function tcS5Summary(){
 }
 
 // [NEW-3] สร้าง PDF client-side
+// ── [PDF-LANG] สร้างเนื้อหา PDF สัญญาตามภาษาที่เลือก (ใช้ชุดคำแปลเดียวกับสัญญาบนจอ TCC_AGREE_I18N) ──
+const TCC_AGREE_PDFLBL = {
+  en:{thb:' THB',thbmo:' THB/month',mo:' months',ppl:' persons',sigh:'Signatures',j_info:'Applicant information',name:'Full name',phone:'Phone number',bnb:'Binance Account ID / UID',team:'Team',pos:'Position',vol:'Target trading limit',tmo:'Target period',tmem:'Target number of members',tbonus:'Target team management fee',tmonthly:'Monthly management fee',totvol:'Total trading limit'},
+  zh:{thb:' 泰铢',thbmo:' 泰铢/月',mo:' 个月',ppl:' 人',sigh:'签名',j_info:'申请人信息',name:'姓名',phone:'电话号码',bnb:'Binance 账户 ID / UID',team:'团队',pos:'职位',vol:'目标交易额度',tmo:'目标期限',tmem:'目标会员人数',tbonus:'目标团队管理费',tmonthly:'月度管理费',totvol:'交易总额度'}
+};
+function tcAgreePdfFull(L, isTrader, c){
+  const U=c.U;
+  const sec=(n,t)=>'<h2>'+_agSec(L,n,t)+'</h2>';
+  const ul=a=>'<ul>'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  const row=(k,v)=>'<tr><td class="dl">'+k+'</td><td>'+v+'</td></tr>';
+  const head=(t,eng)=>'<div class="dh"><div class="dlogo">TCC</div><h1>'+t+'</h1>'+(eng?'<p class="dsub">Trading Partnership Agreement</p>':'')+'<p class="dsub">'+L.sub+'</p></div>'
+    +'<div class="dmeta"><span>'+L.no+': <b>'+c.ref+'</b></span><span>'+L.dt+': <b>'+c.today+'</b></span></div>';
+  if(isTrader){
+    return head(L.pdf_h1, L.pdf_h1!=='Trading Partnership Agreement')
+    +'<table>'+row(L.m1k,L.p_m1v)+row(L.m2k,L.m2v)+row(L.p_m3k,L.p_m3v)+'</table>'
+    +sec(1,L.s1t)
+    +'<h3>'+L.p_11+'</h3><table>'+row(L.p_pn,L.s1av)+'</table>'
+    +'<h3>'+L.p_12+'</h3><table>'+row(U.name,c.name)+row(U.phone,c.phone)+row(U.bnb,c.bnbId)+row(L.p_prot,c.protectAmt)+'</table>'
+    +sec(2,L.s2t)
+    +'<table>'+row(L.d1k,L.d1v)+row(L.d2k,L.d2v)+row(L.d3k,L.d3v)+row(L.d4k,L.d4v)+'</table>'
+    +sec(3,L.s3t)+'<p>'+L.s3a+'</p><p>'+L.s3b+'</p>'
+    +sec(4,L.s4t)
+    +'<h3>'+L.opk+'</h3>'+ul([L.op1,L.op2,L.op3,L.op4,L.op5])
+    +'<h3>'+L.mbk+'</h3>'+ul([L.mb1,L.mb2,L.mb3,L.mb4,L.mb5])
+    +sec(5,L.s5t)
+    +'<table><thead class="hdr"><tr><th>#</th><th>'+L.c_type+'</th><th>'+L.c_pct+'</th><th>'+L.c_desc+'</th></tr></thead>'
+    +'<tr><td>1</td><td>'+L.r1n+'</td><td class="pct">10%</td><td>'+L.r1dl+'</td></tr>'
+    +'<tr><td>2</td><td>'+L.r2nl+'</td><td class="pct">10%</td><td>'+L.r2dl+'</td></tr>'
+    +'<tr><td>3</td><td class="gold"><b>'+L.r3n+'</b></td><td class="pct gold"><b>40%</b></td><td>'+L.r3d+'</td></tr>'
+    +'<tr><td>4</td><td>'+L.r4nl+'</td><td class="pct">40%</td><td>'+L.r4d+'</td></tr>'
+    +'<tr class="tot"><td colspan="2"><b>'+L.rtn+'</b></td><td class="pct"><b>100%</b></td><td>'+L.rtd+'</td></tr></table>'
+    +sec(6,L.s6t)+'<p>'+L.s6a+'</p><p>'+L.s6b+'</p>'
+    +sec(7,L.s7t)+'<p>'+L.s7p+'</p>'
+    +sec(8,L.s8t)+'<p>'+L.s8p+'</p>'
+    +sec(9,L.s9t)+'<p>'+L.s9p+'</p>'
+    +sec(10,L.s10t)+'<p>'+L.s10p+'</p>'
+    +sec(11,L.s11t)+'<p>'+L.s11p+'</p>'
+    +sec(12,L.s12t)+ul([L.g1,L.g2,L.g3])
+    +_agNote(L,'font-size:.78rem;color:#666;font-style:italic;');
+  }
+  return head(L.j_ttl,false)
+    +sec(1,U.j_info)
+    +'<table>'+row(U.name,c.name)+row(U.phone,c.phone)+row('BNB ID',c.bnbId)+row(U.team,c.team)+row(U.pos,c.pos)
+      +row(U.vol,c.vol)+row(U.tmo,c.months+U.mo)+row(U.tmem,c.mems+U.ppl)+row(U.tbonus,c.bonus)+row(U.tmonthly,c.monthly)+'</table>'
+    +'<h2>'+L.j1h+'</h2><p>'+L.j1a+'</p><p style="font-size:.78rem;color:#666;">'+L.j1w+'</p>'
+    +'<h2>'+L.j2h+'</h2>'+ul([L.j2_1,L.j2_2,L.j2_3,L.j2_4])
+    +'<h2>'+L.j3h+'</h2><p>'+L.j3a+'</p><p>'+L.j3b+'</p>'+ul([L.j3_1,L.j3_2,L.j3_3,L.j3_4])
+    +'<h2>'+L.j4h+'</h2><p>'+L.j4p+'</p>'
+    +'<table>'+row(U.tmo,c.months+U.mo)+row(U.tmem,c.mems+U.ppl)+row(U.totvol,c.vol)+'</table>'
+    +'<h2>'+L.j5h+'</h2>'
+    +'<table><thead class="hdr"><tr><th>'+L.j5c1+'</th><th>'+L.j5c2+'</th><th>'+L.j5c3+'</th></tr></thead>'
+    +'<tr><td>Direct</td><td>'+L.j5t1+'</td><td class="pct gold">10%</td></tr>'
+    +'<tr><td>Level A</td><td>'+L.j5t2+'</td><td class="pct gold">15%</td></tr>'
+    +'<tr><td>Level B</td><td>'+L.j5t3+'</td><td class="pct gold">10%</td></tr></table>'
+    +'<p>'+L.j5pay+'</p><p>'+L.j5sb+'</p>'
+    +'<table>'+row(U.tmo,c.months+U.mo)+row(U.tbonus,c.bonus)+row(U.tmonthly,c.monthly)+'</table>'
+    +'<h2>'+L.j6h+'</h2>'+ul([L.j6_1,L.j6_2,L.j6_3,L.j6_4,L.j6_5])
+    +'<h2>'+L.j7h+'</h2>'+ul([L.j7_1,L.j7_2,L.j7_3])
+    +'<h2>'+L.j8h+'</h2><p>'+L.j8p+'</p>'
+    +'<h2>'+L.j9h+'</h2>'+ul([L.j9_1,L.j9_2,L.j9_3])
+    +_agNote(L,'font-size:.78rem;color:#666;font-style:italic;');
+}
+
 function tcDownloadPDF(isTrader, appData){
   // ── ข้อ 4: ใช้ appData ที่ส่งมาตรงๆ (ถ้ามี) แทน TC.appRow
   //    เพื่อให้ PDF ของผู้บริหารแสดงข้อมูลและสถานะถูกต้องเสมอ
   const r=(appData&&typeof appData==='object')?appData:(TC.appRow||{});
   const m=TC.member||{};
-  const today=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  const AG=tcAgreeDict();                       // null = ภาษาไทย (ใช้ข้อความเดิม)
+  const _lg=AG?(TCC_AGREE_I18N[tcAgreeLang()]?tcAgreeLang():'en'):'th';
+  const _U=AG?(TCC_AGREE_PDFLBL[_lg]||TCC_AGREE_PDFLBL.en):null;
+  const today=new Date().toLocaleDateString(AG?(_lg==='zh'?'zh-CN':'en-GB'):'th-TH',{year:'numeric',month:'long',day:'numeric'});
   const name=r.MemberName||memVal(m,'name')||'';
   const phone=r.Phone||m['Phone']||'';
   const bnbId=r.BNB_ID||memVal(m,'id')||'';
@@ -21517,8 +21583,8 @@ function tcDownloadPDF(isTrader, appData){
   const months=r.TargetMonths||'—';
   const mems=r.TargetMembers||'—';
   const pos=r.DesiredPosition||'';
-  const bonus=r.BonusAmount?tcFmtNum(r.BonusAmount)+' บาท':'—';
-  const monthly=r.MonthlyFee?tcFmtNum(r.MonthlyFee)+' บาท/เดือน':'—';
+  const bonus=r.BonusAmount?tcFmtNum(r.BonusAmount)+(_U?_U.thb:' บาท'):'—';
+  const monthly=r.MonthlyFee?tcFmtNum(r.MonthlyFee)+(_U?_U.thbmo:' บาท/เดือน'):'—';
   const ref=r.Title||'';
   // ── ดึงวงเงินคุ้มครองจาก ExtraNote (บรรทัดแรก) ────────────
   const extraLines=(r.ExtraNote||'').split('\n');
@@ -21561,7 +21627,7 @@ td,th{border:1px solid #dde3ef;padding:6px 11px;font-size:.83rem;}
   const isApproved=appStatus==='Approved';
   const approvedDate=isApproved?(r.UpdatedAt||r.SubmittedAt||'').slice(0,10):'';
   // ลายน้ำ: ไม่ Approved = แดง "รอการอนุมัติ", Approved = เขียว "อนุมัติแล้ว"
-  const wmText=isApproved?'✓ อนุมัติแล้ว':'รอการอนุมัติ';
+  const wmText=AG?(isApproved?AG.wm_ok:AG.wm_wait):(isApproved?'✓ อนุมัติแล้ว':'รอการอนุมัติ');
   const wmClass=isApproved?'wm-txt wm-approved':'wm-txt wm-pending';
   // repeat watermark ทั้งหน้า
   const wmBlock=`<div class="wm-wrap">
@@ -21571,13 +21637,15 @@ td,th{border:1px solid #dde3ef;padding:6px 11px;font-size:.83rem;}
     }).join('')}
   </div>`;
   const wmFooter=`<div class="wm-info">
-    <span>เอกสารอ้างอิง: ${ref}</span>
-    <span>${isApproved?`✅ อนุมัติวันที่: ${approvedDate}`:`⚠️ สถานะ: รอการอนุมัติ — เอกสารนี้ยังไม่มีผลผูกพันทางกฎหมาย`}</span>
-    <span>พิมพ์วันที่: ${today}</span>
+    <span>${AG?AG.wm_ref:'เอกสารอ้างอิง: '}${ref}</span>
+    <span>${isApproved?`${AG?AG.sg_ap:'✅ อนุมัติวันที่: '}${approvedDate}`:(AG?AG.wm_st:`⚠️ สถานะ: รอการอนุมัติ — เอกสารนี้ยังไม่มีผลผูกพันทางกฎหมาย`)}</span>
+    <span>${AG?AG.f_pr:'พิมพ์วันที่: '}${today}</span>
   </div>`;
 
   let body='';
-  if(isTrader){
+  if(AG){
+    body=tcAgreePdfFull(AG,isTrader,{ref,today,name,phone,bnbId,team,pos,vol,months,mems,bonus,monthly,protectAmt,U:_U});
+  }else if(isTrader){
     // ═══════════════════════════════════════════════════════
     //  สัญญาบันทึกข้อตกลงการร่วมเทรด (ครบถ้วนจาก docx)
     // ═══════════════════════════════════════════════════════
@@ -21779,7 +21847,7 @@ td,th{border:1px solid #dde3ef;padding:6px 11px;font-size:.83rem;}
     </ul>`;
   }
 
-  const sig=`<h2>ลายมือชื่อ</h2>
+  const sigTh=`<h2>ลายมือชื่อ</h2>
     <div class="sig-row">
       <div class="sig-box"><div class="sig-line"></div><p>${name}</p><p class="sub">ผู้สมัคร</p><p class="sub">วันที่: ${today}</p></div>
       <div class="sig-box"><div class="sig-line"></div><p>คณะกรรมการบริหาร</p><p class="sub">Trader Café Club</p>
@@ -21788,14 +21856,17 @@ td,th{border:1px solid #dde3ef;padding:6px 11px;font-size:.83rem;}
       </div>
     </div>
     <p class="foot">เอกสารฉบับนี้จัดทำ 2 ฉบับ มีข้อความตรงกัน คู่สัญญาแต่ละฝ่ายยึดถือไว้ฝ่ายละ 1 ฉบับ</p>`;
+  const sig=AG?('<h2>'+_U.sigh+'</h2>'+tcAgreePdfSig(AG,{name,today,ref,isApproved,approvedDate})):sigTh;
 
-  const html=`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">
-  <title>${isTrader?'สัญญาร่วมเทรด':'บันทึกข้อตกลง'} — ${name}</title>
+  let html=`<!DOCTYPE html><html lang="${_lg}"><head><meta charset="UTF-8">
+  <title>${AG?(isTrader?AG.pdf_win:AG.j_ttl):(isTrader?'สัญญาร่วมเทรด':'บันทึกข้อตกลง')} — ${name}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  ${AG?tcAgreeFontLink(_lg):''}
   <style>${css}</style></head><body>${wmBlock}${body}${sig}${wmFooter}
-  <script>window.onload=function(){window.print();};<\/script></body></html>`;
+  <script>${AG?"window.onload=function(){(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){setTimeout(function(){window.print();},300);});};":'window.onload=function(){window.print();};'}<\/script></body></html>`;
 
+  if(AG&&_lg==='zh') html=html.split("'Sarabun',sans-serif").join("'Noto Sans SC','Sarabun',sans-serif");
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const win=window.open(url,'_blank');

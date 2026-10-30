@@ -19070,7 +19070,7 @@ async function tcLoadMe(){
   TC.data=d; TC.member=d.member;
   const apps=d.applications||[];
   TC.traderApp=apps.find(r=>(r.DesiredPosition||'')==='เทรดเดอร์')||null;
-  TC.jobApp=apps.find(r=>(r.DesiredPosition||'')!=='เทรดเดอร์'&&(r.DesiredPosition||'')!=='')||null;
+  TC.jobApp=apps.find(r=>(r.DesiredPosition||'')!=='เทรดเดอร์'&&(r.DesiredPosition||'')!==''&&(r.DesiredPosition||'')!=='ลงทะเบียน')||null;   // 'ลงทะเบียน' = แถวเก็บรหัสผ่าน ไม่ใช่ใบสมัครตำแหน่งงาน
   TC.appRow=TC.traderApp||TC.jobApp||null; TC.appId=TC.appRow?(TC.appRow.Id||TC.appRow.id):null;
   TC.hasPassword=!!d.hasPassword;
   return d;

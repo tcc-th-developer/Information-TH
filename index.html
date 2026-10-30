@@ -21052,8 +21052,214 @@ function tcNumBlurSimple(id){
   if(!isNaN(n)&&raw!=='')el.value=n.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
+// ══════════════════════════════════════════════════════════════════
+// [AGREE-I18N] เนื้อหาสัญญา 9 ภาษา — th = ต้นฉบับเดิมในฟังก์ชัน (ไม่แตะ) · ภาษาอื่นสร้างจากข้อมูลด้านล่าง
+// โครงสร้างต้องตรงกับฉบับภาษาไทยทุกข้อ · ฉบับแปลเป็นร่างเพื่อให้นักกฎหมาย/เจ้าของภาษาตรวจก่อนใช้จริง
+// ภาษาที่ยังไม่มีคำแปล → ถอยไปใช้ en (ไม่ใช่ไทย) · ตั้ง note = '' เพื่อปิดข้อความ "ฉบับไทยเป็นหลัก"
+// ══════════════════════════════════════════════════════════════════
+const TCC_AGREE_CSS = { y: 'var(--gold)', d: 'var(--text-dim)' };
+const TCC_AGREE_LOCALE = { th:'th-TH', en:'en-GB', vi:'vi-VN', kh:'km-KH', mm:'my-MM', la:'lo-LA', ms:'ms-MY', id:'id-ID', zh:'zh-CN' };
+const TCC_AGREE_FONT = { zh:'Noto+Sans+SC', kh:'Noto+Sans+Khmer', mm:'Noto+Sans+Myanmar', la:'Noto+Sans+Lao' };
+const TCC_AGREE_I18N = {"en":{"secf":"Section {n} — {t}","ttl":"Trading Partnership Agreement","sub":"Trader Café Club — Thailand","m1k":"Guarantee period","m1v":"First 3 months, for new members","m2k":"Legal references","m2v":"Civil and Commercial Code, Sections 369–398, and the Sale Contract Act B.E. 2562 (2019)","m3k":"Platform","m3v":"Binance Exchange — the member's own account; no funds are transferred to any other person","s1t":"Parties","s1ak":"Service provider:","s1av":"The Executive Committee of the Trader Café Club Thailand project","s1bk":"Member / trading participant:","s1bv":"As stated in this application form","s2t":"Definitions","d1k":"\"System\"","d1v":"the trading-signal system and portfolio-management program developed and provided by the Operator","d2k":"\"Portfolio\"","d2v":"the cryptocurrency trading account on Binance held in the member's own name","d3k":"\"Net Profit\"","d3v":"the difference between the portfolio value at the end and at the start of the period, after deducting platform fees","d4k":"\"Liquidity Claim\"","d4v":"a request for compensation when the portfolio suffers damage","s3t":"Purpose and Term","s3a":"This Agreement sets out the rights, duties and responsibilities in the joint use of the trading-signal system through Binance. <b>The member remains the owner of the account and all assets.</b> The Operator provides signals and strategies only.","s3b":"Term: <b>12 months</b>, renewed automatically unless cancelled with 30 days' prior notice. New members receive a guarantee for the <b>first 3 months</b>.","s4t":"Rights and Duties","opk":"Duties of the Operator:","op1":"Provide and deliver trading signals regularly and on time","op2":"Provide relevant information, advice and training","op3":"Review and consider Liquidity Claim requests within the specified period","op4":"Keep personal data confidential in accordance with the PDPA B.E. 2562 (2019)","op5":"Advance the shortfall of the minimum income if profit is below 10%","mbk":"Duties of the Member:","mb1":"Trade only through the member's own Binance account","mb2":"<b>Never</b> transfer money or hand over Login Credentials to anyone","mb3":"Strictly comply with the trading rules of the System","mb4":"Pay the revenue share on time at the specified rates","mb5":"Notify the Operator immediately if the account is suspended or anything unusual occurs","s5t":"Revenue Allocation from Net Profit","c_pct":"Share","c_desc":"Description","r1d":"Compensation for the team and network — Your Team 10% + Level A 1.5% + Level B 1% + referrer 1–2% of profit (any amount above 10% is deducted from the Reserve Fund)","r2n":"Reserve Fund (income guarantee)","r2d":"Reserve fund for the minimum income guarantee — 10% minus any amount the team/referrer receives above 10%","r3d":"Net profit received directly by the member","r4n":"System Center (system management)","r4d":"System management and development fee","rtd":"of Net Profit","c_type":"Income type","r1n":"Team commission","r1dl":"Compensation for the team and network","r2nl":"Income guarantee","r2dl":"Reserve fund for the minimum income guarantee","r3n":"Trader income","r4nl":"System management","rtn":"Total","s6t":"Liquidity Claim","s6a":"If the portfolio suffers damage, the member may submit a claim when: no breach of conditions has ever occurred / no outstanding debts / all documents are submitted in full.","s6b":"Processing time: Type 1 ≤7 days | Type 2 ≤15 days | Type 3 ≤30 days | Type 4 ≤45 days","s7t":"Minimum Income Guarantee","s7p":"During the first 3 months: a guaranteed minimum profit of <b>10% per month</b>. If profit is below 10%, the Operator advances the difference within 7 business days.","s8t":"Safety of Funds","s8p":"The assets in the portfolio are owned by the member <b>100%</b> at all times. The Operator has no right to access or transfer any assets.","s9t":"Confidentiality (PDPA)","s9p":"The parties agree to keep confidential information secret and not disclose it to third parties. This obligation continues for a further <b>2 years</b> after the Agreement ends.","s10t":"Termination","s10p":"30 days' prior notice, or immediate termination if either party commits a material breach. The Agreement renews automatically every 12 months.","s11t":"Dispute Resolution","s11p":"The parties shall first negotiate in good faith. If not resolved within 30 days, the case shall be brought before the <b>Bangkok South Civil Court</b>, under the laws of the Kingdom of Thailand.","s12t":"General Provisions","g1":"Any amendment must be in writing and signed by both parties","g2":"If any provision is void, the remaining provisions remain in full force","g3":"This Agreement is made in 2 identical copies, one held by each party","note":"This translation is provided for convenience. The Thai version is the authoritative version; in case of any difference, the Thai version prevails.","pdf_win":"Trading Partnership Agreement","pdf_h1":"Trading Partnership Agreement","no":"No.","dt":"Date","st":"Status","ok":"✅ Approved","wait":"⏳ Pending approval","p_m1v":"First 3 months, for new members joining the project","p_m3k":"Trading platform","p_m3v":"Binance Exchange — the member's own account","p_11":"1.1 First party — trading system service provider","p_pn":"Project name","p_12":"1.2 Second party — member / trading participant","p_prot":"Trading protection limit","p_s11":"Disputes are governed by the <b>laws of the Kingdom of Thailand</b> and brought before the <b>Bangkok South Civil Court</b>","sg_m":"Applicant / Member","sg_b":"TCC Executive Committee","sg_dt":"Date: ","sg_dots":"Date: ...........................","sg_ap":"✅ Approved on: ","f_gen":"This document was generated by the Trader Café Club — Easy Trade system | Ref: ","f_pr":"Printed on: ","f_ok":"✅ This document has been approved and is legally binding","f_wait":"⚠️ Pending approval — this document is not legally binding until approved","wm_ok":"✓ Approved","wm_wait":"Pending approval","wm_ref":"Reference: ","wm_st":"⚠️ Status: Pending approval — this document is not yet legally binding","j_ttl":"Project Participation Agreement","j1h":"1. Introduction / Purpose","j1a":"This Agreement is made between <b>the Executive Committee of the Trader Café Club project</b> and <b>the applicant joining the project as an executive</b> in order to build and expand a knowledge base in digital-asset trading through Binance/Binance TH, and to clearly define rights, duties and compensation.","j1w":"⚠ Digital-asset activities in Thailand are regulated by the SEC under the Digital Asset Emergency Decree B.E. 2561 (2018)","j2h":"2. Applicant Qualifications","j2_1":"At least 20 years of age and legally competent to enter into juristic acts","j2_2":"Basic knowledge of digital-asset trading","j2_3":"Not bankrupt, and not under criminal prosecution for fraud-related offences","j2_4":"Accepts the terms of Binance/Binance TH and the relevant Thai laws","j3h":"3. Roles and Duties","j3a":"<b>Building and expanding membership:</b> build and expand the number of team members in line with the agreed targets","j3b":"<b>Training &amp; Education:</b>","j3_1":"How to download/install the Binance and Binance TH apps","j3_2":"Identity verification (KYC) and Passkey setup","j3_3":"Buying and selling coins; setting Take Profit (TP) and Stop Loss (SL)","j3_4":"Depositing, transferring, receiving and withdrawing funds from the account","j4h":"4. Targets and Term","j4p":"The term, target number of members and total trading limit are as stated in this application form","j5h":"5. Compensation and Commission","j5c1":"Level","j5c2":"Type","j5c3":"Rate","j5t1":"Team members trading directly","j5t2":"Teams that split off to form a new team","j5t3":"Next-level teams","j5pay":"Paid in USDT to the Binance account <b>on the 15th of every following month</b>","j5sb":"<b>Special Team Management Fee (Special Bonus):</b> according to the term and targets achieved as stated in the application form","j6h":"6. Obligations and Legal Compliance","j6_1":"Comply with the Digital Asset Emergency Decree B.E. 2561 (2018) and the relevant SEC notifications","j6_2":"Report and pay tax on income in accordance with the Revenue Code","j6_3":"Keep member data confidential in accordance with the PDPA B.E. 2562 (2019)","j6_4":"Do not engage in activities amounting to fundraising without SEC permission","j6_5":"Ensure members complete KYC correctly and fully in accordance with AML/KYC principles","j7h":"7. Termination of the Agreement","j7_1":"Written notice of cancellation at least <b>30 days</b> in advance","j7_2":"The project may terminate immediately if the executive breaches the terms or acts contrary to the law","j7_3":"Upon termination, the executive remains entitled to commission earned before the termination date","j8h":"8. Dispute Resolution","j8p":"The parties shall first negotiate in good faith. If not resolved within 30 days, a suit shall be filed with the competent court in Bangkok, under Thai law.","j9h":"9. Prohibitions","j9_1":"Do not close/open orders without approval from the secretary","j9_2":"Do not evade or refuse to enter orders","j9_3":"Do not raise funds without SEC permission"},"zh":{"secf":"第{n}部分 — {t}","ttl":"联合交易合作协议（Trading Partnership Agreement）","sub":"Trader Café Club — 泰国","m1k":"保障期","m1v":"新会员前3个月","m2k":"法律依据","m2v":"《民商法典》第369–398条及《买卖合同法》佛历2562年（公元2019年）","m3k":"平台","m3v":"币安交易所（Binance）— 会员本人账户，不向任何他人转账","s1t":"合同当事人","s1ak":"服务提供方：","s1av":"Trader Café Club 泰国项目管理委员会","s1bk":"会员／交易参与者：","s1bv":"以本申请表所填信息为准","s2t":"定义","d1k":"“系统”","d1v":"由运营方开发并提供的交易信号系统及投资组合管理程序","d2k":"“投资组合”","d2v":"以会员本人名义在币安开立的加密货币交易账户","d3k":"“净利润”","d3v":"期末与期初投资组合价值之差，扣除平台费用后的金额","d4k":"“Liquidity Claim”（流动性索赔）","d4v":"投资组合遭受损失时申请赔付的请求","s3t":"目的与期限","s3a":"本协议约定通过币安共同使用交易信号系统的权利、义务和责任。<b>会员始终是账户及全部资产的所有人</b>，运营方仅提供信号和策略服务。","s3b":"期限：<b>12个月</b>，如未提前30天通知解除，则自动续期。新会员享有<b>前3个月</b>的保障。","s4t":"权利与义务","opk":"运营方的义务：","op1":"定期、及时地提供并发送交易信号","op2":"提供相关信息、建议和培训","op3":"在规定期限内审核并处理 Liquidity Claim 申请","op4":"依照佛历2562年《个人数据保护法》（PDPA）对个人信息保密","op5":"当利润不足10%时，垫付最低收益的差额","mbk":"会员的义务：","mb1":"仅通过会员本人的币安账户进行交易","mb2":"<b>严禁</b>向任何人转账或交付登录凭证（Login Credentials）","mb3":"严格遵守系统的交易规则","mb4":"按规定比例按时支付收益分成","mb5":"账户被冻结或出现异常情况时，立即通知运营方","s5t":"净利润收益分配比例","c_pct":"比例","c_desc":"说明","r1d":"团队及网络报酬 — Your Team 10% + Level A 1.5% + Level B 1% + 推荐人 利润的1–2%（超过10%的部分从储备基金中扣除）","r2n":"Reserve Fund（收益保障）","r2d":"最低收益保障储备基金 — 10%减去团队/推荐人超出10%的部分","r3d":"会员直接获得的净利润","r4n":"System Center（系统管理）","r4d":"系统管理及开发费用","rtd":"占净利润（Net Profit）","c_type":"收益类型","r1n":"团队佣金","r1dl":"团队及网络报酬","r2nl":"收益保障","r2dl":"最低收益保障储备基金","r3n":"交易员收益","r4nl":"系统管理","rtn":"合计","s6t":"Liquidity Claim（流动性索赔）","s6a":"投资组合受损时，会员在以下条件下有权提出索赔：从未违反条件／无拖欠款项／提交的文件齐全。","s6b":"处理期限：第1类 ≤7天 | 第2类 ≤15天 | 第3类 ≤30天 | 第4类 ≤45天","s7t":"最低收益保障","s7p":"前3个月：保障最低利润<b>每月10%</b>。如利润低于10%，运营方将在7个工作日内垫付差额。","s8t":"资金安全","s8p":"投资组合中的资产<b>100%</b>始终归会员所有，运营方无权访问或转移任何资产。","s9t":"保密（PDPA）","s9p":"双方同意对保密信息予以保密，不向第三方披露。该义务在协议终止后继续有效<b>2年</b>。","s10t":"协议解除","s10p":"提前30天通知，或在任一方发生重大违约时立即解除。协议每12个月自动续期。","s11t":"争议解决","s11p":"先行善意协商；如30天内未能解决，则提交<b>曼谷南区民事法院</b>，适用泰王国法律。","s12t":"一般条款","g1":"协议的修改须以书面形式作出，并经双方签署","g2":"如有条款无效，其余条款仍继续有效","g3":"本协议一式两份，内容一致，双方各执一份","note":"本译文仅供参考，以泰文版本为准；如有差异，以泰文版本为准。","pdf_win":"联合交易协议","pdf_h1":"联合交易合作协议","no":"编号","dt":"日期","st":"状态","ok":"✅ 已批准","wait":"⏳ 待批准","p_m1v":"参与项目的新会员前3个月","p_m3k":"交易平台","p_m3v":"币安交易所（Binance）— 会员本人账户","p_11":"1.1 甲方 — 交易系统服务提供方","p_pn":"项目名称","p_12":"1.2 乙方 — 会员／交易参与者","p_prot":"交易保障额度","p_s11":"争议适用<b>泰王国法律</b>，并提交<b>曼谷南区民事法院</b>","sg_m":"申请人／会员","sg_b":"TCC 管理委员会","sg_dt":"日期：","sg_dots":"日期：...........................","sg_ap":"✅ 批准日期：","f_gen":"本文件由 Trader Café Club — Easy Trade 系统生成 | 编号：","f_pr":"打印日期：","f_ok":"✅ 本文件已获批准，具有法律约束力","f_wait":"⚠️ 待批准 — 在获得批准之前，本文件不具有法律约束力","wm_ok":"✓ 已批准","wm_wait":"待批准","wm_ref":"参考文件：","wm_st":"⚠️ 状态：待批准 — 本文件尚不具有法律约束力","j_ttl":"项目参与协议书","j1h":"1. 前言／目的","j1a":"本协议书由<b>Trader Café Club 项目管理委员会</b>与<b>以管理人员身份申请参与项目的申请人</b>订立，旨在通过 Binance／Binance TH 建立并扩大数字资产交易的知识基础，并明确权利、义务与报酬。","j1w":"⚠ 在泰国开展数字资产活动受证监会（SEC）监管，依据佛历2561年《数字资产紧急法令》","j2h":"2. 申请人资格","j2_1":"年满20周岁，并依法具有民事行为能力","j2_2":"具备数字资产交易的基础知识","j2_3":"非破产人，且未因欺诈相关罪行被提起刑事诉讼","j2_4":"接受 Binance／Binance TH 的条款及泰国相关法律","j3h":"3. 职责与义务","j3a":"<b>发展和扩大会员：</b>按约定目标发展和扩大团队会员数量","j3b":"<b>培训与教育（Training &amp; Education）：</b>","j3_1":"下载／安装 Binance 和 Binance TH 应用的步骤","j3_2":"身份验证（KYC）及 Passkey 设置","j3_3":"币种买卖，设置止盈（TP）和止损（SL）","j3_4":"账户的充值、转账、收款及提现","j4h":"4. 目标与期限","j4p":"期限、目标会员人数及总交易额度以本申请表所载为准","j5h":"5. 报酬与佣金","j5c1":"层级","j5c2":"类型","j5c3":"比率","j5t1":"团队成员自行交易","j5t2":"分出另立的新团队","j5t3":"下一级团队","j5pay":"以 USDT 支付至 Binance 账户，<b>于次月15日发放</b>","j5sb":"<b>特别团队管理费（Special Bonus）：</b>根据申请表所载的期限及达成的目标","j6h":"6. 义务与合规","j6_1":"遵守佛历2561年《数字资产紧急法令》及证监会（SEC）相关公告","j6_2":"依据《税法典》申报并缴纳收入税","j6_3":"依据佛历2562年《个人数据保护法》（PDPA）对会员信息保密","j6_4":"不得从事未经证监会许可而构成募集资金的活动","j6_5":"依据反洗钱／KYC 原则，确保会员正确、完整地完成 KYC","j7h":"7. 协议终止","j7_1":"至少提前<b>30天</b>以书面形式通知解除","j7_2":"如管理人员违反条款或有违法行为，项目方有权立即解除","j7_3":"协议终止后，管理人员仍有权获得终止日之前已产生的佣金","j8h":"8. 争议解决","j8p":"先行善意协商；如30天内未能解决，则向曼谷有管辖权的法院提起诉讼，适用泰国法律。","j9h":"9. 禁止事项","j9_1":"未经秘书批准，不得平仓／开仓","j9_2":"不得推诿或拒绝进入订单","j9_3":"未经证监会许可，不得募集资金"}};
+function tcAgreeLang(){
+  try{ if(typeof _L!=='undefined' && _L) return _L; }catch(e){}
+  try{ if(typeof window.tccLang==='function') return window.tccLang()||'th'; }catch(e){}
+  return 'th';
+}
+// คืน null เมื่อเป็นภาษาไทย (ใช้ข้อความเดิมในฟังก์ชัน)
+function tcAgreeDict(lang){ lang=lang||tcAgreeLang(); if(lang==='th') return null; return TCC_AGREE_I18N[lang]||TCC_AGREE_I18N.en||null; }
+function tcAgreeFontLink(lang){ const f=TCC_AGREE_FONT[lang]; return f?'<link href="https://fonts.googleapis.com/css2?family='+f+':wght@400;600;700&display=swap" rel="stylesheet">':''; }
+function _agSec(L,n,t){ return L.secf.replace('{n}',n).replace('{t}',t); }
+function _agNote(L,css){ return L.note?'<p style="'+css+'">'+L.note+'</p>':''; }
+
+// ── สัญญาร่วมเทรดบนจอ: v='main' (12 ส่วน, หัวตารางใช้ tccT) | v='lao' (9 ส่วน ตามฉบับ index_L_Main) ──
+function tcAgreeTrader(L, v){
+  const Y=TCC_AGREE_CSS.y, D=TCC_AGREE_CSS.d, lao=(v==='lao');
+  const h=(n,t)=>`<h4 style="color:${Y};margin:10px 0 4px;">${_agSec(L,n,t)}</h4>`;
+  const ul=(a,m)=>`<ul style="padding-left:16px;margin:${m};">${a.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+  const B='border-bottom:1px solid rgba(255,255,255,.06);';
+  const T=(typeof tccT==='function')?tccT:(k=>k);
+  const span=k=>`<span data-i18n="${k}">${T(k)}</span>`;
+  const tdc=(c,x,extra)=>`<td style="padding:4px 8px;${c||''}${extra||''}">${x}</td>`;
+  const lbl={
+    type: lao?L.c_type:span('income_type'), r1: lao?L.r1n:span('team_comm_title'),
+    r2: lao?L.r2nl:L.r2n, r3: lao?L.r3n:span('income_trader'), r4: lao?L.r4nl:L.r4n, tot: lao?L.rtn:span('total_all'),
+    d1: lao?L.r1dl:L.r1d, d2: lao?L.r2dl:L.r2d
+  };
+  let o=`
+<h4 style="color:${Y};margin:0 0 4px;">${L.ttl}</h4>
+<p style="color:${D};font-size:.75rem;margin-bottom:10px;">${L.sub}</p>
+<table style="width:100%;border-collapse:collapse;margin-bottom:10px;font-size:.8rem;">
+  <tr><td style="padding:4px 8px;color:${D};width:140px;">${L.m1k}</td><td style="padding:4px 8px;">${L.m1v}</td></tr>
+  <tr><td style="padding:4px 8px;color:${D};">${L.m2k}</td><td style="padding:4px 8px;">${L.m2v}</td></tr>
+  <tr><td style="padding:4px 8px;color:${D};">${L.m3k}</td><td style="padding:4px 8px;">${L.m3v}</td></tr>
+</table>
+${h(1,L.s1t)}
+<p><b>${L.s1ak}</b> ${L.s1av}</p>
+<p><b>${L.s1bk}</b> ${L.s1bv}</p>
+${h(2,L.s2t)}
+<p><b>${L.d1k}</b> — ${L.d1v}</p>
+<p><b>${L.d2k}</b> — ${L.d2v}</p>
+<p><b>${L.d3k}</b> — ${L.d3v}</p>
+<p><b>${L.d4k}</b> — ${L.d4v}</p>
+${h(3,L.s3t)}
+<p>${L.s3a}</p>
+<p>${L.s3b}</p>
+${h(4,L.s4t)}
+<p><b>${L.opk}</b></p>
+${ul([L.op1,L.op2,L.op3,L.op4,L.op5],'4px 0 8px')}
+<p><b>${L.mbk}</b></p>
+${ul([L.mb1,L.mb2,L.mb3,L.mb4,L.mb5],'4px 0 8px')}
+${h(5,L.s5t)}
+<table style="width:100%;border-collapse:collapse;font-size:.78rem;margin-bottom:8px;">
+  <thead><tr style="background:rgba(240,185,11,.15);">
+    <th style="padding:5px 8px;text-align:left;">#</th><th style="padding:5px 8px;text-align:left;">${lbl.type}</th>
+    <th style="padding:5px 8px;text-align:center;">${L.c_pct}</th><th style="padding:5px 8px;text-align:left;">${L.c_desc}</th>
+  </tr></thead>
+  <tbody>
+    <tr>${tdc(B,'1')}${tdc(B,lbl.r1)}${tdc('text-align:center;','10%',B)}${tdc(B,lbl.d1)}</tr>
+    <tr>${tdc(B,'2')}${tdc(B,lbl.r2)}${tdc('text-align:center;','10%',B)}${tdc(B,lbl.d2)}</tr>
+    <tr>${tdc(B,lao?'3':'<b style="color:'+Y+';">3</b>')}${tdc(B+'font-weight:600;color:'+Y+';',lbl.r3)}${tdc('text-align:center;','40%',B+'font-weight:600;color:'+Y+';')}${tdc(B,L.r3d)}</tr>
+    <tr>${tdc(B,'4')}${tdc(B,lbl.r4)}${tdc('text-align:center;','40%',B)}${tdc(B,L.r4d)}</tr>
+    <tr style="background:rgba(240,185,11,.08);"><td colspan="2" style="padding:5px 8px;font-weight:700;">${lbl.tot}</td><td style="padding:5px 8px;text-align:center;font-weight:700;">100%</td><td style="padding:5px 8px;">${L.rtd}</td></tr>
+  </tbody>
+</table>
+${h(6,L.s6t)}
+<p>${L.s6a}</p>
+<p>${L.s6b}</p>
+${h(7,L.s7t)}
+<p>${L.s7p}</p>
+${h(8,L.s8t)}
+<p>${L.s8p}</p>`;
+  if(lao){
+    o+=`
+${h(9,L.s10t)}
+<p>${L.s10p}</p>`;
+  }else{
+    o+=`
+${h(9,L.s9t)}
+<p>${L.s9p}</p>
+${h(10,L.s10t)}
+<p>${L.s10p}</p>
+${h(11,L.s11t)}
+<p>${L.s11p}</p>
+${h(12,L.s12t)}
+${ul([L.g1,L.g2,L.g3],'4px 0')}`;
+  }
+  return o+_agNote(L,'color:'+D+';font-size:.72rem;margin-top:10px;font-style:italic;');
+}
+
+// ── บันทึกข้อตกลงเข้าร่วมโครงการ (ผู้บริหาร/ตำแหน่งอื่น) — ใช้ใน index_L_Main ──
+function tcAgreeJob(L){
+  const Y=TCC_AGREE_CSS.y, D=TCC_AGREE_CSS.d;
+  const h=(t,m)=>`<h4 style="color:${Y};margin:${m||'10px 0 4px'};">${t}</h4>`;
+  const ul=(a,m)=>`<ul style="padding-left:16px;margin:${m};">${a.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+  const B='border-bottom:1px solid rgba(255,255,255,.06);';
+  const row=(a,b,c,last)=>`<tr><td style="padding:4px 8px;${last?'':B}">${a}</td><td style="padding:4px 8px;${last?'':B}">${b}</td><td style="padding:4px 8px;text-align:center;${last?'':B}font-weight:700;color:${Y};">${c}</td></tr>`;
+  return `
+${h(L.j_ttl,'0 0 4px')}
+<p style="color:${D};font-size:.75rem;margin-bottom:10px;">${L.sub}</p>
+${h(L.j1h,'8px 0 4px')}
+<p>${L.j1a}</p>
+<p style="font-size:.75rem;color:${D};">${L.j1w}</p>
+${h(L.j2h)}
+${ul([L.j2_1,L.j2_2,L.j2_3,L.j2_4],'4px 0 8px')}
+${h(L.j3h)}
+<p>${L.j3a}</p>
+<p>${L.j3b}</p>
+${ul([L.j3_1,L.j3_2,L.j3_3,L.j3_4],'4px 0 8px')}
+${h(L.j4h)}
+<p>${L.j4p}</p>
+${h(L.j5h)}
+<table style="width:100%;border-collapse:collapse;font-size:.78rem;margin-bottom:8px;">
+  <thead><tr style="background:rgba(240,185,11,.15);">
+    <th style="padding:5px 8px;">${L.j5c1}</th><th style="padding:5px 8px;">${L.j5c2}</th><th style="padding:5px 8px;text-align:center;">${L.j5c3}</th>
+  </tr></thead>
+  <tbody>
+    ${row('Direct',L.j5t1,'10%')}
+    ${row('Level A',L.j5t2,'15%')}
+    ${row('Level B',L.j5t3,'10%',true)}
+  </tbody>
+</table>
+<p style="font-size:.78rem;">${L.j5pay}</p>
+<p>${L.j5sb}</p>
+${h(L.j6h)}
+${ul([L.j6_1,L.j6_2,L.j6_3,L.j6_4,L.j6_5],'4px 0 8px')}
+${h(L.j7h)}
+${ul([L.j7_1,L.j7_2,L.j7_3],'4px 0 8px')}
+${h(L.j8h)}
+<p>${L.j8p}</p>
+${h(L.j9h)}
+${ul([L.j9_1,L.j9_2,L.j9_3],'4px 0')}`+_agNote(L,'color:'+D+';font-size:.72rem;margin-top:10px;font-style:italic;');
+}
+
+// ── เอกสารพิมพ์/PDF ของ index_Main (ส่วนเนื้อหา + ลายเซ็น) ──
+function tcAgreePdfBody(L, c){
+  const T=(typeof tccT==='function')?tccT:(k=>k);
+  const span=k=>`<span data-i18n="${k}">${T(k)}</span>`;
+  return `<div class="dh"><div class="dlogo">TCC</div>
+    <h1>${L.pdf_h1}</h1>
+    <p class="dsub">Trading Partnership Agreement</p>
+    <p class="dsub">${L.sub}</p></div>
+    <div class="dmeta"><span>${L.no}: <b>${c.ref}</b></span><span>${L.dt}: <b>${c.today}</b></span><span>${L.st}: <b>${c.isApproved?L.ok:L.wait}</b></span></div>
+    <table>
+      <tr><td class="dl">${L.m1k}</td><td>${L.p_m1v}</td></tr>
+      <tr><td class="dl">${L.m2k}</td><td>${L.m2v}</td></tr>
+      <tr><td class="dl">${L.p_m3k}</td><td>${L.p_m3v}</td></tr>
+    </table>
+    <h2>${_agSec(L,1,L.s1t)}</h2>
+    <h3>${L.p_11}</h3>
+    <table><tr><td class="dl">${L.p_pn}</td><td>${L.s1av}</td></tr></table>
+    <h3>${L.p_12}</h3>
+    <table>
+      <tr><td class="dl">${span('fullname')}</td><td>${c.name}</td></tr>
+      <tr><td class="dl">${span('phone')}</td><td>${c.phone}</td></tr>
+      <tr><td class="dl">Binance Account ID</td><td>${c.bnbId}</td></tr>
+      <tr><td class="dl">${L.p_prot}</td><td>${c.protectAmt}</td></tr>
+    </table>
+    <h2>${_agSec(L,5,L.s5t)}</h2>
+    <table><thead class="hdr"><tr><th>#</th><th>${span('income_type')}</th><th>${L.c_pct}</th><th>${L.c_desc}</th></tr></thead>
+      <tr><td>1</td><td>${span('team_comm_title')}</td><td class="pct">10%</td><td>${L.r1d}</td></tr>
+      <tr><td>2</td><td>${L.r2n}</td><td class="pct">10%</td><td>${L.r2d}</td></tr>
+      <tr><td>3</td><td class="gold"><b>${span('income_trader')}</b></td><td class="pct gold"><b>40%</b></td><td>${L.r3d}</td></tr>
+      <tr><td>4</td><td>${L.r4n}</td><td class="pct">40%</td><td>${L.r4d}</td></tr>
+      <tr class="tot"><td colspan="2"><b>${span('total_all')}</b></td><td class="pct"><b>100%</b></td><td>${L.rtd}</td></tr>
+    </table>
+    <h2>${_agSec(L,7,L.s7t)}</h2>
+    <p>${L.s7p}</p>
+    <h2>${_agSec(L,8,L.s8t)}</h2>
+    <p>${L.s8p}</p>
+    <h2>${_agSec(L,10,L.s10t)}</h2>
+    <p>${L.s10p}</p>
+    <h2>${_agSec(L,11,L.s11t)}</h2>
+    <p>${L.p_s11}</p>`+_agNote(L,'font-size:.78rem;color:#666;font-style:italic;');
+}
+function tcAgreePdfSig(L, c){
+  return `
+<div class="sig-row">
+  <div class="sig-box">
+    <div class="sig-line"></div>
+    <p><b>${c.name}</b></p>
+    <p class="sub">${L.sg_m}</p>
+    <p class="sub">${L.sg_dt}${c.today}</p>
+  </div>
+  <div class="sig-box">
+    <div class="sig-line"></div>
+    <p><b>${L.sg_b}</b></p>
+    <p class="sub">${L.sub}</p>
+    <p class="sub">${c.isApproved?L.sg_ap+c.approvedDate:L.sg_dots}</p>
+  </div>
+</div>
+<div class="foot">
+  ${L.f_gen}${c.ref} | ${L.f_pr}${c.today}<br>
+  ${c.isApproved?'<b style="color:#007700;">'+L.f_ok+'</b>':'<b style="color:#cc0000;">'+L.f_wait+'</b>'}
+</div>`;
+}
+
 // [งาน 5] เนื้อหาสัญญาครบถ้วนจาก .docx ทั้ง 2 ฉบับ
 function tcGetAgreementText(pos){
+  // [AGREE-I18N] ภาษาที่ไม่ใช่ไทย → สร้างจากข้อมูลคำแปล (ไทยใช้ข้อความเดิมด้านล่างทุกตัวอักษร)
+  { const _ag=tcAgreeDict(); if(_ag) return pos==='เทรดเดอร์'?tcAgreeTrader(_ag,'lao'):tcAgreeJob(_ag); }
   if(pos==='เทรดเดอร์'){
     return `
 <h4 style="color:var(--gold);margin:0 0 4px;">สัญญาบันทึกข้อตกลงการร่วมเทรด (Trading Partnership Agreement)</h4>

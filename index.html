@@ -5512,6 +5512,219 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
   var _e=tccI18nCheck(); if(_e.length&&window.console) console.warn('[TCC i18n] '+_e.length+' รายการผิดพลาด',_e);
 })();
 </script>
+<script id="tcc-i18n-dash">
+/* TCC i18n — เนื้อใน 4 แท็บของแดชบอร์ด (ส่วนตัว/ทีมของฉัน/ดูสมาชิก/แนะนำสมาชิก) · key d.* = ใช้ร่วม · d1–d4 = ต่อแท็บ
+   ลำดับภาษา th en vi kh mm la ms id zh · key ที่ลงท้าย .h = มี HTML · ค่าที่ส่ง/เก็บใน DB ไม่เปลี่ยน */
+(function(){
+  window.tccMonthYear=function(m,y){ var l=document.documentElement.getAttribute("data-lang")||"th"; return tccT("month."+m)+" "+(l==="th"?y+543:y); };
+  window.tccApiErr=function(d,fb){ d=d||{}; var e=new Error(d.error||fb); if(d.code) e.code=d.code; if(d.vars) e.vars=d.vars; return e; };
+  window.tccErrMsg=function(e,fb){ var k=e&&e.code?"err."+e.code:""; if(k&&window.TCC_I18N[k]) return tccT(k,e.vars); return (e&&e.message)||fb||""; };
+  Object.assign(window.TCC_I18N, {
+    // ── ใช้ร่วมทุกแท็บ (d.*) ──
+    "d.all": ["ทั้งหมด", "All", "Tất cả", "ទាំងអស់", "အားလုံး", "ທັງໝົດ", "Semua", "Semua", "全部"],
+    "d.items": ["{n} รายการ", "{n} items", "{n} mục", "{n} ធាតុ", "{n} ခု", "{n} ລາຍການ", "{n} item", "{n} item", "{n} 笔"],
+    "d.itemUnit": ["รายการ", "items", "mục", "ធាតុ", "ခု", "ລາຍການ", "item", "item", "笔"],
+    "d.noData": ["ไม่มีข้อมูล", "No data", "Không có dữ liệu", "គ្មានទិន្នន័យ", "ဒေတာ မရှိပါ", "ບໍ່ມີຂໍ້ມູນ", "Tiada data", "Tidak ada data", "暂无数据"],
+    "d.noItem": ["ไม่มีรายการ", "No items", "Không có mục nào", "គ្មានធាតុ", "စာရင်း မရှိပါ", "ບໍ່ມີລາຍການ", "Tiada item", "Tidak ada item", "暂无记录"],
+    "d.clear": ["ล้าง", "Clear", "Xóa", "សម្អាត", "ရှင်းလင်းရန်", "ລ້າງ", "Kosongkan", "Hapus", "清除"],
+    "d.apprv": ["อนุมัติ", "Approved", "Đã duyệt", "បានអនុម័ត", "အတည်ပြုပြီး", "ອະນຸມັດ", "Diluluskan", "Disetujui", "已通过"],
+    "d.wait": ["รอ", "Pending", "Chờ", "រង់ចាំ", "စောင့်ဆိုင်း", "ລໍຖ້າ", "Menunggu", "Menunggu", "待处理"],
+    "d.page": ["หน้า {a}/{b}", "Page {a}/{b}", "Trang {a}/{b}", "ទំព័រ {a}/{b}", "စာမျက်နှာ {a}/{b}", "ໜ້າ {a}/{b}", "Halaman {a}/{b}", "Halaman {a}/{b}", "第 {a}/{b} 页"],
+    "d.th.date": ["วันที่", "Date", "Ngày", "កាលបរិច្ឆេទ", "ရက်စွဲ", "ວັນທີ", "Tarikh", "Tanggal", "日期"],
+    "d.th.profit": ["กำไร", "Profit", "Lợi nhuận", "ប្រាក់ចំណេញ", "အမြတ်", "ກຳໄລ", "Keuntungan", "Keuntungan", "利润"],
+    "d.th.transfer": ["ยอดโอน", "Transferred", "Số tiền chuyển", "ចំនួនទឹកប្រាក់ផ្ទេរ", "လွှဲငွေ", "ຍອດໂອນ", "Jumlah dipindah", "Jumlah transfer", "转账金额"],
+    "d.th.status": ["สถานะ", "Status", "Trạng thái", "ស្ថានភាព", "အခြေအနေ", "ສະຖານະ", "Status", "Status", "状态"],
+    // ── แท็บ 1 ส่วนตัว (d1.*) ──
+    "d1.empty": ["📭 ยังไม่มีรายการในระบบ", "📭 No records in the system yet", "📭 Chưa có mục nào trong hệ thống", "📭 មិនទាន់មានបញ្ជីក្នុងប្រព័ន្ធ", "📭 စနစ်တွင် စာရင်း မရှိသေးပါ", "📭 ຍັງບໍ່ມີລາຍການໃນລະບົບ", "📭 Belum ada rekod dalam sistem", "📭 Belum ada catatan di sistem", "📭 系统中暂无记录"],
+    "d1.month": ["📅 เดือน:", "📅 Month:", "📅 Tháng:", "📅 ខែ៖", "📅 လ -", "📅 ເດືອນ:", "📅 Bulan:", "📅 Bulan:", "📅 月份："],
+    "d1.profit": ["💰 กำไรรวม", "💰 Total profit", "💰 Tổng lợi nhuận", "💰 ប្រាក់ចំណេញសរុប", "💰 အမြတ် စုစုပေါင်း", "💰 ກຳໄລລວມ", "💰 Jumlah keuntungan", "💰 Total keuntungan", "💰 总利润"],
+    "d1.member": ["🧩 ส่วนแบ่งสมาชิก (50%)", "🧩 Member share (50%)", "🧩 Phần của thành viên (50%)", "🧩 ចំណែកសមាជិក (50%)", "🧩 အဖွဲ့ဝင် ခွဲဝေမှု (50%)", "🧩 ສ່ວນແບ່ງສະມາຊິກ (50%)", "🧩 Bahagian ahli (50%)", "🧩 Bagian anggota (50%)", "🧩 会员分成 (50%)"],
+    "d1.guar": ["🛡️ ประกันกำไร (10%)", "🛡️ Profit guarantee (10%)", "🛡️ Bảo hiểm lợi nhuận (10%)", "🛡️ ការធានាប្រាក់ចំណេញ (10%)", "🛡️ အမြတ် အာမခံ (10%)", "🛡️ ປະກັນກຳໄລ (10%)", "🛡️ Jaminan keuntungan (10%)", "🛡️ Jaminan keuntungan (10%)", "🛡️ 利润保障 (10%)"],
+    "d1.net": ["⭐ รายได้รวม (โอนสุทธิ)", "⭐ Total income (net transfer)", "⭐ Tổng thu nhập (chuyển thực nhận)", "⭐ ចំណូលសរុប (ផ្ទេរសុទ្ធ)", "⭐ ဝင်ငွေ စုစုပေါင်း (အသားတင် လွှဲငွေ)", "⭐ ລາຍໄດ້ລວມ (ໂອນສຸດທິ)", "⭐ Jumlah pendapatan (pindahan bersih)", "⭐ Total pendapatan (transfer bersih)", "⭐ 总收入（净转账）"],
+    "d1.appr": ["✅ อนุมัติแล้ว", "✅ Approved", "✅ Đã duyệt", "✅ បានអនុម័តរួច", "✅ အတည်ပြုပြီး", "✅ ອະນຸມັດແລ້ວ", "✅ Telah diluluskan", "✅ Sudah disetujui", "✅ 已通过"],
+    "d1.total": ["📋 รายการทั้งหมด", "📋 All items", "📋 Tất cả mục", "📋 ធាតុទាំងអស់", "📋 စာရင်း အားလုံး", "📋 ລາຍການທັງໝົດ", "📋 Semua item", "📋 Semua item", "📋 全部记录"],
+    "d1.charts": ["📊 กราฟวิเคราะห์", "📊 Analytics charts", "📊 Biểu đồ phân tích", "📊 ក្រាហ្វវិភាគ", "📊 ခွဲခြမ်းစိတ်ဖြာ ဇယားများ", "📊 ກຣາຟວິເຄາະ", "📊 Carta analisis", "📊 Grafik analisis", "📊 分析图表"],
+    "d1.chartsHint": ["(กดเพื่อซ่อน/แสดง)", "(tap to hide/show)", "(nhấn để ẩn/hiện)", "(ចុចដើម្បីលាក់/បង្ហាញ)", "(ဖျောက်/ပြရန် နှိပ်ပါ)", "(ກົດເພື່ອຊ່ອນ/ສະແດງ)", "(ketik untuk sembunyi/papar)", "(ketuk untuk sembunyikan/tampilkan)", "(点击隐藏/显示)"],
+    "d1.c1": ["📈 กำไร/ขาดทุน ตามเหรียญ", "📈 Profit/loss by coin", "📈 Lãi/lỗ theo đồng coin", "📈 ចំណេញ/ខាត តាមកាក់", "📈 ဒင်္ဂါးအလိုက် အမြတ်/အရှုံး", "📈 ກຳໄລ/ຂາດທຶນ ຕາມຫຼຽນ", "📈 Untung/rugi mengikut syiling", "📈 Untung/rugi per koin", "📈 各币种盈亏"],
+    "d1.noCoin": ["ไม่มีข้อมูลเหรียญ", "No coin data", "Không có dữ liệu coin", "គ្មានទិន្នន័យកាក់", "ဒင်္ဂါး ဒေတာ မရှိပါ", "ບໍ່ມີຂໍ້ມູນຫຼຽນ", "Tiada data syiling", "Tidak ada data koin", "暂无币种数据"],
+    "d1.c2": ["🎯 สัดส่วน Win / Loss", "🎯 Win / Loss ratio", "🎯 Tỷ lệ Win / Loss", "🎯 សមាមាត្រ Win / Loss", "🎯 Win / Loss အချိုး", "🎯 ສັດສ່ວນ Win / Loss", "🎯 Nisbah Win / Loss", "🎯 Rasio Win / Loss", "🎯 Win / Loss 占比"],
+    "d1.zero": ["ปิด/ไม่มีเหรียญ", "Closed / no coin", "Đóng / không có coin", "បិទ/គ្មានកាក់", "ပိတ်/ဒင်္ဂါး မရှိ", "ປິດ/ບໍ່ມີຫຼຽນ", "Tutup / tiada syiling", "Ditutup / tanpa koin", "已平仓/无币种"],
+    "d1.c3.h": ["💜 Net P&amp;L vs ค่าธรรมเนียม", "💜 Net P&amp;L vs fees", "💜 Net P&amp;L so với phí", "💜 Net P&amp;L និងថ្លៃសេវា", "💜 Net P&amp;L နှင့် ကြေးများ", "💜 Net P&amp;L ທຽບກັບຄ່າທຳນຽມ", "💜 Net P&amp;L vs yuran", "💜 Net P&amp;L vs biaya", "💜 净盈亏与手续费"],
+    "d1.fee": ["ค่าธรรมเนียม (avg {v})", "Fees (avg {v})", "Phí (trung bình {v})", "ថ្លៃសេវា (មធ្យម {v})", "ကြေး (ပျမ်းမျှ {v})", "ຄ່າທຳນຽມ (ສະເລ່ຍ {v})", "Yuran (purata {v})", "Biaya (rata-rata {v})", "手续费（平均 {v}）"],
+    "d1.coinLbl": ["🪙 เหรียญ:", "🪙 Coin:", "🪙 Coin:", "🪙 កាក់៖", "🪙 ဒင်္ဂါး -", "🪙 ຫຼຽນ:", "🪙 Syiling:", "🪙 Koin:", "🪙 币种："],
+    "d1.nonCoin": ["ไม่มีชื่อเหรียญ (Non)", "No coin name (Non)", "Không có tên coin (Non)", "គ្មានឈ្មោះកាក់ (Non)", "ဒင်္ဂါးအမည် မရှိ (Non)", "ບໍ່ມີຊື່ຫຼຽນ (Non)", "Tiada nama syiling (Non)", "Tanpa nama koin (Non)", "无币种名称 (Non)"],
+    "d1.nonList": ["📋 รายการที่ไม่มีชื่อเหรียญ ({n} รายการ)", "📋 Items without a coin name ({n})", "📋 Mục không có tên coin ({n} mục)", "📋 ធាតុដែលគ្មានឈ្មោះកាក់ ({n} ធាតុ)", "📋 ဒင်္ဂါးအမည် မရှိသော စာရင်း ({n} ခု)", "📋 ລາຍການທີ່ບໍ່ມີຊື່ຫຼຽນ ({n} ລາຍການ)", "📋 Item tanpa nama syiling ({n} item)", "📋 Item tanpa nama koin ({n} item)", "📋 无币种名称的记录（{n} 笔）"],
+    "d1.noNote": ["ไม่มีบันทึก", "No note", "Không có ghi chú", "គ្មានកំណត់ចំណាំ", "မှတ်စု မရှိပါ", "ບໍ່ມີບັນທຶກ", "Tiada nota", "Tidak ada catatan", "无备注"],
+    "d1.cfTotal": ["รวมกำไรเหรียญ {c} ทั้งหมด {n} รายการ", "Total profit on {c}: {n} items", "Tổng lợi nhuận coin {c}: {n} mục", "ប្រាក់ចំណេញសរុបកាក់ {c} ទាំងអស់ {n} ធាតុ", "{c} ဒင်္ဂါး အမြတ်စုစုပေါင်း စာရင်း {n} ခု", "ກຳໄລລວມຫຼຽນ {c} ທັງໝົດ {n} ລາຍການ", "Jumlah keuntungan syiling {c}: {n} item", "Total keuntungan koin {c}: {n} item", "{c} 币种总利润，共 {n} 笔"],
+    "d1.cfNone": ["ไม่พบรายการ {c} ในช่วงนี้", "No {c} records in this period", "Không có mục {c} trong khoảng này", "រកមិនឃើញធាតុ {c} ក្នុងអំឡុងពេលនេះ", "ဤကာလတွင် {c} စာရင်း မတွေ့ပါ", "ບໍ່ພົບລາຍການ {c} ໃນຊ່ວງນີ້", "Tiada rekod {c} dalam tempoh ini", "Tidak ada catatan {c} pada periode ini", "此期间没有 {c} 记录"],
+    "d1.byCoin": ["📈 กำไรแยกตามเหรียญ", "📈 Profit by coin", "📈 Lợi nhuận theo coin", "📈 ប្រាក់ចំណេញតាមកាក់", "📈 ဒင်္ဂါးအလိုက် အမြတ်", "📈 ກຳໄລແຍກຕາມຫຼຽນ", "📈 Keuntungan mengikut syiling", "📈 Keuntungan per koin", "📈 各币种利润"],
+    "d1.byCoinHint": ["(กดเหรียญเพื่อดูรายละเอียด)", "(tap a coin for details)", "(nhấn coin để xem chi tiết)", "(ចុចកាក់ដើម្បីមើលព័ត៌មានលម្អិត)", "(အသေးစိတ်ကြည့်ရန် ဒင်္ဂါးကို နှိပ်ပါ)", "(ກົດຫຼຽນເພື່ອເບິ່ງລາຍລະອຽດ)", "(ketik syiling untuk butiran)", "(ketuk koin untuk detail)", "(点击币种查看详情)"],
+    "d1.list": ["📋 รายการ", "📋 Records", "📋 Danh sách", "📋 បញ្ជី", "📋 စာရင်း", "📋 ລາຍການ", "📋 Senarai", "📋 Daftar", "📋 记录"],
+    "d1.listM": ["📋 รายการประจำเดือน", "📋 Monthly records", "📋 Danh sách theo tháng", "📋 បញ្ជីប្រចាំខែ", "📋 လစဉ် စာရင်း", "📋 ລາຍການປະຈຳເດືອນ", "📋 Senarai bulanan", "📋 Daftar bulanan", "📋 当月记录"],
+    "d1.shown": ["(แสดง {a}/{b})", "(showing {a}/{b})", "(hiển thị {a}/{b})", "(បង្ហាញ {a}/{b})", "(ပြသမှု {a}/{b})", "(ສະແດງ {a}/{b})", "(dipaparkan {a}/{b})", "(menampilkan {a}/{b})", "（显示 {a}/{b}）"],
+    // ── แท็บ 2 ทีมของฉัน (d2.*) ──
+    "d2.empty.h": ["📭 ยังไม่มีรายการของทีม <b>{t}</b>", "📭 No records yet for team <b>{t}</b>", "📭 Chưa có mục nào của đội <b>{t}</b>", "📭 មិនទាន់មានបញ្ជីរបស់ក្រុម <b>{t}</b>", "📭 အဖွဲ့ <b>{t}</b> ၏ စာရင်း မရှိသေးပါ", "📭 ຍັງບໍ່ມີລາຍການຂອງທີມ <b>{t}</b>", "📭 Belum ada rekod untuk pasukan <b>{t}</b>", "📭 Belum ada catatan untuk tim <b>{t}</b>", "📭 团队 <b>{t}</b> 暂无记录"],
+    "d2.members": ["สมาชิก", "Members", "Thành viên", "សមាជិក", "အဖွဲ့ဝင်", "ສະມາຊິກ", "Ahli", "Anggota", "会员"],
+    "d2.people": ["{n} คน", "{n} people", "{n} người", "{n} នាក់", "{n} ဦး", "{n} ຄົນ", "{n} orang", "{n} orang", "{n} 人"],
+    "d2.cnt": ["{n} รายการ · {m} สมาชิก", "{n} items · {m} members", "{n} mục · {m} thành viên", "{n} ធាតុ · {m} សមាជិក", "{n} ခု · အဖွဲ့ဝင် {m} ဦး", "{n} ລາຍການ · {m} ສະມາຊິກ", "{n} item · {m} ahli", "{n} item · {m} anggota", "{n} 笔 · {m} 位会员"],
+    "d2.total": ["⭐ รวมทั้งหมด", "⭐ Grand total", "⭐ Tổng cộng", "⭐ សរុបទាំងអស់", "⭐ စုစုပေါင်း", "⭐ ລວມທັງໝົດ", "⭐ Jumlah keseluruhan", "⭐ Total keseluruhan", "⭐ 总计"],
+    "d2.allLv": ["{n} รายการ · ทุกเลเวล", "{n} items · all levels", "{n} mục · mọi cấp", "{n} ធាតុ · គ្រប់កម្រិត", "{n} ခု · အဆင့်အားလုံး", "{n} ລາຍການ · ທຸກລະດັບ", "{n} item · semua peringkat", "{n} item · semua level", "{n} 笔 · 所有等级"],
+    "d2.rank": ["🏆 อันดับสมาชิก Your Team", "🏆 Your Team member ranking", "🏆 Xếp hạng thành viên Your Team", "🏆 ចំណាត់ថ្នាក់សមាជិក Your Team", "🏆 Your Team အဖွဲ့ဝင် အဆင့်သတ်မှတ်ချက်", "🏆 ອັນດັບສະມາຊິກ Your Team", "🏆 Kedudukan ahli Your Team", "🏆 Peringkat anggota Your Team", "🏆 Your Team 会员排名"],
+    "d2.th.name": ["ชื่อ", "Name", "Tên", "ឈ្មោះ", "အမည်", "ຊື່", "Nama", "Nama", "姓名"],
+    // ── แท็บ 3 ดูสมาชิก (d3.*) ──
+    "d3.commSum": ["💰 สรุปค่าคอมมิชชั่น", "💰 Commission summary", "💰 Tổng hợp hoa hồng", "💰 សង្ខេបកម្រៃជើងសារ", "💰 ကော်မရှင် အကျဉ်းချုပ်", "💰 ສະຫຼຸບຄ່າຄອມມິດຊັນ", "💰 Ringkasan komisen", "💰 Ringkasan komisi", "💰 佣金汇总"],
+    "d3.commSumM": ["💰 สรุปค่าคอมมิชชั่นประจำเดือน", "💰 Monthly commission summary", "💰 Tổng hợp hoa hồng theo tháng", "💰 សង្ខេបកម្រៃជើងសារប្រចាំខែ", "💰 လစဉ် ကော်မရှင် အကျဉ်းချုပ်", "💰 ສະຫຼຸບຄ່າຄອມມິດຊັນປະຈຳເດືອນ", "💰 Ringkasan komisen bulanan", "💰 Ringkasan komisi bulanan", "💰 当月佣金汇总"],
+    "d3.ytT": ["Your Team — ค่าคอมทีมของคุณ", "Your Team — your team's commission", "Your Team — hoa hồng đội của bạn", "Your Team — កម្រៃជើងសារក្រុមរបស់អ្នក", "Your Team — သင့်အသင်း၏ ကော်မရှင်", "Your Team — ຄ່າຄອມທີມຂອງເຈົ້າ", "Your Team — komisen pasukan anda", "Your Team — komisi tim Anda", "Your Team — 您团队的佣金"],
+    "d3.ytS": ["10% จากกำไรรวมของสมาชิกในทีม", "10% of the total profit of team members", "10% trên tổng lợi nhuận của thành viên trong đội", "10% នៃប្រាក់ចំណេញសរុបរបស់សមាជិកក្នុងក្រុម", "အဖွဲ့ဝင်များ၏ စုစုပေါင်းအမြတ်မှ 10%", "10% ຂອງກຳໄລລວມຂອງສະມາຊິກໃນທີມ", "10% daripada jumlah keuntungan ahli pasukan", "10% dari total keuntungan anggota tim", "团队成员总利润的 10%"],
+    "d3.laT": ["Level A — ค่าคอมทีม Level A", "Level A — Level A team commission", "Level A — hoa hồng đội Level A", "Level A — កម្រៃជើងសារក្រុម Level A", "Level A — Level A အသင်း ကော်မရှင်", "Level A — ຄ່າຄອມທີມ Level A", "Level A — komisen pasukan Level A", "Level A — komisi tim Level A", "Level A — Level A 团队佣金"],
+    "d3.laS": ["15% จากค่าคอม 10% ของทีมที่ระบุ Level A", "15% of the 10% commission of teams assigned Level A", "15% trên hoa hồng 10% của đội được chỉ định Level A", "15% នៃកម្រៃជើងសារ 10% របស់ក្រុមដែលកំណត់ជា Level A", "Level A သတ်မှတ်ထားသော အသင်း၏ 10% ကော်မရှင်မှ 15%", "15% ຈາກຄ່າຄອມ 10% ຂອງທີມທີ່ລະບຸ Level A", "15% daripada komisen 10% pasukan yang ditetapkan Level A", "15% dari komisi 10% tim yang ditetapkan Level A", "指定为 Level A 的团队 10% 佣金的 15%"],
+    "d3.lbT": ["Level B — ค่าคอมทีม Level B", "Level B — Level B team commission", "Level B — hoa hồng đội Level B", "Level B — កម្រៃជើងសារក្រុម Level B", "Level B — Level B အသင်း ကော်မရှင်", "Level B — ຄ່າຄອມທີມ Level B", "Level B — komisen pasukan Level B", "Level B — komisi tim Level B", "Level B — Level B 团队佣金"],
+    "d3.lbS": ["10% จากทีมที่ระบุ Level B", "10% from teams assigned Level B", "10% từ đội được chỉ định Level B", "10% ពីក្រុមដែលកំណត់ជា Level B", "Level B သတ်မှတ်ထားသော အသင်းမှ 10%", "10% ຈາກທີມທີ່ລະບຸ Level B", "10% daripada pasukan yang ditetapkan Level B", "10% dari tim yang ditetapkan Level B", "指定为 Level B 的团队的 10%"],
+    "d3.hdr": ["รายชื่อสมาชิกทั้งหมดในทีม", "All members of the team", "Danh sách tất cả thành viên trong đội", "បញ្ជីឈ្មោះសមាជិកទាំងអស់ក្នុងក្រុម", "အသင်းရှိ အဖွဲ့ဝင် အားလုံး၏ စာရင်း", "ລາຍຊື່ສະມາຊິກທັງໝົດໃນທີມ", "Senarai semua ahli dalam pasukan", "Daftar semua anggota tim", "团队全部成员名单"],
+    "d3.allMem": ["สมาชิกทั้งหมด", "Total members", "Tổng thành viên", "សមាជិកសរុប", "အဖွဲ့ဝင် စုစုပေါင်း", "ສະມາຊິກທັງໝົດ", "Jumlah ahli", "Total anggota", "会员总数"],
+    "d3.noMem": ["📭 ยังไม่มีสมาชิกในทีม", "📭 No members in the team yet", "📭 Đội chưa có thành viên", "📭 មិនទាន់មានសមាជិកក្នុងក្រុម", "📭 အသင်းတွင် အဖွဲ့ဝင် မရှိသေးပါ", "📭 ຍັງບໍ່ມີສະມາຊິກໃນທີມ", "📭 Belum ada ahli dalam pasukan", "📭 Belum ada anggota di tim", "📭 团队暂无成员"],
+    "d3.ph": ["🔍 ค้นหาชื่อสมาชิก หรือ BNB ID...", "🔍 Search member name or BNB ID...", "🔍 Tìm tên thành viên hoặc BNB ID...", "🔍 ស្វែងរកឈ្មោះសមាជិក ឬ BNB ID...", "🔍 အဖွဲ့ဝင်အမည် သို့မဟုတ် BNB ID ရှာရန်...", "🔍 ຄົ້ນຫາຊື່ສະມາຊິກ ຫຼື BNB ID...", "🔍 Cari nama ahli atau BNB ID...", "🔍 Cari nama anggota atau BNB ID...", "🔍 搜索会员姓名或 BNB ID..."],
+    "d3.pageInfo": ["หน้า {p} / {t}", "Page {p} / {t}", "Trang {p} / {t}", "ទំព័រ {p} / {t}", "စာမျက်နှာ {p} / {t}", "ໜ້າ {p} / {t}", "Halaman {p} / {t}", "Halaman {p} / {t}", "第 {p} / {t} 页"],
+    "d3.found": ["พบ {a} จาก {b} คน", "Found {a} of {b} people", "Tìm thấy {a} trong {b} người", "រកឃើញ {a} ក្នុងចំណោម {b} នាក់", "{b} ဦးအနက် {a} ဦး တွေ့ရှိ", "ພົບ {a} ຈາກ {b} ຄົນ", "Dijumpai {a} daripada {b} orang", "Ditemukan {a} dari {b} orang", "在 {b} 人中找到 {a} 人"],
+    "d3.active": ["Active", "Active", "Hoạt động", "សកម្ម", "အသုံးပြုနေ", "ໃຊ້ງານຢູ່", "Aktif", "Aktif", "已激活"],
+    "d3.pending": ["Pending", "Pending", "Chờ duyệt", "រង់ចាំ", "စောင့်ဆိုင်းဆဲ", "ລໍຖ້າ", "Menunggu", "Menunggu", "待审核"],
+    "d3.mpM": ["💰 กำไรรวม (เดือน)", "💰 Total profit (month)", "💰 Tổng lợi nhuận (tháng)", "💰 ប្រាក់ចំណេញសរុប (ខែ)", "💰 အမြတ် စုစုပေါင်း (လ)", "💰 ກຳໄລລວມ (ເດືອນ)", "💰 Jumlah keuntungan (bulan)", "💰 Total keuntungan (bulan)", "💰 总利润（当月）"],
+    "d3.mt": ["📤 ยอดโอน", "📤 Transferred", "📤 Đã chuyển", "📤 ចំនួនផ្ទេរ", "📤 လွှဲငွေ", "📤 ຍອດໂອນ", "📤 Dipindahkan", "📤 Ditransfer", "📤 转账额"],
+    "d3.mtM": ["📤 ยอดโอน (เดือน)", "📤 Transferred (month)", "📤 Đã chuyển (tháng)", "📤 ចំនួនផ្ទេរ (ខែ)", "📤 လွှဲငွေ (လ)", "📤 ຍອດໂອນ (ເດືອນ)", "📤 Dipindahkan (bulan)", "📤 Ditransfer (bulan)", "📤 转账额（当月）"],
+    "d3.mc": ["📋 รายการ", "📋 Items", "📋 Số mục", "📋 ធាតុ", "📋 စာရင်း", "📋 ລາຍການ", "📋 Item", "📋 Item", "📋 笔数"],
+    "d3.mcM": ["📋 รายการ (เดือน)", "📋 Items (month)", "📋 Số mục (tháng)", "📋 ធាតុ (ខែ)", "📋 စာရင်း (လ)", "📋 ລາຍການ (ເດືອນ)", "📋 Item (bulan)", "📋 Item (bulan)", "📋 笔数（当月）"],
+    "d3.list": ["👤 รายชื่อสมาชิก (แสดง {a} จาก {b} คน / หน้า {p})", "👤 Member list (showing {a} of {b} / page {p})", "👤 Danh sách thành viên (hiển thị {a}/{b} người / trang {p})", "👤 បញ្ជីសមាជិក (បង្ហាញ {a} ក្នុងចំណោម {b} នាក់ / ទំព័រ {p})", "👤 အဖွဲ့ဝင်စာရင်း ({b} ဦးအနက် {a} ဦး ပြသ / စာမျက်နှာ {p})", "👤 ລາຍຊື່ສະມາຊິກ (ສະແດງ {a} ຈາກ {b} ຄົນ / ໜ້າ {p})", "👤 Senarai ahli (dipaparkan {a} daripada {b} / halaman {p})", "👤 Daftar anggota (menampilkan {a} dari {b} / halaman {p})", "👤 会员名单（显示 {a}/{b} 人 / 第 {p} 页）"],
+    "d3.noMatch": ["ไม่พบสมาชิกที่ตรงกับ \"{q}\"", "No members match \"{q}\"", "Không có thành viên khớp với \"{q}\"", "រកមិនឃើញសមាជិកដែលត្រូវនឹង \"{q}\"", "\"{q}\" နှင့် ကိုက်ညီသော အဖွဲ့ဝင် မတွေ့ပါ", "ບໍ່ພົບສະມາຊິກທີ່ກົງກັບ \"{q}\"", "Tiada ahli sepadan dengan \"{q}\"", "Tidak ada anggota yang cocok dengan \"{q}\"", "未找到与 \"{q}\" 匹配的会员"],
+    // ── แท็บ 4 แนะนำสมาชิก / ถอนโบนัส (d4.*) ──
+    "d4.wdMinT": ["ยอดไม่ถึงขั้นต่ำ", "Below the minimum amount", "Chưa đạt số tiền tối thiểu", "ចំនួនទឹកប្រាក់មិនដល់អប្បបរមា", "အနည်းဆုံးပမာဏ မပြည့်မီပါ", "ຍອດບໍ່ຮອດຂັ້ນຕ່ຳ", "Jumlah di bawah minimum", "Jumlah di bawah minimum", "未达到最低金额"],
+    "d4.wdMinM": ["ต้องมีอย่างน้อย {m} USDT (Approved 5 คน)", "At least {m} USDT is required (5 approved members)", "Cần tối thiểu {m} USDT (5 thành viên đã duyệt)", "ត្រូវមានយ៉ាងតិច {m} USDT (សមាជិកដែលបានអនុម័ត 5 នាក់)", "အနည်းဆုံး {m} USDT လိုအပ်သည် (အတည်ပြုပြီး 5 ဦး)", "ຕ້ອງມີຢ່າງໜ້ອຍ {m} USDT (ອະນຸມັດແລ້ວ 5 ຄົນ)", "Sekurang-kurangnya {m} USDT diperlukan (5 ahli diluluskan)", "Minimal {m} USDT diperlukan (5 anggota disetujui)", "至少需要 {m} USDT（5 位已通过会员）"],
+    "d4.noWalletT": ["ไม่พบ Wallet Address", "Wallet address not found", "Không tìm thấy địa chỉ ví", "រកមិនឃើញអាសយដ្ឋានកាបូប", "Wallet လိပ်စာ မတွေ့ပါ", "ບໍ່ພົບທີ່ຢູ່ກະເປົ໋າ", "Alamat dompet tidak dijumpai", "Alamat dompet tidak ditemukan", "未找到钱包地址"],
+    "d4.noWalletM": ["กรุณาตรวจสอบข้อมูลสมาชิก", "Please check the member information", "Vui lòng kiểm tra thông tin thành viên", "សូមពិនិត្យព័ត៌មានសមាជិក", "အဖွဲ့ဝင် အချက်အလက်ကို စစ်ဆေးပါ", "ກະລຸນາກວດສອບຂໍ້ມູນສະມາຊິກ", "Sila semak maklumat ahli", "Harap periksa data anggota", "请检查会员信息"],
+    "d4.pendT": ["มีคำขอถอนค้างอยู่", "A withdrawal request is pending", "Có yêu cầu rút tiền đang chờ", "មានសំណើដកប្រាក់កំពុងរង់ចាំ", "ငွေထုတ်ရန် တောင်းဆိုမှု ကျန်ရှိနေသည်", "ມີຄຳຂໍຖອນຄ້າງຢູ່", "Terdapat permintaan pengeluaran tertangguh", "Ada permintaan penarikan yang tertunda", "有待处理的提现申请"],
+    "d4.pendM": ["กรุณารอให้ Admin ดำเนินการคำขอเดิมก่อน", "Please wait for the Admin to process the existing request first", "Vui lòng chờ Admin xử lý yêu cầu trước đó", "សូមរង់ចាំ Admin ដំណើរការសំណើមុនជាមុនសិន", "ယခင်တောင်းဆိုမှုကို Admin လုပ်ဆောင်ပြီးသည်အထိ စောင့်ပါ", "ກະລຸນາລໍຖ້າ Admin ດຳເນີນການຄຳຂໍເດີມກ່ອນ", "Sila tunggu Admin memproses permintaan sedia ada dahulu", "Harap tunggu Admin memproses permintaan sebelumnya", "请等待管理员先处理现有申请"],
+    "d4.wdTitle": ["💸 แจ้งถอนโบนัสแนะนำสมาชิก", "💸 Request referral bonus withdrawal", "💸 Yêu cầu rút thưởng giới thiệu", "💸 ស្នើដកប្រាក់រង្វាន់ណែនាំសមាជិក", "💸 ရည်ညွှန်းဆုကြေးငွေ ထုတ်ရန် တောင်းဆိုခြင်း", "💸 ແຈ້ງຖອນໂບນັດແນະນຳສະມາຊິກ", "💸 Mohon pengeluaran bonus rujukan", "💸 Ajukan penarikan bonus referral", "💸 申请提取推荐奖金"],
+    "d4.wdAmt": ["ยอดที่จะถอน", "Amount to withdraw", "Số tiền sẽ rút", "ចំនួនទឹកប្រាក់ដែលត្រូវដក", "ထုတ်မည့် ပမာဏ", "ຍອດທີ່ຈະຖອນ", "Jumlah yang akan dikeluarkan", "Jumlah yang akan ditarik", "提现金额"],
+    "d4.wdTo": ["📬 โอนเข้า Wallet:", "📬 Transfer to wallet:", "📬 Chuyển vào ví:", "📬 ផ្ទេរចូលកាបូប៖", "📬 Wallet သို့ လွှဲရန် -", "📬 ໂອນເຂົ້າກະເປົ໋າ:", "📬 Pindah ke dompet:", "📬 Transfer ke dompet:", "📬 转入钱包："],
+    "d4.wdNote.h": ["⚠️ Admin จะดำเนินการโอน USDT BEP-20 ภายใน <b>7 วันทำการ</b>", "⚠️ Admin will transfer USDT BEP-20 within <b>7 business days</b>", "⚠️ Admin sẽ chuyển USDT BEP-20 trong vòng <b>7 ngày làm việc</b>", "⚠️ Admin នឹងផ្ទេរ USDT BEP-20 ក្នុងរយៈពេល <b>7 ថ្ងៃធ្វើការ</b>", "⚠️ Admin သည် USDT BEP-20 ကို <b>လုပ်ငန်းရက် 7 ရက်</b> အတွင်း လွှဲပေးမည်", "⚠️ Admin ຈະດຳເນີນການໂອນ USDT BEP-20 ພາຍໃນ <b>7 ວັນທຳການ</b>", "⚠️ Admin akan memindahkan USDT BEP-20 dalam <b>7 hari bekerja</b>", "⚠️ Admin akan mentransfer USDT BEP-20 dalam <b>7 hari kerja</b>", "⚠️ 管理员将在 <b>7 个工作日</b>内转账 USDT BEP-20"],
+    "d4.wdConfirm": ["✅ ยืนยันแจ้งถอน", "✅ Confirm withdrawal", "✅ Xác nhận rút tiền", "✅ បញ្ជាក់ការដកប្រាក់", "✅ ငွေထုတ်ရန် အတည်ပြုမည်", "✅ ຢືນຢັນແຈ້ງຖອນ", "✅ Sahkan pengeluaran", "✅ Konfirmasi penarikan", "✅ 确认提现"],
+    "d4.sending": ["⏳ กำลังส่งคำขอ...", "⏳ Sending request...", "⏳ Đang gửi yêu cầu...", "⏳ កំពុងផ្ញើសំណើ...", "⏳ တောင်းဆိုမှု ပို့နေသည်...", "⏳ ກຳລັງສົ່ງຄຳຂໍ...", "⏳ Menghantar permintaan...", "⏳ Mengirim permintaan...", "⏳ 正在提交申请..."],
+    "d4.wdOkT": ["✅ แจ้งถอนสำเร็จ", "✅ Withdrawal requested", "✅ Đã gửi yêu cầu rút tiền", "✅ ស្នើដកប្រាក់បានជោគជ័យ", "✅ ငွေထုတ်ရန် တောင်းဆိုမှု အောင်မြင်ပါသည်", "✅ ແຈ້ງຖອນສຳເລັດ", "✅ Permintaan pengeluaran berjaya", "✅ Penarikan berhasil diajukan", "✅ 提现申请已提交"],
+    "d4.wdOkM": ["Admin จะโอน {a} USDT ให้ภายใน 7 วันทำการ", "Admin will transfer {a} USDT within 7 business days", "Admin sẽ chuyển {a} USDT trong vòng 7 ngày làm việc", "Admin នឹងផ្ទេរ {a} USDT ក្នុងរយៈពេល 7 ថ្ងៃធ្វើការ", "Admin သည် {a} USDT ကို လုပ်ငန်းရက် 7 ရက်အတွင်း လွှဲပေးမည်", "Admin ຈະໂອນ {a} USDT ໃຫ້ພາຍໃນ 7 ວັນທຳການ", "Admin akan memindahkan {a} USDT dalam 7 hari bekerja", "Admin akan mentransfer {a} USDT dalam 7 hari kerja", "管理员将在 7 个工作日内转账 {a} USDT"],
+    "d4.wdFailT": ["แจ้งถอนไม่สำเร็จ", "Withdrawal request failed", "Gửi yêu cầu rút tiền không thành công", "ស្នើដកប្រាក់មិនបានជោគជ័យ", "ငွေထုတ်ရန် တောင်းဆိုမှု မအောင်မြင်ပါ", "ແຈ້ງຖອນບໍ່ສຳເລັດ", "Permintaan pengeluaran gagal", "Pengajuan penarikan gagal", "提现申请失败"],
+    "d4.tryAgain": ["กรุณาลองใหม่อีกครั้ง", "Please try again", "Vui lòng thử lại", "សូមព្យាយាមម្តងទៀត", "ကျေးဇူးပြု၍ ထပ်ကြိုးစားပါ", "ກະລຸນາລອງໃໝ່ອີກຄັ້ງ", "Sila cuba lagi", "Silakan coba lagi", "请重试"],
+    "d4.noHist": ["ยังไม่มีประวัติการถอน", "No withdrawal history yet", "Chưa có lịch sử rút tiền", "មិនទាន់មានប្រវត្តិការដកប្រាក់", "ငွေထုတ်ယူမှု မှတ်တမ်း မရှိသေးပါ", "ຍັງບໍ່ມີປະຫວັດການຖອນ", "Belum ada sejarah pengeluaran", "Belum ada riwayat penarikan", "暂无提现记录"],
+    "d4.paid": ["✅ โอนแล้ว", "✅ Paid", "✅ Đã chuyển", "✅ បានផ្ទេរ", "✅ လွှဲပြီး", "✅ ໂອນແລ້ວ", "✅ Telah dibayar", "✅ Sudah ditransfer", "✅ 已转账"],
+    "d4.rej": ["❌ ปฏิเสธ", "❌ Rejected", "❌ Từ chối", "❌ បដិសេធ", "❌ ပယ်ချ", "❌ ປະຕິເສດ", "❌ Ditolak", "❌ Ditolak", "❌ 已拒绝"],
+    "d4.proc": ["⏳ รอดำเนินการ", "⏳ Processing", "⏳ Đang xử lý", "⏳ រង់ចាំដំណើរការ", "⏳ လုပ်ဆောင်ရန် စောင့်ဆိုင်းဆဲ", "⏳ ລໍຖ້າດຳເນີນການ", "⏳ Menunggu pemprosesan", "⏳ Menunggu diproses", "⏳ 处理中"],
+    "d4.paidSum": ["โอนไปแล้ว", "Paid out", "Đã chuyển", "បានផ្ទេររួច", "လွှဲပြီးသော ပမာဏ", "ໂອນໄປແລ້ວ", "Telah dibayar", "Sudah ditransfer", "已转账"],
+    "d4.times": ["จำนวนครั้ง", "Number of requests", "Số lần", "ចំនួនដង", "အကြိမ်အရေအတွက်", "ຈຳນວນຄັ້ງ", "Bilangan kali", "Jumlah permintaan", "次数"],
+    "d4.nTimes": ["{n} ครั้ง", "{n} times", "{n} lần", "{n} ដង", "{n} ကြိမ်", "{n} ຄັ້ງ", "{n} kali", "{n} kali", "{n} 次"],
+    "d4.lastSt": ["สถานะล่าสุด", "Latest status", "Trạng thái mới nhất", "ស្ថានភាពចុងក្រោយ", "နောက်ဆုံး အခြေအနေ", "ສະຖານະຫຼ້າສຸດ", "Status terkini", "Status terbaru", "最新状态"],
+    "d4.hasPend": ["⏳ มีคำขอค้างอยู่", "⏳ A request is pending", "⏳ Có yêu cầu đang chờ", "⏳ មានសំណើកំពុងរង់ចាំ", "⏳ တောင်းဆိုမှု ကျန်ရှိနေသည်", "⏳ ມີຄຳຂໍຄ້າງຢູ່", "⏳ Ada permintaan tertangguh", "⏳ Ada permintaan tertunda", "⏳ 有待处理的申请"],
+    "d4.loadFail": ["โหลดไม่สำเร็จ: {e}", "Failed to load: {e}", "Tải không thành công: {e}", "ផ្ទុកមិនបានជោគជ័យ៖ {e}", "ရယူ၍ မရပါ - {e}", "ໂຫຼດບໍ່ສຳເລັດ: {e}", "Gagal memuat: {e}", "Gagal memuat: {e}", "加载失败：{e}"],
+    "d4.accum": ["💰 โบนัสสะสม (Approved)", "💰 Accumulated bonus (Approved)", "💰 Thưởng tích lũy (đã duyệt)", "💰 រង្វាន់ប្រមូលបាន (Approved)", "💰 စုဆောင်းဆုကြေးငွေ (အတည်ပြုပြီး)", "💰 ໂບນັດສະສົມ (Approved)", "💰 Bonus terkumpul (Diluluskan)", "💰 Bonus terkumpul (Disetujui)", "💰 累计奖金（已通过）"],
+    "d4.paidOut": ["✅ ถอนไปแล้ว", "✅ Already withdrawn", "✅ Đã rút", "✅ បានដករួច", "✅ ထုတ်ယူပြီး", "✅ ຖອນໄປແລ້ວ", "✅ Telah dikeluarkan", "✅ Sudah ditarik", "✅ 已提取"],
+    "d4.avail": ["💵 ยอดคงเหลือที่ถอนได้", "💵 Available balance", "💵 Số dư có thể rút", "💵 សមតុល្យដែលអាចដកបាន", "💵 ထုတ်ယူနိုင်သော လက်ကျန်", "💵 ຍອດຄົງເຫຼືອທີ່ຖອນໄດ້", "💵 Baki yang boleh dikeluarkan", "💵 Saldo yang dapat ditarik", "💵 可提取余额"],
+    "d4.minLine": ["ขั้นต่ำ {m} · Approved {n} คน", "Minimum {m} · {n} approved members", "Tối thiểu {m} · {n} thành viên đã duyệt", "អប្បបរមា {m} · Approved {n} នាក់", "အနည်းဆုံး {m} · အတည်ပြုပြီး {n} ဦး", "ຂັ້ນຕ່ຳ {m} · Approved {n} ຄົນ", "Minimum {m} · {n} ahli diluluskan", "Minimal {m} · {n} anggota disetujui", "最低 {m} · 已通过 {n} 人"],
+    "d4.pendWarn": ["⚠️ มีคำขอค้างอยู่", "⚠️ A request is pending", "⚠️ Có yêu cầu đang chờ", "⚠️ មានសំណើកំពុងរង់ចាំ", "⚠️ တောင်းဆိုမှု ကျန်ရှိနေသည်", "⚠️ ມີຄຳຂໍຄ້າງຢູ່", "⚠️ Ada permintaan tertangguh", "⚠️ Ada permintaan tertunda", "⚠️ 有待处理的申请"],
+    "d4.noWallet": ["⚠️ ยังไม่มี Wallet Address", "⚠️ No wallet address yet", "⚠️ Chưa có địa chỉ ví", "⚠️ មិនទាន់មានអាសយដ្ឋានកាបូប", "⚠️ Wallet လိပ်စာ မရှိသေးပါ", "⚠️ ຍັງບໍ່ມີທີ່ຢູ່ກະເປົ໋າ", "⚠️ Belum ada alamat dompet", "⚠️ Belum ada alamat dompet", "⚠️ 尚无钱包地址"],
+    "d4.btnPend": ["มีคำขอถอนค้างอยู่ — รอ Admin", "A request is pending — waiting for Admin", "Có yêu cầu đang chờ — chờ Admin", "មានសំណើរង់ចាំ — រង់ចាំ Admin", "တောင်းဆိုမှု ကျန်ရှိနေသည် — Admin ကို စောင့်ပါ", "ມີຄຳຂໍຖອນຄ້າງຢູ່ — ລໍຖ້າ Admin", "Permintaan tertangguh — menunggu Admin", "Permintaan tertunda — menunggu Admin", "有待处理申请 — 等待管理员"],
+    "d4.btnWd": ["แจ้งถอนโบนัส ({a})", "Withdraw bonus ({a})", "Rút thưởng ({a})", "ដកប្រាក់រង្វាន់ ({a})", "ဆုကြေးငွေ ထုတ်ရန် ({a})", "ແຈ້ງຖອນໂບນັດ ({a})", "Keluarkan bonus ({a})", "Tarik bonus ({a})", "提取奖金（{a}）"],
+    "d4.btnMin": ["ยังไม่ถึงขั้นต่ำ", "Minimum not reached yet", "Chưa đạt mức tối thiểu", "មិនទាន់ដល់អប្បបរមា", "အနည်းဆုံးပမာဏ မပြည့်သေးပါ", "ຍັງບໍ່ຮອດຂັ້ນຕ່ຳ", "Belum mencapai minimum", "Belum mencapai minimum", "尚未达到最低金额"],
+    "d4.copiedM": ["ลิงค์แนะนำถูกคัดลอกไปยัง clipboard", "Referral link copied to clipboard", "Đã sao chép liên kết giới thiệu vào clipboard", "បានចម្លងតំណណែនាំទៅ clipboard", "ရည်ညွှန်းလင့်ခ်ကို clipboard သို့ ကူးယူပြီး", "ສຳເນົາລິ້ງແນະນຳໄປຍັງ clipboard ແລ້ວ", "Pautan rujukan disalin ke papan klip", "Tautan referral disalin ke clipboard", "推荐链接已复制到剪贴板"],
+    "d4.unitP": ["คน", "people", "người", "នាក់", "ဦး", "ຄົນ", "orang", "orang", "人"],
+    "d4.s.total": ["👥 สมาชิกที่แนะนำทั้งหมด", "👥 Total members referred", "👥 Tổng thành viên đã giới thiệu", "👥 សមាជិកដែលបានណែនាំសរុប", "👥 ရည်ညွှန်းထားသော အဖွဲ့ဝင် စုစုပေါင်း", "👥 ສະມາຊິກທີ່ແນະນຳທັງໝົດ", "👥 Jumlah ahli yang dirujuk", "👥 Total anggota yang direferensikan", "👥 推荐会员总数"],
+    "d4.s.appr": ["✅ Approved แล้ว", "✅ Approved", "✅ Đã duyệt", "✅ បាន Approved", "✅ အတည်ပြုပြီး", "✅ Approved ແລ້ວ", "✅ Telah diluluskan", "✅ Sudah disetujui", "✅ 已通过"],
+    "d4.s.per": ["💰 โบนัสต่อคน", "💰 Bonus per member", "💰 Thưởng theo từng người", "💰 រង្វាន់ក្នុងម្នាក់", "💰 တစ်ဦးချင်း ဆုကြေးငွေ", "💰 ໂບນັດຕໍ່ຄົນ", "💰 Bonus setiap ahli", "💰 Bonus per anggota", "💰 每人奖金"],
+    "d4.s.calc": ["{n} คน × {b}", "{n} people × {b}", "{n} người × {b}", "{n} នាក់ × {b}", "{n} ဦး × {b}", "{n} ຄົນ × {b}", "{n} orang × {b}", "{n} orang × {b}", "{n} 人 × {b}"],
+    "d4.s.wait": ["⏳ รอ Admin อนุมัติ", "⏳ Awaiting Admin approval", "⏳ Chờ Admin duyệt", "⏳ រង់ចាំ Admin អនុម័ត", "⏳ Admin အတည်ပြုရန် စောင့်ဆိုင်းဆဲ", "⏳ ລໍຖ້າ Admin ອະນຸມັດ", "⏳ Menunggu kelulusan Admin", "⏳ Menunggu persetujuan Admin", "⏳ 等待管理员审批"],
+    "d4.s.comm": ["📊 ค่าคอมทีม (รวม)", "📊 Team commission (total)", "📊 Hoa hồng đội (tổng)", "📊 កម្រៃជើងសារក្រុម (សរុប)", "📊 အသင်း ကော်မရှင် (စုစုပေါင်း)", "📊 ຄ່າຄອມທີມ (ລວມ)", "📊 Komisen pasukan (jumlah)", "📊 Komisi tim (total)", "📊 团队佣金（合计）"],
+    "d4.s.commSub": ["ค่าคอมทีมสะสม (Approved)", "Accumulated team commission (Approved)", "Hoa hồng đội tích lũy (đã duyệt)", "កម្រៃជើងសារក្រុមប្រមូលបាន (Approved)", "စုဆောင်းထားသော အသင်း ကော်မရှင် (အတည်ပြုပြီး)", "ຄ່າຄອມທີມສະສົມ (Approved)", "Komisen pasukan terkumpul (Diluluskan)", "Komisi tim terkumpul (Disetujui)", "累计团队佣金（已通过）"],
+    "d4.s.bonus": ["🎁 โบนัสค่าคอม {p}%", "🎁 Commission bonus {p}%", "🎁 Thưởng hoa hồng {p}%", "🎁 រង្វាន់កម្រៃជើងសារ {p}%", "🎁 ကော်မရှင် ဆုကြေးငွေ {p}%", "🎁 ໂບນັດຄ່າຄອມ {p}%", "🎁 Bonus komisen {p}%", "🎁 Bonus komisi {p}%", "🎁 佣金奖金 {p}%"],
+    "d4.s.all": ["🏆 รวมโบนัสทั้งหมด (Approved)", "🏆 Total bonus (Approved)", "🏆 Tổng thưởng (đã duyệt)", "🏆 រង្វាន់សរុបទាំងអស់ (Approved)", "🏆 ဆုကြေးငွေ စုစုပေါင်း (အတည်ပြုပြီး)", "🏆 ໂບນັດລວມທັງໝົດ (Approved)", "🏆 Jumlah bonus (Diluluskan)", "🏆 Total bonus (Disetujui)", "🏆 奖金总额（已通过）"],
+    "d4.s.perP": ["(ต่อคน)", "(per member)", "(theo người)", "(ក្នុងម្នាក់)", "(တစ်ဦးချင်း)", "(ຕໍ່ຄົນ)", "(setiap ahli)", "(per anggota)", "（按人）"],
+    "d4.s.commP": ["(ค่าคอม {p}%)", "(commission {p}%)", "(hoa hồng {p}%)", "(កម្រៃជើងសារ {p}%)", "(ကော်မရှင် {p}%)", "(ຄ່າຄອມ {p}%)", "(komisen {p}%)", "(komisi {p}%)", "（佣金 {p}%）"],
+    "d4.t.title": ["📊 โบนัสค่าคอมมิชชั่นแบบขั้นบันได", "📊 Tiered commission bonus", "📊 Thưởng hoa hồng theo bậc", "📊 រង្វាន់កម្រៃជើងសារតាមកម្រិត", "📊 အဆင့်လိုက် ကော်မရှင် ဆုကြေးငွေ", "📊 ໂບນັດຄ່າຄອມມິດຊັນແບບຂັ້ນໄດ", "📊 Bonus komisen berperingkat", "📊 Bonus komisi bertingkat", "📊 阶梯式佣金奖金"],
+    "d4.t.prog": ["ความคืบหน้า:", "Progress:", "Tiến độ:", "ដំណើរការ៖", "တိုးတက်မှု -", "ຄວາມຄືບໜ້າ:", "Kemajuan:", "Kemajuan:", "进度："],
+    "d4.t.next": ["ถัดไป:", "Next:", "Tiếp theo:", "បន្ទាប់៖", "နောက်တစ်ဆင့် -", "ຖັດໄປ:", "Seterusnya:", "Berikutnya:", "下一级："],
+    "d4.t.nextPct": ["(+{p}% ค่าคอม)", "(+{p}% commission)", "(+{p}% hoa hồng)", "(+{p}% កម្រៃជើងសារ)", "(+{p}% ကော်မရှင်)", "(+{p}% ຄ່າຄອມ)", "(+{p}% komisen)", "(+{p}% komisi)", "（+{p}% 佣金）"],
+    "d4.t.max": ["🏆 ระดับสูงสุดแล้ว!", "🏆 Top level reached!", "🏆 Đã đạt cấp cao nhất!", "🏆 ដល់កម្រិតខ្ពស់បំផុតហើយ!", "🏆 အမြင့်ဆုံးအဆင့် ရောက်ပြီ!", "🏆 ຮອດລະດັບສູງສຸດແລ້ວ!", "🏆 Tahap tertinggi dicapai!", "🏆 Level tertinggi tercapai!", "🏆 已达最高等级！"],
+    "d4.t.h1": ["จำนวนสมาชิก", "Members", "Số thành viên", "ចំនួនសមាជិក", "အဖွဲ့ဝင် အရေအတွက်", "ຈຳນວນສະມາຊິກ", "Bilangan ahli", "Jumlah anggota", "会员人数"],
+    "d4.t.h2": ["โบนัสต่อคน", "Bonus / member", "Thưởng / người", "រង្វាន់ / នាក់", "ဆုကြေးငွေ / ဦး", "ໂບນັດ / ຄົນ", "Bonus / ahli", "Bonus / anggota", "每人奖金"],
+    "d4.t.h3": ["% ค่าคอมมิชชั่น", "% commission", "% hoa hồng", "% កម្រៃជើងសារ", "% ကော်မရှင်", "% ຄ່າຄອມມິດຊັນ", "% komisen", "% komisi", "佣金 %"],
+    "d4.t.h4": ["รวมโบนัส", "Total bonus", "Tổng thưởng", "រង្វាន់សរុប", "ဆုကြေးငွေ စုစုပေါင်း", "ໂບນັດລວມ", "Jumlah bonus", "Total bonus", "奖金合计"],
+    "d4.tier.20": ["20 คนขึ้นไป", "20 or more people", "Từ 20 người trở lên", "20 នាក់ឡើងទៅ", "20 ဦးနှင့်အထက်", "20 ຄົນຂຶ້ນໄປ", "20 orang ke atas", "20 orang ke atas", "20 人及以上"],
+    "d4.tier.10": ["10 คนขึ้นไป", "10 or more people", "Từ 10 người trở lên", "10 នាក់ឡើងទៅ", "10 ဦးနှင့်အထက်", "10 ຄົນຂຶ້ນໄປ", "10 orang ke atas", "10 orang ke atas", "10 人及以上"],
+    "d4.tier.0": ["น้อยกว่า 10 คน", "Fewer than 10 people", "Dưới 10 người", "តិចជាង 10 នាក់", "10 ဦးအောက်", "ໜ້ອຍກວ່າ 10 ຄົນ", "Kurang daripada 10 orang", "Kurang dari 10 orang", "少于 10 人"],
+    "d4.t.cur": ["✅ ระดับปัจจุบัน", "✅ Current level", "✅ Cấp hiện tại", "✅ កម្រិតបច្ចុប្បន្ន", "✅ လက်ရှိအဆင့်", "✅ ລະດັບປັດຈຸບັນ", "✅ Tahap semasa", "✅ Level saat ini", "✅ 当前等级"],
+    "d4.t.pass": ["ผ่านแล้ว", "Achieved", "Đã đạt", "បានឆ្លងកាត់", "ရရှိပြီး", "ຜ່ານແລ້ວ", "Tercapai", "Tercapai", "已达成"],
+    "d4.t.no": ["ยังไม่ถึง", "Not yet", "Chưa đạt", "មិនទាន់ដល់", "မရောက်သေးပါ", "ຍັງບໍ່ຮອດ", "Belum", "Belum", "未达成"],
+    "d4.n1.h": ["📌 <b>เงื่อนไข:</b> % ของค่าคอมมิชชั่นคำนวณจากค่าคอมมิชชั่นทีมที่ได้รับในเดือนนั้น", "📌 <b>Conditions:</b> the commission % is calculated from the team commission received in that month", "📌 <b>Điều kiện:</b> % hoa hồng được tính từ hoa hồng đội nhận được trong tháng đó", "📌 <b>លក្ខខណ្ឌ៖</b> % កម្រៃជើងសារគណនាពីកម្រៃជើងសារក្រុមដែលទទួលបានក្នុងខែនោះ", "📌 <b>အခြေအနေများ -</b> ကော်မရှင် % ကို ထိုလ၌ ရရှိသော အသင်းကော်မရှင်မှ တွက်ချက်သည်", "📌 <b>ເງື່ອນໄຂ:</b> % ຂອງຄ່າຄອມມິດຊັນຄິດໄລ່ຈາກຄ່າຄອມມິດຊັນທີມທີ່ໄດ້ຮັບໃນເດືອນນັ້ນ", "📌 <b>Syarat:</b> % komisen dikira daripada komisen pasukan yang diterima pada bulan itu", "📌 <b>Ketentuan:</b> % komisi dihitung dari komisi tim yang diterima pada bulan tersebut", "📌 <b>条件：</b>佣金百分比按当月团队所得佣金计算"],
+    "d4.n2": ["โบนัสต่อคน: จ่ายเมื่อสมาชิกที่แนะนำได้รับการ Approve", "Bonus per member: paid when the referred member is approved", "Thưởng theo người: trả khi thành viên được giới thiệu được duyệt", "រង្វាន់ក្នុងម្នាក់៖ បើកនៅពេលសមាជិកដែលបានណែនាំត្រូវបាន Approve", "တစ်ဦးချင်း ဆုကြေးငွေ - ရည်ညွှန်းထားသော အဖွဲ့ဝင် Approve ဖြစ်သောအခါ ပေးချေသည်", "ໂບນັດຕໍ່ຄົນ: ຈ່າຍເມື່ອສະມາຊິກທີ່ແນະນຳໄດ້ຮັບການ Approve", "Bonus setiap ahli: dibayar apabila ahli yang dirujuk diluluskan", "Bonus per anggota: dibayar saat anggota yang direferensikan disetujui", "每人奖金：被推荐会员通过审核后发放"],
+    "d4.n3": ["หากสมาชิกที่แนะนำถูก Rejected ภายหลัง โบนัสจะถูกยกเลิกและหักออกจากยอดคงเหลือ", "If a referred member is rejected later, the bonus is cancelled and deducted from the balance", "Nếu thành viên được giới thiệu bị từ chối sau đó, thưởng sẽ bị hủy và trừ khỏi số dư", "ប្រសិនបើសមាជិកដែលបានណែនាំត្រូវបាន Rejected ក្រោយមក រង្វាន់នឹងត្រូវលុបចោល ហើយកាត់ចេញពីសមតុល្យ", "ရည်ညွှန်းထားသော အဖွဲ့ဝင်ကို နောက်ပိုင်း Rejected လုပ်ပါက ဆုကြေးငွေကို ပယ်ဖျက်ပြီး လက်ကျန်မှ နုတ်ယူမည်", "ຖ້າສະມາຊິກທີ່ແນະນຳຖືກ Rejected ພາຍຫຼັງ ໂບນັດຈະຖືກຍົກເລີກ ແລະ ຫັກອອກຈາກຍອດຄົງເຫຼືອ", "Jika ahli yang dirujuk ditolak kemudian, bonus dibatalkan dan ditolak daripada baki", "Jika anggota yang direferensikan ditolak kemudian, bonus dibatalkan dan dipotong dari saldo", "若被推荐会员之后被拒绝，奖金将被取消并从余额中扣除"],
+    "d4.l.title": ["🔗 ลิงค์แนะนำของคุณ", "🔗 Your referral link", "🔗 Liên kết giới thiệu của bạn", "🔗 តំណណែនាំរបស់អ្នក", "🔗 သင်၏ ရည်ညွှန်းလင့်ခ်", "🔗 ລິ້ງແນະນຳຂອງເຈົ້າ", "🔗 Pautan rujukan anda", "🔗 Tautan referral Anda", "🔗 您的推荐链接"],
+    "d4.l.copy": ["📋 คัดลอก", "📋 Copy", "📋 Sao chép", "📋 ចម្លង", "📋 ကူးယူရန်", "📋 ສຳເນົາ", "📋 Salin", "📋 Salin", "📋 复制"],
+    "d4.l.hint": ["แชร์ลิงค์นี้ให้เพื่อน — เมื่อสมัครสำเร็จและได้รับการ Approve คุณจะได้รับโบนัสอัตโนมัติ", "Share this link with friends — once they register and are approved, you receive the bonus automatically", "Chia sẻ liên kết này cho bạn bè — khi họ đăng ký thành công và được duyệt, bạn sẽ tự động nhận thưởng", "ចែករំលែកតំណនេះជាមួយមិត្តភក្តិ — នៅពេលពួកគេចុះឈ្មោះជោគជ័យ ហើយត្រូវបាន Approve អ្នកនឹងទទួលបានរង្វាន់ដោយស្វ័យប្រវត្តិ", "ဤလင့်ခ်ကို သူငယ်ချင်းများနှင့် မျှဝေပါ — စာရင်းသွင်းပြီး Approve ဖြစ်သောအခါ ဆုကြေးငွေကို အလိုအလျောက် ရရှိမည်", "ແບ່ງປັນລິ້ງນີ້ໃຫ້ໝູ່ — ເມື່ອສະໝັກສຳເລັດ ແລະ ໄດ້ຮັບການ Approve ເຈົ້າຈະໄດ້ຮັບໂບນັດອັດຕະໂນມັດ", "Kongsi pautan ini dengan rakan — apabila mereka berdaftar dan diluluskan, anda menerima bonus secara automatik", "Bagikan tautan ini ke teman — setelah mereka mendaftar dan disetujui, Anda otomatis menerima bonus", "将此链接分享给朋友——他们注册并通过审核后，您将自动获得奖金"],
+    "d4.m.title": ["👥 รายชื่อสมาชิกที่แนะนำ", "👥 Referred members", "👥 Danh sách thành viên đã giới thiệu", "👥 បញ្ជីសមាជិកដែលបានណែនាំ", "👥 ရည်ညွှန်းထားသော အဖွဲ့ဝင်စာရင်း", "👥 ລາຍຊື່ສະມາຊິກທີ່ແນະນຳ", "👥 Senarai ahli yang dirujuk", "👥 Daftar anggota yang direferensikan", "👥 已推荐会员名单"],
+    "d4.m.empty1": ["📭 ยังไม่มีสมาชิกที่คุณแนะนำ", "📭 You haven't referred anyone yet", "📭 Bạn chưa giới thiệu thành viên nào", "📭 អ្នកមិនទាន់បានណែនាំសមាជិកណាទេ", "📭 သင် ရည်ညွှန်းထားသော အဖွဲ့ဝင် မရှိသေးပါ", "📭 ເຈົ້າຍັງບໍ່ໄດ້ແນະນຳສະມາຊິກ", "📭 Anda belum merujuk sesiapa", "📭 Anda belum mereferensikan siapa pun", "📭 您还没有推荐任何会员"],
+    "d4.m.empty2": ["แชร์ลิงค์ด้านบนให้เพื่อนสมัครได้เลย!", "Share the link above so your friends can register!", "Hãy chia sẻ liên kết phía trên để bạn bè đăng ký!", "ចែករំលែកតំណខាងលើឱ្យមិត្តភក្តិចុះឈ្មោះបានតែម្តង!", "အပေါ်ပါ လင့်ခ်ကို မျှဝေပြီး သူငယ်ချင်းများကို စာရင်းသွင်းခိုင်းပါ!", "ແບ່ງປັນລິ້ງຂ້າງເທິງໃຫ້ໝູ່ສະໝັກໄດ້ເລີຍ!", "Kongsi pautan di atas supaya rakan boleh mendaftar!", "Bagikan tautan di atas agar teman Anda bisa mendaftar!", "把上方链接分享给朋友即可注册！"],
+    "d4.m.wait": ["รอ {b}", "Pending {b}", "Chờ {b}", "រង់ចាំ {b}", "စောင့်ဆိုင်း {b}", "ລໍຖ້າ {b}", "Menunggu {b}", "Menunggu {b}", "待发 {b}"],
+    "d4.p.title": ["💳 รายการจ่ายเงินทีม", "💳 Team payments", "💳 Thanh toán của đội", "💳 ការទូទាត់របស់ក្រុម", "💳 အသင်း ငွေပေးချေမှုများ", "💳 ລາຍການຈ່າຍເງິນທີມ", "💳 Pembayaran pasukan", "💳 Pembayaran tim", "💳 团队付款记录"],
+    "d4.p.ph": ["🔍 ค้นหาชื่อ / BNB ID...", "🔍 Search name / BNB ID...", "🔍 Tìm tên / BNB ID...", "🔍 ស្វែងរកឈ្មោះ / BNB ID...", "🔍 အမည် / BNB ID ရှာရန်...", "🔍 ຄົ້ນຫາຊື່ / BNB ID...", "🔍 Cari nama / BNB ID...", "🔍 Cari nama / BNB ID...", "🔍 搜索姓名 / BNB ID..."],
+    "d4.p.allM": ["📅 ทุกเดือน", "📅 All months", "📅 Tất cả các tháng", "📅 គ្រប់ខែ", "📅 လအားလုံး", "📅 ທຸກເດືອນ", "📅 Semua bulan", "📅 Semua bulan", "📅 所有月份"],
+    "d4.p.comm": ["ค่าคอมรวม:", "Total commission:", "Tổng hoa hồng:", "កម្រៃជើងសារសរុប៖", "ကော်မရှင် စုစုပေါင်း -", "ຄ່າຄອມລວມ:", "Jumlah komisen:", "Total komisi:", "佣金合计："],
+    "d4.p.profit": ["กำไรรวม:", "Total profit:", "Tổng lợi nhuận:", "ប្រាក់ចំណេញសរុប៖", "အမြတ် စုစုပေါင်း -", "ກຳໄລລວມ:", "Jumlah keuntungan:", "Total keuntungan:", "利润合计："],
+    "d4.p.filtered": ["{n} รายการที่กรอง", "{n} items filtered", "{n} mục đã lọc", "{n} ធាតុដែលបានត្រង", "စစ်ထုတ်ထားသော {n} ခု", "{n} ລາຍການທີ່ກັ່ນຕອງ", "{n} item ditapis", "{n} item terfilter", "已筛选 {n} 笔"],
+    "d4.p.pf": ["💹 กำไร:", "💹 Profit:", "💹 Lợi nhuận:", "💹 ប្រាក់ចំណេញ៖", "💹 အမြတ် -", "💹 ກຳໄລ:", "💹 Keuntungan:", "💹 Keuntungan:", "💹 利润："],
+    "d4.p.cm": ["ค่าคอม", "Commission", "Hoa hồng", "កម្រៃជើងសារ", "ကော်မရှင်", "ຄ່າຄອມ", "Komisen", "Komisi", "佣金"],
+    "d4.p.none": ["📭 ไม่พบรายการที่ตรงกัน", "📭 No matching records found", "📭 Không tìm thấy mục phù hợp", "📭 រកមិនឃើញធាតុដែលត្រូវគ្នា", "📭 ကိုက်ညီသော စာရင်း မတွေ့ပါ", "📭 ບໍ່ພົບລາຍການທີ່ກົງກັນ", "📭 Tiada rekod yang sepadan", "📭 Tidak ditemukan catatan yang cocok", "📭 未找到匹配记录"],
+    "d4.c.title": ["📋 เงื่อนไขการถอนโบนัสแนะนำสมาชิก", "📋 Referral bonus withdrawal conditions", "📋 Điều kiện rút thưởng giới thiệu", "📋 លក្ខខណ្ឌដកប្រាក់រង្វាន់ណែនាំសមាជិក", "📋 ရည်ညွှန်းဆုကြေးငွေ ထုတ်ယူရန် အခြေအနေများ", "📋 ເງື່ອນໄຂການຖອນໂບນັດແນະນຳສະມາຊິກ", "📋 Syarat pengeluaran bonus rujukan", "📋 Ketentuan penarikan bonus referral", "📋 推荐奖金提现条件"],
+    "d4.c1": ["ต่อสมาชิก 1 คน ที่ Approve แล้ว", "per member who has been approved", "cho mỗi thành viên đã được duyệt", "ក្នុងសមាជិក 1 នាក់ដែលបាន Approve រួច", "Approve ဖြစ်ပြီးသော အဖွဲ့ဝင် တစ်ဦးလျှင်", "ຕໍ່ສະມາຊິກ 1 ຄົນ ທີ່ Approve ແລ້ວ", "bagi setiap ahli yang telah diluluskan", "per anggota yang sudah disetujui", "每位已通过的会员"],
+    "d4.c2t": ["รอ Admin", "Awaiting Admin", "Chờ Admin", "រង់ចាំ Admin", "Admin စောင့်ဆိုင်း", "ລໍຖ້າ Admin", "Menunggu Admin", "Menunggu Admin", "等待管理员"],
+    "d4.c2": ["โบนัสจะปรากฏเป็น \"รอ Admin อนุมัติ\" หลังสมาชิกใหม่สมัครสำเร็จ และเปลี่ยนเป็น \"ได้รับแล้ว\" เมื่อ Admin อนุมัติสมาชิกนั้น", "The bonus appears as \"Awaiting Admin approval\" after the new member registers, and changes to \"Received\" once the Admin approves that member", "Thưởng hiển thị là \"Chờ Admin duyệt\" sau khi thành viên mới đăng ký thành công, và chuyển thành \"Đã nhận\" khi Admin duyệt thành viên đó", "រង្វាន់នឹងបង្ហាញជា \"រង់ចាំ Admin អនុម័ត\" បន្ទាប់ពីសមាជិកថ្មីចុះឈ្មោះជោគជ័យ ហើយប្តូរទៅជា \"បានទទួល\" នៅពេល Admin អនុម័តសមាជិកនោះ", "ဆုကြေးငွေသည် အဖွဲ့ဝင်အသစ် စာရင်းသွင်းပြီးနောက် \"Admin အတည်ပြုရန် စောင့်ဆိုင်းဆဲ\" ဟု ပြပြီး Admin က ထိုအဖွဲ့ဝင်ကို အတည်ပြုသောအခါ \"ရရှိပြီး\" သို့ ပြောင်းလဲမည်", "ໂບນັດຈະສະແດງເປັນ \"ລໍຖ້າ Admin ອະນຸມັດ\" ຫຼັງສະມາຊິກໃໝ່ສະໝັກສຳເລັດ ແລະ ປ່ຽນເປັນ \"ໄດ້ຮັບແລ້ວ\" ເມື່ອ Admin ອະນຸມັດສະມາຊິກນັ້ນ", "Bonus dipaparkan sebagai \"Menunggu kelulusan Admin\" selepas ahli baharu berdaftar, dan bertukar kepada \"Diterima\" apabila Admin meluluskan ahli itu", "Bonus tampil sebagai \"Menunggu persetujuan Admin\" setelah anggota baru mendaftar, dan berubah menjadi \"Diterima\" saat Admin menyetujui anggota tersebut", "新会员注册成功后，奖金显示为“等待管理员审批”，管理员通过该会员后变为“已收到”"],
+    "d4.c3t": ["ถอนขั้นต่ำ", "Minimum withdrawal", "Rút tối thiểu", "ដកអប្បបរមា", "အနည်းဆုံး ထုတ်ယူမှု", "ຖອນຂັ້ນຕ່ຳ", "Pengeluaran minimum", "Penarikan minimum", "最低提现"],
+    "d4.c3": ["{m} USDT (เทียบเท่า 5 คนที่ Approve แล้ว)", "{m} USDT (equivalent to 5 approved members)", "{m} USDT (tương đương 5 thành viên đã duyệt)", "{m} USDT (ស្មើនឹងសមាជិក 5 នាក់ដែលបាន Approve)", "{m} USDT (Approve ဖြစ်ပြီး 5 ဦးနှင့် ညီမျှ)", "{m} USDT (ເທົ່າກັບ 5 ຄົນທີ່ Approve ແລ້ວ)", "{m} USDT (bersamaan 5 ahli diluluskan)", "{m} USDT (setara 5 anggota disetujui)", "{m} USDT（相当于 5 位已通过会员）"],
+    "d4.c4t": ["โอนเข้า", "Transferred to", "Chuyển vào", "ផ្ទេរចូល", "လွှဲမည့်နေရာ", "ໂອນເຂົ້າ", "Dipindahkan ke", "Ditransfer ke", "转入"],
+    "d4.c4": ["Address Wallet (USDT BEP-20) ที่ลงทะเบียนไว้เท่านั้น ภายใน 7 วันทำการ", "only the registered wallet address (USDT BEP-20), within 7 business days", "chỉ vào địa chỉ ví (USDT BEP-20) đã đăng ký, trong vòng 7 ngày làm việc", "តែអាសយដ្ឋានកាបូប (USDT BEP-20) ដែលបានចុះឈ្មោះប៉ុណ្ណោះ ក្នុងរយៈពេល 7 ថ្ងៃធ្វើការ", "မှတ်ပုံတင်ထားသော Wallet လိပ်စာ (USDT BEP-20) သို့သာ လုပ်ငန်းရက် 7 ရက်အတွင်း", "ສະເພາະທີ່ຢູ່ກະເປົ໋າ (USDT BEP-20) ທີ່ລົງທະບຽນໄວ້ເທົ່ານັ້ນ ພາຍໃນ 7 ວັນທຳການ", "hanya alamat dompet (USDT BEP-20) yang didaftarkan, dalam 7 hari bekerja", "hanya ke alamat dompet (USDT BEP-20) yang terdaftar, dalam 7 hari kerja", "仅转入已登记的钱包地址（USDT BEP-20），7 个工作日内完成"],
+    "d4.c5t": ["ถูก Rejected", "If Rejected", "Nếu bị từ chối", "ប្រសិនបើ Rejected", "Rejected ဖြစ်ပါက", "ຖ້າຖືກ Rejected", "Jika Ditolak", "Jika Ditolak", "若被拒绝"],
+    "d4.calc": ["⏳ กำลังคำนวณยอดคงเหลือ...", "⏳ Calculating balance...", "⏳ Đang tính số dư...", "⏳ កំពុងគណនាសមតុល្យ...", "⏳ လက်ကျန်ငွေ တွက်ချက်နေသည်...", "⏳ ກຳລັງຄຳນວນຍອດຄົງເຫຼືອ...", "⏳ Mengira baki...", "⏳ Menghitung saldo...", "⏳ 正在计算余额..."],
+    "d4.hist": ["🧾 ประวัติการถอนโบนัส", "🧾 Bonus withdrawal history", "🧾 Lịch sử rút thưởng", "🧾 ប្រវត្តិការដកប្រាក់រង្វាន់", "🧾 ဆုကြေးငွေ ထုတ်ယူမှု မှတ်တမ်း", "🧾 ປະຫວັດການຖອນໂບນັດ", "🧾 Sejarah pengeluaran bonus", "🧾 Riwayat penarikan bonus", "🧾 奖金提现记录"],
+    "d4.loading": ["⏳ กำลังโหลด...", "⏳ Loading...", "⏳ Đang tải...", "⏳ កំពុងផ្ទុក...", "⏳ ရယူနေသည်...", "⏳ ກຳລັງໂຫຼດ...", "⏳ Memuatkan...", "⏳ Memuat...", "⏳ 加载中..."],
+    // ── ข้อความ error จาก Worker (err.<code>) — Worker ส่ง {error, code, vars} ──
+    "err.E_RATE": ["คำขอถี่เกินไป กรุณารอ {m} นาที", "Too many requests. Please wait {m} min", "Quá nhiều yêu cầu. Vui lòng chờ {m} phút", "សំណើច្រើនពេក សូមរង់ចាំ {m} នាទី", "တောင်းဆိုမှု များလွန်းသည် {m} မိနစ် စောင့်ပါ", "ຄຳຂໍຖີ່ເກີນໄປ ກະລຸນາລໍຖ້າ {m} ນາທີ", "Terlalu banyak permintaan. Sila tunggu {m} minit", "Terlalu banyak permintaan. Harap tunggu {m} menit", "请求过于频繁，请等待 {m} 分钟"],
+    "err.E_ID_PHONE_REQ": ["กรุณากรอก BNB ID และเบอร์โทร", "Please enter your BNB ID and phone number", "Vui lòng nhập BNB ID và số điện thoại", "សូមបញ្ចូល BNB ID និងលេខទូរស័ព្ទ", "BNB ID နှင့် ဖုန်းနံပါတ် ဖြည့်ပါ", "ກະລຸນາປ້ອນ BNB ID ແລະ ເບີໂທ", "Sila masukkan BNB ID dan nombor telefon", "Harap isi BNB ID dan nomor telepon", "请输入 BNB ID 和手机号码"],
+    "err.E_LOCKED": ["ล็อคชั่วคราว กรุณารอ 15 นาที", "Temporarily locked. Please wait 15 minutes", "Tạm thời bị khóa. Vui lòng chờ 15 phút", "ត្រូវបានចាក់សោបណ្តោះអាសន្ន សូមរង់ចាំ 15 នាទី", "ယာယီ ပိတ်ထားသည် 15 မိနစ် စောင့်ပါ", "ລັອກຊົ່ວຄາວ ກະລຸນາລໍຖ້າ 15 ນາທີ", "Dikunci sementara. Sila tunggu 15 minit", "Dikunci sementara. Harap tunggu 15 menit", "已临时锁定，请等待 15 分钟"],
+    "err.E_MEMBER_NF": ["ไม่พบสมาชิก หรือเบอร์โทรไม่ตรงกับที่ลงทะเบียนไว้", "Member not found, or the phone number does not match the registered one", "Không tìm thấy thành viên hoặc số điện thoại không khớp với số đã đăng ký", "រកមិនឃើញសមាជិក ឬលេខទូរស័ព្ទមិនត្រូវនឹងដែលបានចុះឈ្មោះ", "အဖွဲ့ဝင် မတွေ့ပါ သို့မဟုတ် ဖုန်းနံပါတ်သည် မှတ်ပုံတင်ထားသည်နှင့် မကိုက်ညီပါ", "ບໍ່ພົບສະມາຊິກ ຫຼື ເບີໂທບໍ່ກົງກັບທີ່ລົງທະບຽນໄວ້", "Ahli tidak dijumpai atau nombor telefon tidak sepadan dengan yang didaftarkan", "Anggota tidak ditemukan atau nomor telepon tidak cocok dengan yang terdaftar", "未找到会员，或手机号码与登记不符"],
+    "err.E_PHONE_EXPIRED": ["หมดเวลายืนยันเบอร์โทร กรุณาเริ่มใหม่", "Phone verification timed out. Please start again", "Hết thời gian xác minh số điện thoại. Vui lòng bắt đầu lại", "អស់ពេលផ្ទៀងផ្ទាត់លេខទូរស័ព្ទ សូមចាប់ផ្តើមឡើងវិញ", "ဖုန်းအတည်ပြုချိန် ကုန်သွားသည် ပြန်စတင်ပါ", "ໝົດເວລາຢືນຢັນເບີໂທ ກະລຸນາເລີ່ມໃໝ່", "Pengesahan telefon tamat masa. Sila mulakan semula", "Verifikasi telepon kedaluwarsa. Harap mulai ulang", "手机验证已超时，请重新开始"],
+    "err.E_PW_SHORT": ["รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร", "Password must be at least 6 characters", "Mật khẩu phải có ít nhất 6 ký tự", "ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច 6 តួអក្សរ", "စကားဝှက်သည် အနည်းဆုံး 6 လုံး ရှိရမည်", "ລະຫັດຜ່ານຕ້ອງມີຢ່າງໜ້ອຍ 6 ຕົວອັກສອນ", "Kata laluan mesti sekurang-kurangnya 6 aksara", "Kata sandi minimal 6 karakter", "密码至少需要 6 个字符"],
+    "err.E_PW_WRONG": ["รหัสผ่านไม่ถูกต้อง", "Incorrect password", "Mật khẩu không đúng", "ពាក្យសម្ងាត់មិនត្រឹមត្រូវ", "စကားဝှက် မမှန်ပါ", "ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ", "Kata laluan salah", "Kata sandi salah", "密码错误"],
+    "err.E_SESSION_EXP": ["เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่", "Session expired. Please log in again", "Phiên đã hết hạn. Vui lòng đăng nhập lại", "សម័យអស់សុពលភាព សូមចូលប្រព័ន្ធម្តងទៀត", "စက်ရှင် သက်တမ်းကုန်ပြီ ပြန်လည်ဝင်ရောက်ပါ", "ເຊດຊັນໝົດອາຍຸ ກະລຸນາເຂົ້າລະບົບໃໝ່", "Sesi tamat. Sila log masuk semula", "Sesi berakhir. Silakan login kembali", "会话已过期，请重新登录"],
+    "err.E_PW_ALREADY": ["บัญชีนี้ตั้งรหัสผ่านไว้แล้ว", "This account already has a password", "Tài khoản này đã đặt mật khẩu", "គណនីនេះបានកំណត់ពាក្យសម្ងាត់រួចហើយ", "ဤအကောင့်တွင် စကားဝှက် သတ်မှတ်ပြီးဖြစ်သည်", "ບັນຊີນີ້ຕັ້ງລະຫັດຜ່ານໄວ້ແລ້ວ", "Akaun ini sudah mempunyai kata laluan", "Akun ini sudah memiliki kata sandi", "此账号已设置密码"],
+    "err.E_APP_DUP": ["ส่งใบสมัครประเภทนี้ไปแล้ว", "This type of application has already been submitted", "Đã gửi loại đơn đăng ký này", "បានដាក់ពាក្យសុំប្រភេទនេះរួចហើយ", "ဤအမျိုးအစား လျှောက်လွှာကို တင်သွင်းပြီးဖြစ်သည်", "ສົ່ງໃບສະໝັກປະເພດນີ້ໄປແລ້ວ", "Permohonan jenis ini telah dihantar", "Aplikasi jenis ini sudah dikirim", "已提交过此类申请"],
+    "err.E_POS_BAD": ["ตำแหน่งไม่ถูกต้อง", "Invalid position", "Vị trí không hợp lệ", "តួនាទីមិនត្រឹមត្រូវ", "ရာထူး မမှန်ကန်ပါ", "ຕຳແໜ່ງບໍ່ຖືກຕ້ອງ", "Jawatan tidak sah", "Posisi tidak valid", "职位无效"],
+    "err.E_WD_BUSY": ["กำลังประมวลผลคำขอก่อนหน้า", "The previous request is still being processed", "Đang xử lý yêu cầu trước đó", "កំពុងដំណើរការសំណើមុន", "ယခင်တောင်းဆိုမှုကို လုပ်ဆောင်နေဆဲဖြစ်သည်", "ກຳລັງປະມວນຜົນຄຳຂໍກ່ອນໜ້າ", "Permintaan sebelumnya sedang diproses", "Permintaan sebelumnya sedang diproses", "上一个请求正在处理中"],
+    "err.E_WD_PENDING": ["มีคำขอถอนค้างอยู่ กรุณารอ Admin ดำเนินการ", "A withdrawal request is pending. Please wait for the Admin", "Có yêu cầu rút tiền đang chờ. Vui lòng chờ Admin xử lý", "មានសំណើដកប្រាក់កំពុងរង់ចាំ សូមរង់ចាំ Admin ដំណើរការ", "ငွေထုတ်ရန် တောင်းဆိုမှု ကျန်ရှိနေသည် Admin ကို စောင့်ပါ", "ມີຄຳຂໍຖອນຄ້າງຢູ່ ກະລຸນາລໍຖ້າ Admin ດຳເນີນການ", "Terdapat permintaan pengeluaran tertangguh. Sila tunggu Admin", "Ada permintaan penarikan tertunda. Harap tunggu Admin", "有待处理的提现申请，请等待管理员处理"],
+    "err.E_WD_MIN": ["ยอดไม่ถึงขั้นต่ำ {m}", "Below the minimum amount of {m}", "Chưa đạt mức tối thiểu {m}", "ចំនួនទឹកប្រាក់មិនដល់អប្បបរមា {m}", "အနည်းဆုံးပမာဏ {m} မပြည့်မီပါ", "ຍອດບໍ່ຮອດຂັ້ນຕ່ຳ {m}", "Di bawah jumlah minimum {m}", "Di bawah jumlah minimum {m}", "未达到最低金额 {m}"],
+    "err.E_WD_WALLET": ["ที่อยู่กระเป๋าของสมาชิกไม่ถูกต้อง กรุณาติดต่อแอดมิน", "The member's wallet address is invalid. Please contact the admin", "Địa chỉ ví của thành viên không hợp lệ. Vui lòng liên hệ admin", "អាសយដ្ឋានកាបូបរបស់សមាជិកមិនត្រឹមត្រូវ សូមទាក់ទង admin", "အဖွဲ့ဝင်၏ Wallet လိပ်စာ မမှန်ပါ admin ကို ဆက်သွယ်ပါ", "ທີ່ຢູ່ກະເປົ໋າຂອງສະມາຊິກບໍ່ຖືກຕ້ອງ ກະລຸນາຕິດຕໍ່ admin", "Alamat dompet ahli tidak sah. Sila hubungi admin", "Alamat dompet anggota tidak valid. Harap hubungi admin", "会员钱包地址无效，请联系管理员"],
+    "err.E_CLAIM_AUTH": ["BNB ID หรือเบอร์โทรไม่ตรงกับที่ลงทะเบียนไว้", "BNB ID or phone number does not match the registered one", "BNB ID hoặc số điện thoại không khớp với số đã đăng ký", "BNB ID ឬលេខទូរស័ព្ទមិនត្រូវនឹងដែលបានចុះឈ្មោះ", "BNB ID သို့မဟုတ် ဖုန်းနံပါတ်သည် မှတ်ပုံတင်ထားသည်နှင့် မကိုက်ညီပါ", "BNB ID ຫຼື ເບີໂທບໍ່ກົງກັບທີ່ລົງທະບຽນໄວ້", "BNB ID atau nombor telefon tidak sepadan dengan yang didaftarkan", "BNB ID atau nomor telepon tidak cocok dengan yang terdaftar", "BNB ID 或手机号码与登记不符"],
+    "err.E_CLAIM_INC1": ["ข้อมูลวันที่/มูลค่าพอร์ตไม่ครบ", "Date / portfolio value information is incomplete", "Thiếu thông tin ngày / giá trị danh mục", "ព័ត៌មានកាលបរិច្ឆេទ/តម្លៃផតទ្វីមិនគ្រប់", "ရက်စွဲ/ပေါ့ဖ်ဖိုလီယို တန်ဖိုး အချက်အလက် မပြည့်စုံပါ", "ຂໍ້ມູນວັນທີ/ມູນຄ່າພອດບໍ່ຄົບ", "Maklumat tarikh / nilai portfolio tidak lengkap", "Data tanggal / nilai portofolio tidak lengkap", "日期/资产组合价值信息不完整"],
+    "err.E_DATE_BAD": ["วันที่ไม่ถูกต้อง", "Invalid date", "Ngày không hợp lệ", "កាលបរិច្ឆេទមិនត្រឹមត្រូវ", "ရက်စွဲ မမှန်ကန်ပါ", "ວັນທີບໍ່ຖືກຕ້ອງ", "Tarikh tidak sah", "Tanggal tidak valid", "日期无效"],
+    "err.E_CLAIM_INC2": ["ข้อมูลไม่ครบ", "Incomplete information", "Thông tin chưa đầy đủ", "ព័ត៌មានមិនគ្រប់គ្រាន់", "အချက်အလက် မပြည့်စုံပါ", "ຂໍ້ມູນບໍ່ຄົບ", "Maklumat tidak lengkap", "Data tidak lengkap", "信息不完整"],
+    "err.E_BNB_FMT": ["BNB ID ไม่ถูกต้อง (3-40 ตัว a-z 0-9 _ . -)", "Invalid BNB ID (3-40 characters: a-z 0-9 _ . -)", "BNB ID không hợp lệ (3-40 ký tự a-z 0-9 _ . -)", "BNB ID មិនត្រឹមត្រូវ (3-40 តួ a-z 0-9 _ . -)", "BNB ID မမှန်ပါ (3-40 လုံး a-z 0-9 _ . -)", "BNB ID ບໍ່ຖືກຕ້ອງ (3-40 ຕົວ a-z 0-9 _ . -)", "BNB ID tidak sah (3-40 aksara a-z 0-9 _ . -)", "BNB ID tidak valid (3-40 karakter a-z 0-9 _ . -)", "BNB ID 无效（3-40 个字符：a-z 0-9 _ . -）"],
+    "err.E_NAME_REQ": ["กรุณากรอกชื่อ", "Please enter your name", "Vui lòng nhập tên", "សូមបញ្ចូលឈ្មោះ", "အမည် ဖြည့်ပါ", "ກະລຸນາປ້ອນຊື່", "Sila masukkan nama", "Harap isi nama", "请输入姓名"],
+    "err.E_PHONE_BAD": ["เบอร์โทรไม่ถูกต้อง", "Invalid phone number", "Số điện thoại không hợp lệ", "លេខទូរស័ព្ទមិនត្រឹមត្រូវ", "ဖုန်းနံပါတ် မမှန်ပါ", "ເບີໂທບໍ່ຖືກຕ້ອງ", "Nombor telefon tidak sah", "Nomor telepon tidak valid", "手机号码无效"],
+    "err.E_WALLET_FMT": ["ที่อยู่กระเป๋า BEP-20 ไม่ถูกต้อง", "Invalid BEP-20 wallet address", "Địa chỉ ví BEP-20 không hợp lệ", "អាសយដ្ឋានកាបូប BEP-20 មិនត្រឹមត្រូវ", "BEP-20 Wallet လိပ်စာ မမှန်ပါ", "ທີ່ຢູ່ກະເປົ໋າ BEP-20 ບໍ່ຖືກຕ້ອງ", "Alamat dompet BEP-20 tidak sah", "Alamat dompet BEP-20 tidak valid", "BEP-20 钱包地址无效"],
+    "err.E_BNB_DUP": ["BNB ID นี้ถูกใช้สมัครแล้ว", "This BNB ID has already been registered", "BNB ID này đã được đăng ký", "BNB ID នេះត្រូវបានប្រើចុះឈ្មោះរួចហើយ", "ဤ BNB ID ကို စာရင်းသွင်းပြီးဖြစ်သည်", "BNB ID ນີ້ຖືກໃຊ້ສະໝັກແລ້ວ", "BNB ID ini telah didaftarkan", "BNB ID ini sudah terdaftar", "此 BNB ID 已被注册"],
+    "err.E_WALLET_DUP": ["ที่อยู่กระเป๋านี้ถูกใช้สมัครแล้ว", "This wallet address has already been used to register", "Địa chỉ ví này đã được dùng để đăng ký", "អាសយដ្ឋានកាបូបនេះត្រូវបានប្រើចុះឈ្មោះរួចហើយ", "ဤ Wallet လိပ်စာကို စာရင်းသွင်းရန် အသုံးပြုပြီးဖြစ်သည်", "ທີ່ຢູ່ກະເປົ໋ານີ້ຖືກໃຊ້ສະໝັກແລ້ວ", "Alamat dompet ini telah digunakan untuk mendaftar", "Alamat dompet ini sudah dipakai untuk mendaftar", "此钱包地址已被用于注册"],
+    "err.E_TEAM_NF": ["ไม่พบทีมที่เลือก กรุณารีเฟรชหน้าแล้วเลือกใหม่", "The selected team was not found. Please refresh the page and choose again", "Không tìm thấy đội đã chọn. Vui lòng tải lại trang và chọn lại", "រកមិនឃើញក្រុមដែលបានជ្រើស សូមផ្ទុកទំព័រឡើងវិញ ហើយជ្រើសរើសម្តងទៀត", "ရွေးချယ်ထားသော အသင်း မတွေ့ပါ စာမျက်နှာကို ပြန်လည်ရယူပြီး ထပ်ရွေးပါ", "ບໍ່ພົບທີມທີ່ເລືອກ ກະລຸນາໂຫຼດໜ້າໃໝ່ແລ້ວເລືອກອີກຄັ້ງ", "Pasukan yang dipilih tidak dijumpai. Sila muat semula halaman dan pilih semula", "Tim yang dipilih tidak ditemukan. Harap muat ulang halaman dan pilih lagi", "未找到所选团队，请刷新页面后重新选择"],
+    "err.E_IMG_BIG": ["รูปใหญ่เกิน 5MB", "Image is larger than 5MB", "Ảnh lớn hơn 5MB", "រូបភាពធំជាង 5MB", "ပုံအရွယ်အစား 5MB ထက် ကြီးနေသည်", "ຮູບໃຫຍ່ເກີນ 5MB", "Imej melebihi 5MB", "Gambar lebih besar dari 5MB", "图片超过 5MB"],
+    "err.E_IMG_TYPE": ["รองรับเฉพาะไฟล์ JPEG / PNG / WebP", "Only JPEG / PNG / WebP files are supported", "Chỉ hỗ trợ tệp JPEG / PNG / WebP", "គាំទ្រតែឯកសារ JPEG / PNG / WebP ប៉ុណ្ណោះ", "JPEG / PNG / WebP ဖိုင်များကိုသာ ပံ့ပိုးသည်", "ຮອງຮັບສະເພາະໄຟລ໌ JPEG / PNG / WebP", "Hanya fail JPEG / PNG / WebP disokong", "Hanya file JPEG / PNG / WebP yang didukung", "仅支持 JPEG / PNG / WebP 文件"],
+    "err.E_IMG_FAIL": ["อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่", "Image upload failed. Please try again", "Tải ảnh lên không thành công. Vui lòng thử lại", "ផ្ទុកឡើងរូបភាពមិនបានជោគជ័យ សូមព្យាយាមម្តងទៀត", "ပုံတင်၍ မအောင်မြင်ပါ ထပ်ကြိုးစားပါ", "ອັບໂຫຼດຮູບບໍ່ສຳເລັດ ກະລຸນາລອງໃໝ່", "Muat naik imej gagal. Sila cuba lagi", "Unggah gambar gagal. Silakan coba lagi", "图片上传失败，请重试"],
+    /*@@D_END@@*/
+  });
+  var _e=tccI18nCheck(); if(_e.length&&window.console) console.warn("[TCC i18n dash] "+_e.length+" รายการผิดพลาด",_e);
+})();
+</script>
 
 <script>
 // ═══ TCC v4 — global fetch wrapper: แนบ token (admin/member) + จัดการ 401 ═══
@@ -12124,7 +12337,7 @@ async function loadClaimHistory(type){
 async function tccClaimPost(type, body){
   const r=await fetch(`${WORKER_URL}/api/claims/${type}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const d=await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(d.error||('HTTP '+r.status));
+  if(!r.ok) throw tccApiErr(d,'HTTP '+r.status);
   return d;
 }
 async function tccMemberLookup(bnbId){
@@ -12281,7 +12494,7 @@ function applyServerTotals(){
 
 async function ndbInsert(table,data){
   const res=await fetch(`${WORKER_URL}/api/${table}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||`Insert ${res.status}`);}
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw tccApiErr(e,`Insert ${res.status}`);}
   const result=await res.json();
   _cacheBust(table); // [v2.4] bust cache หลัง insert
   return result;
@@ -14302,7 +14515,7 @@ async function uploadToImgBB(thumbId){
   });
   if(!res.ok){
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `Image upload failed (${res.status})`);
+    throw tccApiErr(err,`Image upload failed (${res.status})`);
   }
   const data = await res.json();
   const url  = data.url || '';
@@ -14519,7 +14732,7 @@ async function submitRegistration(){
   }catch(e){
     resEl.innerHTML=`<div class="api-err" style="padding:12px;border-radius:8px;
       background:rgba(246,70,93,0.1);border:1px solid rgba(246,70,93,0.3);color:#f6465d;">
-      ${tccT('reg.err.generic',{msg:esc(e.message)})}
+      ${tccT('reg.err.generic',{msg:esc(tccErrMsg(e))})}
     </div>`;
     if(btn){ btn.textContent=tccT('reg.confirmBtn'); btn.disabled=false; }
   }
@@ -17144,7 +17357,7 @@ async function clmSubmit(){
     if(typeof loadAdminClaimLP === 'function') setTimeout(loadAdminClaimLP, 1000);
     setTimeout(clmClose, 3500);
   }).catch(function(e){
-    clmMsg('er',tccT('cm.err.generic',{msg:e.message}));
+    clmMsg('er',tccT('cm.err.generic',{msg:tccErrMsg(e)}));
     if(btn){ btn.disabled=false; btn.textContent=tccT('cm.submit'); }
   });
 }
@@ -18032,7 +18245,7 @@ async function c10Submit(){
     if(typeof loadAdminClaim10==='function') setTimeout(loadAdminClaim10, 1000);
     setTimeout(c10Close, 3500);
   }).catch(function(e){
-    c10Msg('er',tccT('cm.err.generic',{msg:e.message}));
+    c10Msg('er',tccT('cm.err.generic',{msg:tccErrMsg(e)}));
     if(btn){ btn.disabled=false; btn.textContent=tccT('cm.submit'); }
   });
 }
@@ -19255,7 +19468,7 @@ function TC_PAYMENTS(){ return (TC.data&&TC.data.payments)||[]; }
 async function tcApi(path,opt){
   const r=await fetch(WORKER_URL+path,opt);
   const d=await r.json().catch(()=>({}));
-  if(!r.ok){ const e=new Error(d.error||('HTTP '+r.status)); e.status=r.status; throw e; }
+  if(!r.ok){ const e=tccApiErr(d,'HTTP '+r.status); e.status=r.status; throw e; }
   return d;
 }
 async function tcLoadMe(){
@@ -19371,7 +19584,7 @@ async function tcS1go(){
   try{
     const lk=await tcApi('/api/member/lookup?bnbId='+encodeURIComponent(v));
     if(lk.found) found={BNB_ID:v,Name:lk.name,Team:lk.team};
-  }catch(e){inp.disabled=false;tcBarShow('error','❌ '+(e.message||tccT('tf.1.fail')));return;}
+  }catch(e){inp.disabled=false;tcBarShow('error','❌ '+(tccErrMsg(e)||tccT('tf.1.fail')));return;}
   if(!found){inp.disabled=false;tcBarShow('error','❌ '+tccT('tf.1.nf'));return;}
   TC.member=found;TC.traderApp=null;TC.jobApp=null;TC.appRow=null;TC.appId=null;TC.data=null;
   tcBarRemove();TC.step=2;tcRender();
@@ -19419,7 +19632,7 @@ async function tcS2go(){
     if(d.apps&&d.apps.trader) TC.traderApp={Status:d.apps.trader.status,DesiredPosition:'เทรดเดอร์'};
     if(d.apps&&d.apps.job) TC.jobApp={Status:d.apps.job.status,DesiredPosition:d.apps.job.position};
     TC.step=3;tcRender();
-  }catch(e){inp.disabled=false;tcErr(err,e.message||tccT('tf.2.fail'));}
+  }catch(e){inp.disabled=false;tcErr(err,tccErrMsg(e)||tccT('tf.2.fail'));}
 }
 
 // ── Step 3 ────────────────────────────────────────────────────
@@ -19452,8 +19665,8 @@ async function tcS3go(){
     TC.hasPassword=!d.pwPending;
     TC.step=4;tcRender();
   }catch(e){
-    if(e.status===401&&/หมดเวลา/.test(e.message||'')){ tcReset(); tcRender(); tcBarShow('warn','⚠️ '+e.message); return; }
-    tcErr(err,e.message||tccT('tf.3.fail'));
+    if(e.status===401&&(e.code==='E_PHONE_EXPIRED'||/หมดเวลา/.test(e.message||''))){ tcReset(); tcRender(); tcBarShow('warn','⚠️ '+tccErrMsg(e)); return; }
+    tcErr(err,tccErrMsg(e)||tccT('tf.3.fail'));
   }
 }
 
@@ -19625,19 +19838,19 @@ let _tcRefPayMonth   = ''; // กรองเดือน
 function tcS5Personal(myId){
   const TPER=10; // รายการต่อหน้า
   const rows = TC_PAYMENTS().filter(p=>String(payVal(p,'bnb_id')).trim()===String(myId).trim());
-  if(!rows.length) return `<div style="text-align:center;padding:24px;color:var(--muted);">📭 ยังไม่มีรายการในระบบ</div>`;
+  if(!rows.length) return `<div style="text-align:center;padding:24px;color:var(--muted);">${tccT('d1.empty')}</div>`;
 
   // ── เดือน dropdown ────────────────────────────────────────────
   const months={};
   rows.forEach(p=>{const d=parsePayDate(payVal(p,'date'));if(d){const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;months[k]=true;}});
   const sortedM=Object.keys(months).sort().reverse();
   const monthSel=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-    <span style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">📅 เดือน:</span>
+    <span style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${tccT('d1.month')}</span>
     <select onchange="_tcDashMonth=this.value;_tcCoinFilter='';_tcCoinSearch='';_tcPersonPage=0;tcRender();"
       style="background:#1a1d21;border:1px solid rgba(240,185,11,.38);border-radius:8px;color:var(--gold);
              font-family:'Prompt',sans-serif;font-size:.82rem;padding:5px 10px;outline:none;cursor:pointer;flex:1;max-width:180px;">
-      <option value="" ${!_tcDashMonth?'selected':''}>ทั้งหมด</option>
-      ${sortedM.map(k=>{const[y,mo]=k.split('-');return`<option value="${k}" ${_tcDashMonth===k?'selected':''}>${getThaiMonth(parseInt(mo))} ${parseInt(y)+543}</option>`;}).join('')}
+      <option value="" ${!_tcDashMonth?'selected':''}>${tccT('d.all')}</option>
+      ${sortedM.map(k=>{const[y,mo]=k.split('-');return`<option value="${k}" ${_tcDashMonth===k?'selected':''}>${tccMonthYear(parseInt(mo),parseInt(y))}</option>`;}).join('')}
     </select>
   </div>`;
 
@@ -19656,28 +19869,28 @@ function tcS5Personal(myId){
 
   const summCards=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
     <div style="background:rgba(240,185,11,.07);border:1px solid rgba(240,185,11,.2);border-radius:10px;padding:11px;">
-      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">💰 กำไรรวม</div>
+      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">${tccT('d1.profit')}</div>
       <div style="font-family:'Orbitron',monospace;font-size:.88rem;font-weight:900;color:var(--gold);margin-top:4px;">${fmtD(totProfit)}</div>
     </div>
     <div style="background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.2);border-radius:10px;padding:11px;">
-      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">🧩 ส่วนแบ่งสมาชิก (50%)</div>
+      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">${tccT('d1.member')}</div>
       <div style="font-family:'Orbitron',monospace;font-size:.88rem;font-weight:900;color:rgba(96,165,250,.9);margin-top:4px;">${fmtD(totMember)}</div>
     </div>
     <div style="background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:11px;">
-      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">🛡️ ประกันกำไร (10%)</div>
+      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">${tccT('d1.guar')}</div>
       <div style="font-family:'Orbitron',monospace;font-size:.88rem;font-weight:900;color:rgba(251,191,36,.9);margin-top:4px;">${fmtD(totGuaranee)}</div>
     </div>
     <div style="background:linear-gradient(135deg,rgba(3,192,117,.1),rgba(240,185,11,.05));border:1px solid rgba(3,192,117,.3);border-radius:10px;padding:11px;">
-      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">⭐ รายได้รวม (โอนสุทธิ)</div>
+      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">${tccT('d1.net')}</div>
       <div style="font-family:'Orbitron',monospace;font-size:.88rem;font-weight:900;color:var(--green);margin-top:4px;">${fmtD(totTransfer)}</div>
     </div>
     <div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:11px;">
-      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">✅ อนุมัติแล้ว</div>
-      <div style="font-size:1rem;font-weight:900;color:#22c55e;margin-top:4px;">${approved} รายการ</div>
+      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">${tccT('d1.appr')}</div>
+      <div style="font-size:1rem;font-weight:900;color:#22c55e;margin-top:4px;">${tccT('d.items',{n:approved})}</div>
     </div>
     <div style="background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.15);border-radius:10px;padding:11px;">
-      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">📋 รายการทั้งหมด</div>
-      <div style="font-size:1rem;font-weight:900;color:rgba(96,165,250,.9);margin-top:4px;">${filtered.length} รายการ</div>
+      <div style="font-size:.65rem;color:var(--muted);font-weight:600;">${tccT('d1.total')}</div>
+      <div style="font-size:1rem;font-weight:900;color:rgba(96,165,250,.9);margin-top:4px;">${tccT('d.items',{n:filtered.length})}</div>
     </div>
   </div>`;
 
@@ -19803,13 +20016,13 @@ function tcS5Personal(myId){
     <details open style="margin-bottom:14px;">
       <summary style="font-size:.78rem;font-weight:700;color:var(--gold);cursor:pointer;list-style:none;
         display:flex;align-items:center;gap:6px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.07);user-select:none;">
-        📊 กราฟวิเคราะห์ <span style="font-size:.65rem;color:var(--muted);font-weight:400;">(กดเพื่อซ่อน/แสดง)</span>
+        ${tccT('d1.charts')} <span style="font-size:.65rem;color:var(--muted);font-weight:400;">${tccT('d1.chartsHint')}</span>
       </summary>
 
       <!-- ══ CARD 1: กำไรแยกตามเหรียญ — Horizontal bar ══ -->
       <div style="background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-top:12px;">
         <div style="font-size:.72rem;color:var(--text-dim);font-weight:700;margin-bottom:12px;letter-spacing:.3px;">
-          📈 กำไร/ขาดทุน ตามเหรียญ
+          ${tccT('d1.c1')}
         </div>
         ${chartCoins.length ? chartCoins.map(([sym,val])=>{
           const pct=Math.abs(val)/maxCoinV*100;
@@ -19824,13 +20037,13 @@ function tcS5Personal(myId){
               <div style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:.68rem;font-weight:700;color:#fff;z-index:1;">${label}</div>
             </div>
           </div>`;
-        }).join('') : '<div style="text-align:center;color:var(--muted);font-size:.78rem;padding:12px;">ไม่มีข้อมูลเหรียญ</div>'}
+        }).join('') : '<div style="text-align:center;color:var(--muted);font-size:.78rem;padding:12px;">'+tccT('d1.noCoin')+'</div>'}
       </div>
 
       <!-- ══ CARD 2: Win/Loss + สถิติ ══ -->
       <div style="background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-top:10px;">
         <div style="font-size:.72rem;color:var(--text-dim);font-weight:700;margin-bottom:12px;letter-spacing:.3px;">
-          🎯 สัดส่วน Win / Loss
+          ${tccT('d1.c2')}
         </div>
         <div style="display:flex;align-items:center;gap:16px;">
           <!-- Donut -->
@@ -19850,7 +20063,7 @@ function tcS5Personal(myId){
               <span style="font-size:1rem;">✅</span>
               <div style="flex:1;">
                 <div style="font-size:.62rem;color:var(--muted);">Win</div>
-                <div style="font-size:.88rem;font-weight:900;color:#22c55e;">${winCnt} <span style="font-size:.65rem;font-weight:400;">รายการ</span></div>
+                <div style="font-size:.88rem;font-weight:900;color:#22c55e;">${winCnt} <span style="font-size:.65rem;font-weight:400;">${tccT('d.itemUnit')}</span></div>
               </div>
               <div style="font-size:.75rem;font-weight:700;color:#22c55e;">${(winPct*100).toFixed(0)}%</div>
             </div>
@@ -19858,15 +20071,15 @@ function tcS5Personal(myId){
               <span style="font-size:1rem;">❌</span>
               <div style="flex:1;">
                 <div style="font-size:.62rem;color:var(--muted);">Loss</div>
-                <div style="font-size:.88rem;font-weight:900;color:#ef4444;">${lossCnt} <span style="font-size:.65rem;font-weight:400;">รายการ</span></div>
+                <div style="font-size:.88rem;font-weight:900;color:#ef4444;">${lossCnt} <span style="font-size:.65rem;font-weight:400;">${tccT('d.itemUnit')}</span></div>
               </div>
               <div style="font-size:.75rem;font-weight:700;color:#ef4444;">${(lossPct*100).toFixed(0)}%</div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 12px;">
               <span style="font-size:1rem;">⚪</span>
               <div style="flex:1;">
-                <div style="font-size:.62rem;color:var(--muted);">ปิด/ไม่มีเหรียญ</div>
-                <div style="font-size:.88rem;font-weight:900;color:rgba(255,255,255,.5);">${zeroCnt} <span style="font-size:.65rem;font-weight:400;">รายการ</span></div>
+                <div style="font-size:.62rem;color:var(--muted);">${tccT('d1.zero')}</div>
+                <div style="font-size:.88rem;font-weight:900;color:rgba(255,255,255,.5);">${zeroCnt} <span style="font-size:.65rem;font-weight:400;">${tccT('d.itemUnit')}</span></div>
               </div>
               <div style="font-size:.75rem;font-weight:700;color:rgba(255,255,255,.4);">${(zeroPct*100).toFixed(0)}%</div>
             </div>
@@ -19877,10 +20090,10 @@ function tcS5Personal(myId){
       <!-- ══ CARD 3: Net P&L vs ค่าธรรมเนียม — Horizontal grouped bar ══ -->
       <div style="background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-top:10px;margin-bottom:4px;">
         <div style="font-size:.72rem;color:var(--text-dim);font-weight:700;margin-bottom:4px;letter-spacing:.3px;">
-          💜 Net P&amp;L vs ค่าธรรมเนียม
+          ${tccT('d1.c3.h')}
         </div>
         <div style="display:flex;gap:12px;font-size:.63rem;color:var(--muted);margin-bottom:10px;">
-          <span>🟡 Net P&amp;L</span><span>🟣 ค่าธรรมเนียม (avg ${fmtD(commPer)})</span>
+          <span>🟡 Net P&amp;L</span><span>🟣 ${tccT('d1.fee',{v:fmtD(commPer)})}</span>
         </div>
         ${chartCoins.length ? chartCoins.map(([sym,val])=>{
           const pctNet=Math.abs(val)/maxNetV*100;
@@ -19904,7 +20117,7 @@ function tcS5Personal(myId){
               </div>
             </div>
           </div>`;
-        }).join('') : '<div style="text-align:center;color:var(--muted);font-size:.78rem;padding:12px;">ไม่มีข้อมูล</div>'}
+        }).join('') : '<div style="text-align:center;color:var(--muted);font-size:.78rem;padding:12px;">'+tccT('d.noData')+'</div>'}
       </div>
 
     </details>`;
@@ -19912,17 +20125,17 @@ function tcS5Personal(myId){
 
   // ══ COIN FILTER DROPDOWN ══════════════════════════════════════
   const coinDropdown=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-    <span style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">🪙 เหรียญ:</span>
+    <span style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${tccT('d1.coinLbl')}</span>
     <select onchange="_tcCoinFilter=this.value;_tcCoinSearch='';tcRender();"
       style="background:#1a1d21;border:1px solid rgba(240,185,11,.38);border-radius:8px;color:var(--gold);
              font-family:'Prompt',sans-serif;font-size:.82rem;padding:5px 10px;outline:none;cursor:pointer;flex:1;max-width:200px;">
-      <option value="" ${!_tcCoinFilter?'selected':''}>ทั้งหมด</option>
+      <option value="" ${!_tcCoinFilter?'selected':''}>${tccT('d.all')}</option>
       ${coinNames.map(s=>`<option value="${s}" ${_tcCoinFilter===s?'selected':''}>${s}</option>`).join('')}
-      ${hasNonNote?`<option value="NON" ${_tcCoinFilter==='NON'?'selected':''}>ไม่มีชื่อเหรียญ (Non)</option>`:''}
+      ${hasNonNote?`<option value="NON" ${_tcCoinFilter==='NON'?'selected':''}>${tccT('d1.nonCoin')}</option>`:''}
     </select>
     ${_tcCoinFilter?`<button onclick="_tcCoinFilter='';_tcCoinSearch='';tcRender();"
       style="padding:3px 8px;border-radius:7px;font-size:.7rem;cursor:pointer;
-             background:rgba(246,70,93,.1);border:1px solid rgba(246,70,93,.3);color:#f6465d;">✕ ล้าง</button>`:''}
+             background:rgba(246,70,93,.1);border:1px solid rgba(246,70,93,.3);color:#f6465d;">✕ ${tccT('d.clear')}</button>`:''}
   </div>`;
 
   // ══ COIN DISPLAY SECTION ══════════════════════════════════════
@@ -19931,15 +20144,15 @@ function tcS5Personal(myId){
     // รายการที่ไม่มีเหรียญ
     const nonItems=noteItems.filter(n=>!n.hasCoins);
     coinHtml=coinDropdown+`<div style="margin-bottom:14px;">
-      <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">📋 รายการที่ไม่มีชื่อเหรียญ (${nonItems.length} รายการ)</div>
+      <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">${tccT('d1.nonList',{n:nonItems.length})}</div>
       ${nonItems.slice(0,10).map(n=>`<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:9px 11px;margin-bottom:6px;">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
           <span style="font-size:.68rem;color:var(--muted);">${n.date}</span>
           <span style="font-size:.7rem;color:var(--gold);font-family:'Orbitron',monospace;">${fmtD(n.profit)}</span>
         </div>
-        <div style="font-size:.72rem;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;">${n.note?_escHtml(n.note):'<span style="color:var(--muted);font-style:italic;">ไม่มีบันทึก</span>'}</div>
+        <div style="font-size:.72rem;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;">${n.note?_escHtml(n.note):'<span style="color:var(--muted);font-style:italic;">'+tccT('d1.noNote')+'</span>'}</div>
       </div>`).join('')}
-      ${!nonItems.length?`<div style="text-align:center;padding:12px;color:var(--muted);font-size:.8rem;">ไม่มีรายการ</div>`:''}
+      ${!nonItems.length?`<div style="text-align:center;padding:12px;color:var(--muted);font-size:.8rem;">${tccT('d.noItem')}</div>`:''}
     </div>`;
 
   } else if(_tcCoinFilter && coinNames.includes(_tcCoinFilter)){
@@ -19955,7 +20168,7 @@ function tcS5Personal(myId){
         <div style="flex:1;">
           <div style="font-family:'Orbitron',monospace;font-size:.9rem;font-weight:900;color:${cfTotal>=0?'var(--gold)':'#f6465d'};">
             ${cfTotal>=0?'+':''}${fmtD(cfTotal)}</div>
-          <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">รวมกำไรเหรียญ ${cf} ทั้งหมด ${cfItems.length} รายการ</div>
+          <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">${tccT('d1.cfTotal',{c:cf,n:cfItems.length})}</div>
         </div>
       </div>
       ${cfItems.map(n=>`<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:9px 11px;margin-bottom:6px;">
@@ -19968,7 +20181,7 @@ function tcS5Personal(myId){
           ${cf}: ${n.coinBreakdown[cf]>=0?'+':''}${fmtD(n.coinBreakdown[cf]||0)}
         </div>
       </div>`).join('')}
-      ${!cfItems.length?`<div style="text-align:center;padding:12px;color:var(--muted);font-size:.8rem;">ไม่พบรายการ ${cf} ในช่วงนี้</div>`:''}
+      ${!cfItems.length?`<div style="text-align:center;padding:12px;color:var(--muted);font-size:.8rem;">${tccT('d1.cfNone',{c:cf})}</div>`:''}
     </div>`;
 
   } else if(coinEntries.length){
@@ -19987,7 +20200,7 @@ function tcS5Personal(myId){
       </div>`;
     }).join('');
     coinHtml=coinDropdown+`<div style="margin-bottom:14px;">
-      <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">📈 กำไรแยกตามเหรียญ <span style="font-size:.65rem;color:var(--muted);font-weight:400;">(กดเหรียญเพื่อดูรายละเอียด)</span></div>
+      <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">${tccT('d1.byCoin')} <span style="font-size:.65rem;color:var(--muted);font-weight:400;">${tccT('d1.byCoinHint')}</span></div>
       ${bars}
     </div>`;
   } else {
@@ -20009,7 +20222,7 @@ function tcS5Personal(myId){
     <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap;">
       ${tPagBtn(0,'«',tPage===0)}
       ${tPagBtn(Math.max(0,tPage-1),'‹',tPage===0)}
-      <span style="font-size:.78rem;color:var(--text-dim);padding:0 6px;">หน้า ${tPage+1}/${totalTPages}</span>
+      <span style="font-size:.78rem;color:var(--text-dim);padding:0 6px;">${tccT('d.page',{a:tPage+1,b:totalTPages})}</span>
       ${tPagBtn(Math.min(totalTPages-1,tPage+1),'›',tPage===totalTPages-1)}
       ${tPagBtn(totalTPages-1,'»',tPage===totalTPages-1)}
     </div>`:'';
@@ -20019,8 +20232,8 @@ function tcS5Personal(myId){
     const prof=payNum(p,'profit'),trans=payNum(p,'transfer');
     const pos=(payVal(p,'position')||'').toLowerCase();
     const st=pos==='approve'
-      ?`<span style="color:#22c55e;font-size:.7rem;">✅ อนุมัติ</span>`
-      :`<span style="color:rgba(96,165,250,.9);font-size:.7rem;">⏳ รอ</span>`;
+      ?`<span style="color:#22c55e;font-size:.7rem;">✅ ${tccT('d.apprv')}</span>`
+      :`<span style="color:rgba(96,165,250,.9);font-size:.7rem;">⏳ ${tccT('d.wait')}</span>`;
     return`<tr style="border-bottom:1px solid rgba(255,255,255,.04);">
       <td style="padding:7px 4px;font-size:.73rem;color:var(--text-dim);">${String(d).slice(0,10)}</td>
       <td style="padding:7px 4px;font-family:'Orbitron',monospace;font-size:.76rem;color:var(--gold);">$${prof.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
@@ -20031,17 +20244,17 @@ function tcS5Personal(myId){
 
   return monthSel+summCards+chartHtml+coinHtml+`
     <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">
-      📋 รายการ${_tcDashMonth?'ประจำเดือน':''} (แสดง ${pageData.length}/${tableData.length})
+      ${tccT(_tcDashMonth?'d1.listM':'d1.list')} ${tccT('d1.shown',{a:pageData.length,b:tableData.length})}
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:.78rem;">
         <thead><tr style="border-bottom:1px solid var(--border2);">
-          <th style="text-align:left;padding:6px 4px;color:var(--muted);font-weight:600;">วันที่</th>
-          <th style="text-align:left;padding:6px 4px;color:var(--muted);font-weight:600;">กำไร</th>
-          <th style="text-align:left;padding:6px 4px;color:var(--muted);font-weight:600;">ยอดโอน</th>
-          <th style="text-align:left;padding:6px 4px;color:var(--muted);font-weight:600;">สถานะ</th>
+          <th style="text-align:left;padding:6px 4px;color:var(--muted);font-weight:600;">${tccT('d.th.date')}</th>
+          <th style="text-align:left;padding:6px 4px;color:var(--muted);font-weight:600;">${tccT('d.th.profit')}</th>
+          <th style="text-align:left;padding:6px 4px;color:var(--muted);font-weight:600;">${tccT('d.th.transfer')}</th>
+          <th style="text-align:left;padding:6px 4px;color:var(--muted);font-weight:600;">${tccT('d.th.status')}</th>
         </tr></thead>
-        <tbody>${tableRows||`<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted);">ไม่มีข้อมูล</td></tr>`}</tbody>
+        <tbody>${tableRows||`<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted);">${tccT('d.noData')}</td></tr>`}</tbody>
       </table>
     </div>
     ${tablePag}`;
@@ -20056,19 +20269,19 @@ function tcS5Team(teamName){
     const t=payVal(p,'team'),la=payVal(p,'lva'),lb=payVal(p,'lvb');
     return t===teamName||la===teamName||lb===teamName;
   });
-  if(!allRows.length) return `<div style="text-align:center;padding:24px;color:var(--muted);">📭 ยังไม่มีรายการของทีม <b>${teamName}</b></div>`;
+  if(!allRows.length) return `<div style="text-align:center;padding:24px;color:var(--muted);">${tccT('d2.empty.h',{t:teamName})}</div>`;
 
   // ── เดือน dropdown ────────────────────────────────────────────
   const months={};
   allRows.forEach(p=>{const d=parsePayDate(payVal(p,'date'));if(d){const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;months[k]=true;}});
   const sortedM=Object.keys(months).sort().reverse();
   const monthSel=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-    <span style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">📅 เดือน:</span>
+    <span style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${tccT('d1.month')}</span>
     <select onchange="_tcTeamMonth=this.value||null;tcRender();"
       style="background:#1a1d21;border:1px solid rgba(240,185,11,.38);border-radius:8px;color:var(--gold);
              font-family:'Prompt',sans-serif;font-size:.82rem;padding:5px 10px;outline:none;cursor:pointer;flex:1;max-width:180px;">
-      <option value="" ${!_tcTeamMonth?'selected':''}>ทั้งหมด</option>
-      ${sortedM.map(k=>{const[y,mo]=k.split('-');return`<option value="${k}" ${_tcTeamMonth===k?'selected':''}>${getThaiMonth(parseInt(mo))} ${parseInt(y)+543}</option>`;}).join('')}
+      <option value="" ${!_tcTeamMonth?'selected':''}>${tccT('d.all')}</option>
+      ${sortedM.map(k=>{const[y,mo]=k.split('-');return`<option value="${k}" ${_tcTeamMonth===k?'selected':''}>${tccMonthYear(parseInt(mo),parseInt(y))}</option>`;}).join('')}
     </select>
   </div>`;
 
@@ -20103,8 +20316,8 @@ function tcS5Team(teamName){
       <div style="font-size:.72rem;color:var(--text-dim);margin-top:3px;">YT: ${fmtD(ytAmt)} · LA: ${fmtD(laAmt)} · LB: ${fmtD(lbAmt)}</div>
     </div>
     <div style="text-align:right;">
-      <div style="font-size:.68rem;color:var(--muted);">สมาชิก</div>
-      <div style="font-size:1.1rem;font-weight:900;color:var(--gold);">${cntMembers} คน</div>
+      <div style="font-size:.68rem;color:var(--muted);">${tccT('d2.members')}</div>
+      <div style="font-size:1.1rem;font-weight:900;color:var(--gold);">${tccT('d2.people',{n:cntMembers})}</div>
     </div>
   </div>`;
 
@@ -20113,22 +20326,22 @@ function tcS5Team(teamName){
     <div style="background:rgba(240,185,11,.07);border:1px solid rgba(240,185,11,.25);border-radius:10px;padding:12px;">
       <div style="font-size:.65rem;color:var(--muted);font-weight:600;letter-spacing:.5px;">🏠 YOUR TEAM (10%)</div>
       <div style="font-family:'Orbitron',monospace;font-size:.88rem;font-weight:900;color:var(--gold);margin-top:5px;">${fmtD(ytAmt)}</div>
-      <div style="font-size:.68rem;color:var(--text-dim);margin-top:3px;">${ytRows.length} รายการ · ${[...new Set(ytRows.map(p=>payVal(p,'bnb_id')))].length} สมาชิก</div>
+      <div style="font-size:.68rem;color:var(--text-dim);margin-top:3px;">${tccT('d2.cnt',{n:ytRows.length,m:[...new Set(ytRows.map(p=>payVal(p,'bnb_id')))].length})}</div>
     </div>
     <div style="background:rgba(3,192,117,.07);border:1px solid rgba(3,192,117,.25);border-radius:10px;padding:12px;">
       <div style="font-size:.65rem;color:var(--muted);font-weight:600;letter-spacing:.5px;">🅰️ LEVEL A (15%)</div>
       <div style="font-family:'Orbitron',monospace;font-size:.88rem;font-weight:900;color:var(--green);margin-top:5px;">${fmtD(laAmt)}</div>
-      <div style="font-size:.68rem;color:var(--text-dim);margin-top:3px;">${laRows.length} รายการ</div>
+      <div style="font-size:.68rem;color:var(--text-dim);margin-top:3px;">${tccT('d.items',{n:laRows.length})}</div>
     </div>
     <div style="background:rgba(24,144,255,.07);border:1px solid rgba(24,144,255,.25);border-radius:10px;padding:12px;">
       <div style="font-size:.65rem;color:var(--muted);font-weight:600;letter-spacing:.5px;">🅱️ LEVEL B (10%)</div>
       <div style="font-family:'Orbitron',monospace;font-size:.88rem;font-weight:900;color:var(--blue);margin-top:5px;">${fmtD(lbAmt)}</div>
-      <div style="font-size:.68rem;color:var(--text-dim);margin-top:3px;">${lbRows.length} รายการ</div>
+      <div style="font-size:.68rem;color:var(--text-dim);margin-top:3px;">${tccT('d.items',{n:lbRows.length})}</div>
     </div>
     <div style="background:linear-gradient(135deg,rgba(240,185,11,.1),rgba(3,192,117,.05));border:1px solid rgba(240,185,11,.3);border-radius:10px;padding:12px;">
-      <div style="font-size:.65rem;color:var(--muted);font-weight:600;letter-spacing:.5px;">⭐ รวมทั้งหมด</div>
+      <div style="font-size:.65rem;color:var(--muted);font-weight:600;letter-spacing:.5px;">${tccT('d2.total')}</div>
       <div style="font-family:'Orbitron',monospace;font-size:.88rem;font-weight:900;color:var(--gold);margin-top:5px;">${fmtD(totAmt)}</div>
-      <div style="font-size:.68rem;color:var(--text-dim);margin-top:3px;">${filtered.length} รายการ · ทุกเลเวล</div>
+      <div style="font-size:.68rem;color:var(--text-dim);margin-top:3px;">${tccT('d2.allLv',{n:filtered.length})}</div>
     </div>
   </div>`;
 
@@ -20153,16 +20366,16 @@ function tcS5Team(teamName){
   </tr>`).join('');
 
   return monthSel+teamHeader+summCards+`
-    <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">🏆 อันดับสมาชิก Your Team</div>
+    <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">${tccT('d2.rank')}</div>
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:.78rem;">
         <thead><tr style="border-bottom:1px solid var(--border2);">
           <th style="text-align:center;padding:7px 4px;color:var(--muted);font-weight:600;">#</th>
-          <th style="text-align:left;padding:7px 4px;color:var(--muted);font-weight:600;">ชื่อ</th>
-          <th style="text-align:left;padding:7px 4px;color:var(--muted);font-weight:600;">กำไร</th>
-          <th style="text-align:left;padding:7px 4px;color:var(--muted);font-weight:600;">ยอดโอน</th>
+          <th style="text-align:left;padding:7px 4px;color:var(--muted);font-weight:600;">${tccT('d2.th.name')}</th>
+          <th style="text-align:left;padding:7px 4px;color:var(--muted);font-weight:600;">${tccT('d.th.profit')}</th>
+          <th style="text-align:left;padding:7px 4px;color:var(--muted);font-weight:600;">${tccT('d.th.transfer')}</th>
         </tr></thead>
-        <tbody>${rankRows||`<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted);">ไม่มีข้อมูล</td></tr>`}</tbody>
+        <tbody>${rankRows||`<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--muted);">${tccT('d.noData')}</td></tr>`}</tbody>
       </table>
     </div>`;
 }
@@ -20187,12 +20400,12 @@ function tcS5Members(teamName){
 
   // ── month selector ────────────────────────────────────────────
   const monthSel=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-    <span style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">📅 เดือน:</span>
+    <span style="font-size:.78rem;color:var(--text-dim);white-space:nowrap;">${tccT('d1.month')}</span>
     <select onchange="_tcMembMonth=this.value;_tcMembPage=0;tcRender();"
       style="background:#1a1d21;border:1px solid rgba(240,185,11,.38);border-radius:8px;color:var(--gold);
              font-family:'Prompt',sans-serif;font-size:.82rem;padding:5px 10px;outline:none;cursor:pointer;flex:1;max-width:180px;">
-      <option value="" ${!_tcMembMonth?'selected':''}>ทั้งหมด</option>
-      ${sortedM.map(k=>{const[y,mo]=k.split('-');return`<option value="${k}" ${_tcMembMonth===k?'selected':''}>${getThaiMonth(parseInt(mo))} ${parseInt(y)+543}</option>`;}).join('')}
+      <option value="" ${!_tcMembMonth?'selected':''}>${tccT('d.all')}</option>
+      ${sortedM.map(k=>{const[y,mo]=k.split('-');return`<option value="${k}" ${_tcMembMonth===k?'selected':''}>${tccMonthYear(parseInt(mo),parseInt(y))}</option>`;}).join('')}
     </select>
   </div>`;
 
@@ -20214,27 +20427,27 @@ function tcS5Members(teamName){
   // ── 4 Commission summary cards ────────────────────────────────
   const commCards=`
     <div style="margin-bottom:14px;">
-      <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">💰 สรุปค่าคอมมิชชั่น${_tcMembMonth?'ประจำเดือน':''}</div>
+      <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">${tccT(_tcMembMonth?'d3.commSumM':'d3.commSum')}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <div style="background:rgba(240,185,11,.07);border:1px solid rgba(240,185,11,.25);border-radius:10px;padding:11px;">
           <div style="font-size:.63rem;color:var(--muted);font-weight:600;letter-spacing:.5px;">🏠 YOUR TEAM (10%)</div>
           <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:900;color:var(--gold);margin-top:4px;">${fmtD(ytAmt)}</div>
-          <div style="font-size:.67rem;color:var(--text-dim);margin-top:2px;">${ytRows.length} รายการ · ${[...new Set(ytRows.map(p=>payVal(p,'bnb_id')))].length} สมาชิก</div>
+          <div style="font-size:.67rem;color:var(--text-dim);margin-top:2px;">${tccT('d2.cnt',{n:ytRows.length,m:[...new Set(ytRows.map(p=>payVal(p,'bnb_id')))].length})}</div>
         </div>
         <div style="background:rgba(3,192,117,.07);border:1px solid rgba(3,192,117,.25);border-radius:10px;padding:11px;">
           <div style="font-size:.63rem;color:var(--muted);font-weight:600;letter-spacing:.5px;">🅰️ LEVEL A (15%)</div>
           <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:900;color:var(--green);margin-top:4px;">${fmtD(laAmt)}</div>
-          <div style="font-size:.67rem;color:var(--text-dim);margin-top:2px;">${laRows.length} รายการ</div>
+          <div style="font-size:.67rem;color:var(--text-dim);margin-top:2px;">${tccT('d.items',{n:laRows.length})}</div>
         </div>
         <div style="background:rgba(24,144,255,.07);border:1px solid rgba(24,144,255,.25);border-radius:10px;padding:11px;">
           <div style="font-size:.63rem;color:var(--muted);font-weight:600;letter-spacing:.5px;">🅱️ LEVEL B (10%)</div>
           <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:900;color:rgba(96,165,250,.9);margin-top:4px;">${fmtD(lbAmt)}</div>
-          <div style="font-size:.67rem;color:var(--text-dim);margin-top:2px;">${lbRows.length} รายการ</div>
+          <div style="font-size:.67rem;color:var(--text-dim);margin-top:2px;">${tccT('d.items',{n:lbRows.length})}</div>
         </div>
         <div style="background:linear-gradient(135deg,rgba(240,185,11,.1),rgba(3,192,117,.05));border:1px solid rgba(240,185,11,.3);border-radius:10px;padding:11px;">
-          <div style="font-size:.63rem;color:var(--muted);font-weight:600;letter-spacing:.5px;">⭐ รวมทั้งหมด</div>
+          <div style="font-size:.63rem;color:var(--muted);font-weight:600;letter-spacing:.5px;">${tccT('d2.total')}</div>
           <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:900;color:var(--gold);margin-top:4px;">${fmtD(totAmt)}</div>
-          <div style="font-size:.67rem;color:var(--text-dim);margin-top:2px;">${filtPay.length} รายการ · ทุกเลเวล</div>
+          <div style="font-size:.67rem;color:var(--text-dim);margin-top:2px;">${tccT('d2.allLv',{n:filtPay.length})}</div>
         </div>
       </div>
     </div>`;
@@ -20246,45 +20459,45 @@ function tcS5Members(teamName){
         <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';"
           style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;">
           <div style="width:28px;height:28px;background:rgba(240,185,11,.15);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;">🏠</div>
-          <div style="flex:1;"><div style="font-size:.82rem;font-weight:700;color:var(--gold);">Your Team — ค่าคอมทีมของคุณ</div>
-            <div style="font-size:.68rem;color:var(--muted);">10% จากกำไรรวมของสมาชิกในทีม</div></div>
+          <div style="flex:1;"><div style="font-size:.82rem;font-weight:700;color:var(--gold);">${tccT('d3.ytT')}</div>
+            <div style="font-size:.68rem;color:var(--muted);">${tccT('d3.ytS')}</div></div>
           <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:900;color:var(--gold);">${fmtD(ytAmt)}</div>
         </div>
         <div style="display:none;padding:0 14px 12px;">
           ${ytRows.length?ytRows.slice().reverse().map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.75rem;">
             <div><span style="color:var(--gold);font-weight:600;">${payVal(p,'name')||payVal(p,'bnb_id')}</span><span style="color:var(--muted);margin-left:6px;">${String(payVal(p,'date')).slice(0,10)}</span></div>
             <div style="font-family:'Orbitron',monospace;color:var(--gold);">+${fmtD(payNum(p,'commission'))}</div></div>`).join('')
-            :`<div style="text-align:center;padding:10px;color:var(--muted);font-size:.78rem;">ไม่มีรายการ</div>`}
+            :`<div style="text-align:center;padding:10px;color:var(--muted);font-size:.78rem;">${tccT('d.noItem')}</div>`}
         </div>
       </div>
       <div style="background:rgba(3,192,117,.04);border-bottom:1px solid rgba(255,255,255,.06);">
         <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';"
           style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;">
           <div style="width:28px;height:28px;background:rgba(3,192,117,.15);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;">🅰️</div>
-          <div style="flex:1;"><div style="font-size:.82rem;font-weight:700;color:var(--green);">Level A — ค่าคอมทีม Level A</div>
-            <div style="font-size:.68rem;color:var(--muted);">15% จากค่าคอม 10% ของทีมที่ระบุ Level A</div></div>
+          <div style="flex:1;"><div style="font-size:.82rem;font-weight:700;color:var(--green);">${tccT('d3.laT')}</div>
+            <div style="font-size:.68rem;color:var(--muted);">${tccT('d3.laS')}</div></div>
           <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:900;color:var(--green);">${fmtD(laAmt)}</div>
         </div>
         <div style="display:none;padding:0 14px 12px;">
           ${laRows.length?laRows.slice().reverse().map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.75rem;">
             <div><span style="color:var(--green);font-weight:600;">${payVal(p,'name')||payVal(p,'bnb_id')}</span><span style="color:var(--muted);margin-left:6px;">${String(payVal(p,'date')).slice(0,10)}</span></div>
             <div style="font-family:'Orbitron',monospace;color:var(--green);">+${fmtD(payNum(p,'commission')*0.15)}</div></div>`).join('')
-            :`<div style="text-align:center;padding:10px;color:var(--muted);font-size:.78rem;">ไม่มีรายการ</div>`}
+            :`<div style="text-align:center;padding:10px;color:var(--muted);font-size:.78rem;">${tccT('d.noItem')}</div>`}
         </div>
       </div>
       <div style="background:rgba(24,144,255,.03);">
         <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';"
           style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;">
           <div style="width:28px;height:28px;background:rgba(24,144,255,.15);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;">🅱️</div>
-          <div style="flex:1;"><div style="font-size:.82rem;font-weight:700;color:rgba(96,165,250,.9);">Level B — ค่าคอมทีม Level B</div>
-            <div style="font-size:.68rem;color:var(--muted);">10% จากทีมที่ระบุ Level B</div></div>
+          <div style="flex:1;"><div style="font-size:.82rem;font-weight:700;color:rgba(96,165,250,.9);">${tccT('d3.lbT')}</div>
+            <div style="font-size:.68rem;color:var(--muted);">${tccT('d3.lbS')}</div></div>
           <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:900;color:rgba(96,165,250,.9);">${fmtD(lbAmt)}</div>
         </div>
         <div style="display:none;padding:0 14px 12px;">
           ${lbRows.length?lbRows.slice().reverse().map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.75rem;">
             <div><span style="color:rgba(96,165,250,.9);font-weight:600;">${payVal(p,'name')||payVal(p,'bnb_id')}</span><span style="color:var(--muted);margin-left:6px;">${String(payVal(p,'date')).slice(0,10)}</span></div>
             <div style="font-family:'Orbitron',monospace;color:rgba(96,165,250,.9);">+${fmtD(payNum(p,'commission')*0.10)}</div></div>`).join('')
-            :`<div style="text-align:center;padding:10px;color:var(--muted);font-size:.78rem;">ไม่มีรายการ</div>`}
+            :`<div style="text-align:center;padding:10px;color:var(--muted);font-size:.78rem;">${tccT('d.noItem')}</div>`}
         </div>
       </div>
     </div>`;
@@ -20300,23 +20513,23 @@ function tcS5Members(teamName){
       <div style="font-size:1.8rem;">👥</div>
       <div style="flex:1;">
         <div style="font-size:.92rem;font-weight:800;color:rgba(96,165,250,.95);">${teamName}</div>
-        <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px;">รายชื่อสมาชิกทั้งหมดในทีม</div>
+        <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px;">${tccT('d3.hdr')}</div>
       </div>
       <div style="text-align:right;">
-        <div style="font-size:.65rem;color:var(--muted);">สมาชิกทั้งหมด</div>
-        <div style="font-size:1.1rem;font-weight:900;color:rgba(96,165,250,.95);">${allMembers.length} คน</div>
+        <div style="font-size:.65rem;color:var(--muted);">${tccT('d3.allMem')}</div>
+        <div style="font-size:1.1rem;font-weight:900;color:rgba(96,165,250,.95);">${tccT('d2.people',{n:allMembers.length})}</div>
       </div>
     </div>`;
 
   if(!allMembers.length){
     return monthSel+commCards+commSections+teamHeader+
-      `<div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">📭 ยังไม่มีสมาชิกในทีม</div>`;
+      `<div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">${tccT('d3.noMem')}</div>`;
   }
 
   // ── Search box ────────────────────────────────────────────────
   const sq=(_tcMembSearch||'').toLowerCase().trim();
   const searchBox=`<div style="position:relative;margin-bottom:12px;">
-    <input value="${_escHtml(_tcMembSearch)}" placeholder="🔍 ค้นหาชื่อสมาชิก หรือ BNB ID..."
+    <input value="${_escHtml(_tcMembSearch)}" placeholder="${tccT('d3.ph')}"
       oninput="_tcMembSearch=this.value;_tcMembPage=0;tcRender();"
       style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(96,165,250,.3);border-radius:8px;
              color:var(--text);font-size:.82rem;padding:7px 12px;outline:none;box-sizing:border-box;font-family:'Prompt',sans-serif;">
@@ -20348,12 +20561,12 @@ function tcS5Members(teamName){
     <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin:12px 0 4px;flex-wrap:wrap;">
       ${pagBtn(0,'«',page===0)}
       ${pagBtn(Math.max(0,page-1),'‹',page===0)}
-      <span style="font-size:.78rem;color:var(--text-dim);padding:0 6px;">หน้า ${page+1} / ${totalPages}
-        <span style="color:var(--muted);">(${filtMembers.length} คน)</span></span>
+      <span style="font-size:.78rem;color:var(--text-dim);padding:0 6px;">${tccT('d3.pageInfo',{p:page+1,t:totalPages})}
+        <span style="color:var(--muted);">(${tccT('d2.people',{n:filtMembers.length})})</span></span>
       ${pagBtn(Math.min(totalPages-1,page+1),'›',page===totalPages-1)}
       ${pagBtn(totalPages-1,'»',page===totalPages-1)}
     </div>` : (filtMembers.length!==allMembers.length?
-      `<div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">พบ ${filtMembers.length} จาก ${allMembers.length} คน</div>`:'');
+      `<div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">${tccT('d3.found',{a:filtMembers.length,b:allMembers.length})}</div>`:'');
 
   // ── Member cards ──────────────────────────────────────────────
   const memberRows=pageMembers.map((m,i)=>{
@@ -20387,20 +20600,20 @@ function tcS5Members(teamName){
             background:${isApprove?'rgba(34,197,94,.12)':'rgba(240,185,11,.1)'};
             color:${isApprove?'var(--green)':'var(--gold)'};
             border:1px solid ${isApprove?'rgba(34,197,94,.3)':'rgba(240,185,11,.25)'};">
-          ${isApprove?'✅ Active':'⏳ Pending'}
+          ${isApprove?'✅ '+tccT('d3.active'):'⏳ '+tccT('d3.pending')}
         </span>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;">
         <div style="background:rgba(240,185,11,.05);border-radius:7px;padding:7px;text-align:center;">
-          <div style="font-size:.6rem;color:var(--muted);">💰 กำไรรวม${_tcMembMonth?' (เดือน)':''}</div>
+          <div style="font-size:.6rem;color:var(--muted);">${tccT(_tcMembMonth?'d3.mpM':'d1.profit')}</div>
           <div style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;color:var(--gold);margin-top:2px;">${fmtD(totalProfit)}</div>
         </div>
         <div style="background:rgba(34,197,94,.05);border-radius:7px;padding:7px;text-align:center;">
-          <div style="font-size:.6rem;color:var(--muted);">📤 ยอดโอน${_tcMembMonth?' (เดือน)':''}</div>
+          <div style="font-size:.6rem;color:var(--muted);">${tccT(_tcMembMonth?'d3.mtM':'d3.mt')}</div>
           <div style="font-family:'Orbitron',monospace;font-size:.72rem;font-weight:700;color:var(--green);margin-top:2px;">${fmtD(totalTransfer)}</div>
         </div>
         <div style="background:rgba(255,255,255,.03);border-radius:7px;padding:7px;text-align:center;">
-          <div style="font-size:.6rem;color:var(--muted);">📋 รายการ${_tcMembMonth?' (เดือน)':''}</div>
+          <div style="font-size:.6rem;color:var(--muted);">${tccT(_tcMembMonth?'d3.mcM':'d3.mc')}</div>
           <div style="font-size:.78rem;font-weight:700;color:var(--text);margin-top:2px;">${memberPays.length}</div>
         </div>
       </div>
@@ -20413,9 +20626,9 @@ function tcS5Members(teamName){
 
   return monthSel+commCards+commSections+teamHeader+searchBox+
     `<div style="font-size:.75rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">
-      👤 รายชื่อสมาชิก (แสดง ${pageMembers.length} จาก ${filtMembers.length} คน / หน้า ${page+1})
+      ${tccT('d3.list',{a:pageMembers.length,b:filtMembers.length,p:page+1})}
     </div>`+
-    (pageMembers.length?memberRows:`<div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">ไม่พบสมาชิกที่ตรงกับ "${_tcMembSearch}"</div>`)+
+    (pageMembers.length?memberRows:`<div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">${tccT('d3.noMatch',{q:_escHtml(_tcMembSearch)})}</div>`)+
     paginationBar;
 }
 
@@ -20431,15 +20644,15 @@ function _tcOpenWithdrawModal(memberId, wallet, amount){
   // [FIX1] ป้องกันถอนซ้ำ — โหลด Withdrawals แล้วตรวจ Pending ก่อน
   const min = REF_BONUS_PER_MEMBER * 5;  // [FIX4] ขั้นต่ำ 5 คน = $50
   if(amount < min){
-    tccNotif('warn','ยอดไม่ถึงขั้นต่ำ', 'ต้องมีอย่างน้อย $'+min+' USDT (Approved 5 คน)');
+    tccNotif('warn',tccT('d4.wdMinT'), tccT('d4.wdMinM',{m:'$'+min}));
     return;
   }
   if(!wallet){
-    tccNotif('warn','ไม่พบ Wallet Address','กรุณาตรวจสอบข้อมูลสมาชิก');
+    tccNotif('warn',tccT('d4.noWalletT'),tccT('d4.noWalletM'));
     return;
   }
   const ref=TC.data&&TC.data.referral;
-  if(ref&&ref.pending>0){ tccNotif('warn','มีคำขอถอนค้างอยู่','กรุณารอให้ Admin ดำเนินการคำขอเดิมก่อน'); return; }
+  if(ref&&ref.pending>0){ tccNotif('warn',tccT('d4.pendT'),tccT('d4.pendM')); return; }
   _tcShowWithdrawModal(memberId, wallet, ref?ref.available:amount);
 }
 
@@ -20457,28 +20670,28 @@ function _tcShowWithdrawModal(memberId, wallet, amount){
       <button onclick="document.getElementById('_ref-wd-overlay').style.display='none'"
         style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.07);border:none;color:var(--text);
         width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.9rem;">✕</button>
-      <div style="font-size:1rem;font-weight:700;color:var(--gold);margin-bottom:16px;">💸 แจ้งถอนโบนัสแนะนำสมาชิก</div>
+      <div style="font-size:1rem;font-weight:700;color:var(--gold);margin-bottom:16px;">${tccT('d4.wdTitle')}</div>
       <div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:9px;padding:12px;margin-bottom:14px;">
-        <div style="font-size:.7rem;color:var(--muted);">ยอดที่จะถอน</div>
+        <div style="font-size:.7rem;color:var(--muted);">${tccT('d4.wdAmt')}</div>
         <div style="font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:900;color:var(--green);">$${parseFloat(amount).toFixed(2)} <span style="font-size:.65rem;color:var(--muted);">USDT</span></div>
       </div>
-      <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:5px;">📬 โอนเข้า Wallet:</div>
+      <div style="font-size:.75rem;color:var(--text-dim);margin-bottom:5px;">${tccT('d4.wdTo')}</div>
       <div style="background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:9px 12px;
         font-family:monospace;font-size:.72rem;color:var(--text);word-break:break-all;margin-bottom:14px;">
         ${wallet}
       </div>
       <div style="font-size:.68rem;color:var(--muted);margin-bottom:14px;line-height:1.6;padding:8px 10px;background:rgba(255,255,255,.02);border-radius:7px;">
-        ⚠️ Admin จะดำเนินการโอน USDT BEP-20 ภายใน <b>7 วันทำการ</b>
+        ${tccT('d4.wdNote.h')}
       </div>
       <div style="display:flex;gap:10px;">
         <button onclick="document.getElementById('_ref-wd-overlay').style.display='none'"
           style="flex:1;padding:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--text-dim);font-size:.82rem;cursor:pointer;">
-          ยกเลิก
+          ${tccT('common.cancel')}
         </button>
         <button onclick="_tcConfirmWithdraw('${jsq(memberId)}','${jsq(wallet)}',${amount})"
           style="flex:2;padding:10px;background:linear-gradient(135deg,rgba(34,197,94,.3),rgba(34,197,94,.15));
           border:1px solid rgba(34,197,94,.5);border-radius:8px;color:var(--green);font-size:.82rem;font-weight:700;cursor:pointer;">
-          ✅ ยืนยันแจ้งถอน
+          ${tccT('d4.wdConfirm')}
         </button>
       </div>
     </div>`;
@@ -20488,17 +20701,17 @@ async function _tcConfirmWithdraw(memberId, wallet, amount){
   const overlay = document.getElementById('_ref-wd-overlay');
   if(overlay) overlay.style.display = 'none';
   try{
-    tccNotif('info','⏳ กำลังส่งคำขอ...','');
+    tccNotif('info',tccT('d4.sending'),'');
     window._wdIdem=window._wdIdem||(Date.now().toString(36)+Math.random().toString(36).slice(2));
     const res=await tcApi('/api/me/withdraw',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':window._wdIdem},body:'{}'});
     window._wdIdem=null;
     await tcLoadMe().catch(()=>{});
-    tccNotif('success','✅ แจ้งถอนสำเร็จ','Admin จะโอน $'+Number(res.amount).toFixed(2)+' USDT ให้ภายใน 7 วันทำการ');
+    tccNotif('success',tccT('d4.wdOkT'),tccT('d4.wdOkM',{a:'$'+Number(res.amount).toFixed(2)}));
     // รีเฟรชแท็บเพื่อแสดงประวัติการถอนใหม่
     window._refTabLoadedFor = null;
     setTimeout(()=>tcRender(), 800);
   }catch(e){
-    tccNotif('error','แจ้งถอนไม่สำเร็จ', e.message||'กรุณาลองใหม่อีกครั้ง');
+    tccNotif('error',tccT('d4.wdFailT'), tccErrMsg(e)||tccT('d4.tryAgain'));
   }
 }
 
@@ -20513,7 +20726,7 @@ async function _tcLoadWdHistory(memberId){
     // กรองเฉพาะของสมาชิกคนนี้
     const mine = all.filter(w=>String(w.MemberId||'').trim()===String(memberId).trim());
     if(!mine.length){
-      wrap.innerHTML = '<div style="padding:14px;text-align:center;color:var(--muted);font-size:.78rem;">ยังไม่มีประวัติการถอน</div>';
+      wrap.innerHTML = '<div style="padding:14px;text-align:center;color:var(--muted);font-size:.78rem;">'+tccT('d4.noHist')+'</div>';
       return;
     }
     // สรุปยอดรวม
@@ -20523,25 +20736,25 @@ async function _tcLoadWdHistory(memberId){
 
     const wBadge = st => {
       const s = String(st||'').toLowerCase();
-      if(s==='paid')     return '<span style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--green);font-size:.6rem;padding:2px 7px;border-radius:10px;font-weight:700;">✅ โอนแล้ว</span>';
-      if(s==='rejected') return '<span style="background:rgba(246,70,93,.1);border:1px solid rgba(246,70,93,.3);color:#f6465d;font-size:.6rem;padding:2px 7px;border-radius:10px;font-weight:700;">❌ ปฏิเสธ</span>';
-      return '<span style="background:rgba(240,185,11,.1);border:1px solid rgba(240,185,11,.25);color:var(--gold);font-size:.6rem;padding:2px 7px;border-radius:10px;font-weight:700;">⏳ รอดำเนินการ</span>';
+      if(s==='paid')     return '<span style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--green);font-size:.6rem;padding:2px 7px;border-radius:10px;font-weight:700;">'+tccT('d4.paid')+'</span>';
+      if(s==='rejected') return '<span style="background:rgba(246,70,93,.1);border:1px solid rgba(246,70,93,.3);color:#f6465d;font-size:.6rem;padding:2px 7px;border-radius:10px;font-weight:700;">'+tccT('d4.rej')+'</span>';
+      return '<span style="background:rgba(240,185,11,.1);border:1px solid rgba(240,185,11,.25);color:var(--gold);font-size:.6rem;padding:2px 7px;border-radius:10px;font-weight:700;">'+tccT('d4.proc')+'</span>';
     };
 
     wrap.innerHTML =
       // แถบสรุป
       `<div style="display:flex;gap:8px;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);flex-wrap:wrap;">
         <div style="flex:1;min-width:100px;">
-          <div style="font-size:.62rem;color:var(--muted);">โอนไปแล้ว</div>
+          <div style="font-size:.62rem;color:var(--muted);">${tccT('d4.paidSum')}</div>
           <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:900;color:var(--green);">$${totalPaid.toFixed(2)}</div>
         </div>
         <div style="flex:1;min-width:100px;">
-          <div style="font-size:.62rem;color:var(--muted);">จำนวนครั้ง</div>
-          <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:900;color:var(--text);">${mine.length} ครั้ง</div>
+          <div style="font-size:.62rem;color:var(--muted);">${tccT('d4.times')}</div>
+          <div style="font-family:'Orbitron',monospace;font-size:.85rem;font-weight:900;color:var(--text);">${tccT('d4.nTimes',{n:mine.length})}</div>
         </div>
         ${hasPending?`<div style="flex:1;min-width:100px;">
-          <div style="font-size:.62rem;color:var(--muted);">สถานะล่าสุด</div>
-          <div style="font-size:.72rem;color:var(--gold);font-weight:700;margin-top:3px;">⏳ มีคำขอค้างอยู่</div>
+          <div style="font-size:.62rem;color:var(--muted);">${tccT('d4.lastSt')}</div>
+          <div style="font-size:.72rem;color:var(--gold);font-weight:700;margin-top:3px;">${tccT('d4.hasPend')}</div>
         </div>`:''}
       </div>`
       // รายการ
@@ -20555,7 +20768,7 @@ async function _tcLoadWdHistory(memberId){
         <div>${wBadge(w.Status)}</div>
       </div>`).join('');
   }catch(e){
-    if(wrap) wrap.innerHTML = `<div style="padding:12px;text-align:center;color:#f6465d;font-size:.75rem;">โหลดไม่สำเร็จ: ${e.message}</div>`;
+    if(wrap) wrap.innerHTML = `<div style="padding:12px;text-align:center;color:#f6465d;font-size:.75rem;">${tccT('d4.loadFail',{e:tccErrMsg(e)})}</div>`;
   }
 }
 
@@ -20586,20 +20799,20 @@ async function _tcLoadWdAndRenderBalance(memberId, totalBonus, wallet){
       <div style="display:flex;flex-direction:column;gap:8px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <div>
-            <div style="font-size:.62rem;color:var(--muted);margin-bottom:2px;">💰 โบนัสสะสม (Approved)</div>
+            <div style="font-size:.62rem;color:var(--muted);margin-bottom:2px;">${tccT('d4.accum')}</div>
             <div style="font-family:'Orbitron',monospace;font-size:.9rem;font-weight:900;color:var(--gold);">${fU(totalBonus)} <span style="font-size:.55rem;color:var(--muted);">USDT</span></div>
           </div>
           <div>
-            <div style="font-size:.62rem;color:var(--muted);margin-bottom:2px;">✅ ถอนไปแล้ว</div>
+            <div style="font-size:.62rem;color:var(--muted);margin-bottom:2px;">${tccT('d4.paidOut')}</div>
             <div style="font-family:'Orbitron',monospace;font-size:.9rem;font-weight:900;color:var(--text);">${fU(totalPaid)} <span style="font-size:.55rem;color:var(--muted);">USDT</span></div>
           </div>
         </div>
         <div style="padding:8px 10px;background:${available>=REF_MIN?'rgba(34,197,94,.07)':'rgba(255,255,255,.02)'};border:1px solid ${available>=REF_MIN?'rgba(34,197,94,.25)':'rgba(255,255,255,.08)'};border-radius:8px;">
-          <div style="font-size:.62rem;color:var(--muted);margin-bottom:2px;">💵 ยอดคงเหลือที่ถอนได้</div>
+          <div style="font-size:.62rem;color:var(--muted);margin-bottom:2px;">${tccT('d4.avail')}</div>
           <div style="font-family:'Orbitron',monospace;font-size:1.05rem;font-weight:900;color:${available>=REF_MIN?'var(--green)':'var(--gold)'};">${fU(available)} <span style="font-size:.55rem;color:var(--muted);">USDT</span></div>
-          <div style="font-size:.6rem;color:var(--muted);margin-top:2px;">ขั้นต่ำ $${REF_MIN} · Approved ${REF_MIN/REF_BONUS_PER_MEMBER} คน${hasPending?' · <span style="color:var(--gold);">⚠️ มีคำขอค้างอยู่</span>':''}</div>
+          <div style="font-size:.6rem;color:var(--muted);margin-top:2px;">${tccT('d4.minLine',{m:'$'+REF_MIN,n:REF_MIN/REF_BONUS_PER_MEMBER})}${hasPending?' · <span style="color:var(--gold);">'+tccT('d4.pendWarn')+'</span>':''}</div>
         </div>
-        ${wallet?`<div style="padding:6px 9px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06);border-radius:7px;font-size:.63rem;color:var(--muted);">📬 <span style="font-family:monospace;color:var(--text);word-break:break-all;">${wallet}</span></div>`:'<div style="font-size:.65rem;color:#f6465d;">⚠️ ยังไม่มี Wallet Address</div>'}
+        ${wallet?`<div style="padding:6px 9px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06);border-radius:7px;font-size:.63rem;color:var(--muted);">📬 <span style="font-family:monospace;color:var(--text);word-break:break-all;">${wallet}</span></div>`:'<div style="font-size:.65rem;color:#f6465d;">'+tccT('d4.noWallet')+'</div>'}
         <button onclick="_tcOpenWithdrawModal('${jsq(memberId)}','${jsq(wallet)}',${available})"
           ${canWd?'':'disabled'}
           style="width:100%;padding:11px 16px;
@@ -20608,7 +20821,7 @@ async function _tcLoadWdAndRenderBalance(memberId, totalBonus, wallet){
           border-radius:9px;color:${canWd?'var(--green)':'var(--muted)'};
           font-size:.82rem;font-weight:700;cursor:${canWd?'pointer':'not-allowed'};
           display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;">
-          💸 ${hasPending?'มีคำขอถอนค้างอยู่ — รอ Admin':canWd?'แจ้งถอนโบนัส ($'+available.toFixed(2)+')':'ยังไม่ถึงขั้นต่ำ'}
+          💸 ${hasPending?tccT('d4.btnPend'):canWd?tccT('d4.btnWd',{a:'$'+available.toFixed(2)}):tccT('d4.btnMin')}
         </button>
       </div>`;
   }
@@ -20616,22 +20829,22 @@ async function _tcLoadWdAndRenderBalance(memberId, totalBonus, wallet){
   // ── render history ───────────────────────────────────────────────
   if(histEl){
     if(!allWd.length){
-      histEl.innerHTML='<div style="padding:14px;text-align:center;color:var(--muted);font-size:.78rem;">ยังไม่มีประวัติการถอน</div>';
+      histEl.innerHTML='<div style="padding:14px;text-align:center;color:var(--muted);font-size:.78rem;">'+tccT('d4.noHist')+'</div>';
       return;
     }
     const wBadge=st=>{
       const s=String(st||'').toLowerCase();
-      if(s==='paid')    return '<span style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--green);font-size:.6rem;padding:2px 7px;border-radius:8px;font-weight:700;">✅ โอนแล้ว</span>';
-      if(s==='rejected')return '<span style="background:rgba(246,70,93,.1);border:1px solid rgba(246,70,93,.3);color:#f6465d;font-size:.6rem;padding:2px 7px;border-radius:8px;font-weight:700;">❌ ปฏิเสธ</span>';
-      return '<span style="background:rgba(240,185,11,.1);border:1px solid rgba(240,185,11,.25);color:var(--gold);font-size:.6rem;padding:2px 7px;border-radius:8px;font-weight:700;">⏳ รอดำเนินการ</span>';
+      if(s==='paid')    return '<span style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--green);font-size:.6rem;padding:2px 7px;border-radius:8px;font-weight:700;">'+tccT('d4.paid')+'</span>';
+      if(s==='rejected')return '<span style="background:rgba(246,70,93,.1);border:1px solid rgba(246,70,93,.3);color:#f6465d;font-size:.6rem;padding:2px 7px;border-radius:8px;font-weight:700;">'+tccT('d4.rej')+'</span>';
+      return '<span style="background:rgba(240,185,11,.1);border:1px solid rgba(240,185,11,.25);color:var(--gold);font-size:.6rem;padding:2px 7px;border-radius:8px;font-weight:700;">'+tccT('d4.proc')+'</span>';
     };
     const rows=allWd.slice().sort((a,b)=>new Date(b.RequestedAt||0)-new Date(a.RequestedAt||0));
     histEl.innerHTML=
       `<div style="display:flex;gap:8px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.05);flex-wrap:wrap;">
-        <div style="flex:1;min-width:90px;"><div style="font-size:.6rem;color:var(--muted);">โอนไปแล้ว</div>
+        <div style="flex:1;min-width:90px;"><div style="font-size:.6rem;color:var(--muted);">${tccT('d4.paidSum')}</div>
           <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:700;color:var(--green);">$${totalPaid.toFixed(2)}</div></div>
-        <div style="flex:1;min-width:90px;"><div style="font-size:.6rem;color:var(--muted);">จำนวนครั้ง</div>
-          <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:700;color:var(--text);">${allWd.length} ครั้ง</div></div>
+        <div style="flex:1;min-width:90px;"><div style="font-size:.6rem;color:var(--muted);">${tccT('d4.times')}</div>
+          <div style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:700;color:var(--text);">${tccT('d4.nTimes',{n:allWd.length})}</div></div>
       </div>`
       +rows.map(w=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);flex-wrap:wrap;">
         <div style="flex:1;min-width:0;">
@@ -20657,9 +20870,9 @@ function isRefPending(st){
 
 const REF_BONUS_PER_MEMBER = 10;      // USDT ต่อสมาชิก Approved
 const REF_COMM_TIERS = [
-  { min:20, pct:20, label:'20 คนขึ้นไป' },
-  { min:10, pct:10, label:'10 คนขึ้นไป' },
-  { min:0,  pct:0,  label:'น้อยกว่า 10 คน' },
+  { min:20, pct:20, lk:'d4.tier.20' },
+  { min:10, pct:10, lk:'d4.tier.10' },
+  { min:0,  pct:0,  lk:'d4.tier.0' },
 ];
 
 function tcS5Referral(myId){
@@ -20711,12 +20924,12 @@ function tcS5Referral(myId){
   // ── คัดลอกลิงค์ ─────────────────────────────────────────────────
   const copyRefLink=()=>{
     if(navigator.clipboard){
-      navigator.clipboard.writeText(refLink).then(()=>tccNotif('success','คัดลอกแล้ว!','ลิงค์แนะนำถูกคัดลอกไปยัง clipboard'));
+      navigator.clipboard.writeText(refLink).then(()=>tccNotif('success',tccT('common.copied'),tccT('d4.copiedM')));
     } else {
       const el=document.createElement('textarea');
       el.value=refLink; document.body.appendChild(el); el.select();
       document.execCommand('copy'); document.body.removeChild(el);
-      tccNotif('success','คัดลอกแล้ว!','ลิงค์แนะนำถูกคัดลอกไปยัง clipboard');
+      tccNotif('success',tccT('common.copied'),tccT('d4.copiedM'));
     }
   };
   // expose สำหรับ onclick inline
@@ -20729,39 +20942,39 @@ function tcS5Referral(myId){
   const statsHtml=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
       <div style="background:rgba(240,185,11,.07);border:1px solid rgba(240,185,11,.2);border-radius:10px;padding:11px;">
-        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">👥 สมาชิกที่แนะนำทั้งหมด</div>
-        <div style="font-size:1.3rem;font-weight:900;color:var(--gold);margin-top:4px;">${referred.length} <span style="font-size:.7rem;font-weight:400;">คน</span></div>
+        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">${tccT('d4.s.total')}</div>
+        <div style="font-size:1.3rem;font-weight:900;color:var(--gold);margin-top:4px;">${referred.length} <span style="font-size:.7rem;font-weight:400;">${tccT('d4.unitP')}</span></div>
       </div>
       <div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:11px;">
-        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">✅ Approved แล้ว</div>
-        <div style="font-size:1.3rem;font-weight:900;color:var(--green);margin-top:4px;">${approvedCount} <span style="font-size:.7rem;font-weight:400;">คน</span></div>
+        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">${tccT('d4.s.appr')}</div>
+        <div style="font-size:1.3rem;font-weight:900;color:var(--green);margin-top:4px;">${approvedCount} <span style="font-size:.7rem;font-weight:400;">${tccT('d4.unitP')}</span></div>
       </div>
       <div style="background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(240,185,11,.05));border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:11px;">
-        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">💰 โบนัสต่อคน</div>
+        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">${tccT('d4.s.per')}</div>
         <div style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:var(--green);margin-top:4px;">${fmtU(totalBonus)} <span style="font-size:.6rem;color:var(--muted);">USDT</span></div>
-        <div style="font-size:.6rem;color:var(--muted);margin-top:3px;">${approvedCount} คน × $${REF_BONUS_PER_MEMBER}</div>
+        <div style="font-size:.6rem;color:var(--muted);margin-top:3px;">${tccT('d4.s.calc',{n:approvedCount,b:'$'+REF_BONUS_PER_MEMBER})}</div>
       </div>
       <div style="background:rgba(240,185,11,.05);border:1px solid rgba(240,185,11,.15);border-radius:10px;padding:11px;">
-        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">⏳ รอ Admin อนุมัติ</div>
+        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">${tccT('d4.s.wait')}</div>
         <div style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:var(--gold);margin-top:4px;">${fmtU(pendingBonus)} <span style="font-size:.6rem;color:var(--muted);">USDT</span></div>
       </div>
       ${commPct>0?`
       <div style="background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.2);border-radius:10px;padding:11px;">
-        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">📊 ค่าคอมทีม (รวม)</div>
+        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">${tccT('d4.s.comm')}</div>
         <div style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:rgba(96,165,250,.9);margin-top:4px;">${fmtU(teamCommTotal)} <span style="font-size:.6rem;color:var(--muted);">USDT</span></div>
-        <div style="font-size:.6rem;color:var(--muted);margin-top:3px;">ค่าคอมทีมสะสม (Approved)</div>
+        <div style="font-size:.6rem;color:var(--muted);margin-top:3px;">${tccT('d4.s.commSub')}</div>
       </div>
       <div style="background:linear-gradient(135deg,rgba(96,165,250,.1),rgba(34,197,94,.05));border:1px solid rgba(96,165,250,.25);border-radius:10px;padding:11px;">
-        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">🎁 โบนัสค่าคอม ${commPct}%</div>
+        <div style="font-size:.63rem;color:var(--muted);font-weight:600;">${tccT('d4.s.bonus',{p:commPct})}</div>
         <div style="font-family:'Orbitron',monospace;font-size:.95rem;font-weight:900;color:rgba(96,165,250,.9);margin-top:4px;">${fmtU(commBonus)} <span style="font-size:.6rem;color:var(--muted);">USDT</span></div>
         <div style="font-size:.6rem;color:var(--muted);margin-top:3px;">${fmtU(teamCommTotal)} × ${commPct}%</div>
       </div>`:''}
     </div>
     <div style="background:linear-gradient(135deg,rgba(240,185,11,.15),rgba(34,197,94,.08));border:1px solid rgba(240,185,11,.4);border-radius:12px;padding:13px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
       <div>
-        <div style="font-size:.68rem;color:var(--muted);font-weight:600;">🏆 รวมโบนัสทั้งหมด (Approved)</div>
+        <div style="font-size:.68rem;color:var(--muted);font-weight:600;">${tccT('d4.s.all')}</div>
         <div style="font-size:.62rem;color:var(--muted);margin-top:3px;">
-          ${fmtU(totalBonus)} (ต่อคน)${commPct>0?' + '+fmtU(commBonus)+' (ค่าคอม '+commPct+'%)':''}
+          ${fmtU(totalBonus)} ${tccT('d4.s.perP')}${commPct>0?' + '+fmtU(commBonus)+' '+tccT('d4.s.commP',{p:commPct}):''}
         </div>
       </div>
       <div style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:var(--gold);">${fmtU(totalPayout)}<span style="font-size:.6rem;font-weight:400;color:var(--muted);"> USDT</span></div>
@@ -20770,13 +20983,13 @@ function tcS5Referral(myId){
   // ── โบนัสค่าคอมมิชชั่นขั้นบันได ───────────────────────────────
   const tierHtml=`
     <div style="background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-bottom:14px;">
-      <div style="font-size:.75rem;color:var(--text-dim);font-weight:700;margin-bottom:12px;">📊 โบนัสค่าคอมมิชชั่นแบบขั้นบันได</div>
+      <div style="font-size:.75rem;color:var(--text-dim);font-weight:700;margin-bottom:12px;">${tccT('d4.t.title')}</div>
 
       <!-- แถบ progress -->
       <div style="margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-bottom:5px;">
-          <span>ความคืบหน้า: <b style="color:var(--gold);">${approvedCount} คน</b></span>
-          ${nextTier?`<span>ถัดไป: <b style="color:var(--gold);">${nextTier.min} คน</b> (+${nextTier.pct}% ค่าคอม)</span>`:'<span style="color:var(--green);">🏆 ระดับสูงสุดแล้ว!</span>'}
+          <span>${tccT('d4.t.prog')} <b style="color:var(--gold);">${tccT('d2.people',{n:approvedCount})}</b></span>
+          ${nextTier?`<span>${tccT('d4.t.next')} <b style="color:var(--gold);">${tccT('d2.people',{n:nextTier.min})}</b> ${tccT('d4.t.nextPct',{p:nextTier.pct})}</span>`:'<span style="color:var(--green);">'+tccT('d4.t.max')+'</span>'}
         </div>
         <div style="background:rgba(255,255,255,.06);border-radius:8px;height:10px;overflow:hidden;">
           <div style="height:100%;border-radius:8px;background:linear-gradient(90deg,var(--gold),var(--green));
@@ -20789,11 +21002,11 @@ function tcS5Referral(myId){
       <table style="width:100%;min-width:320px;border-collapse:collapse;font-size:.73rem;">
         <thead>
           <tr style="border-bottom:1px solid rgba(255,255,255,.08);">
-            <th style="text-align:left;padding:6px 8px;color:var(--muted);font-weight:600;">จำนวนสมาชิก</th>
-            <th style="text-align:center;padding:6px 8px;color:var(--muted);font-weight:600;">โบนัสต่อคน</th>
-            <th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600;">% ค่าคอมมิชชั่น</th>
-            <th style="text-align:right;padding:6px 4px;color:var(--muted);font-weight:600;">รวมโบนัส</th>
-            <th style="text-align:center;padding:6px 4px;color:var(--muted);font-weight:600;">สถานะ</th>
+            <th style="text-align:left;padding:6px 8px;color:var(--muted);font-weight:600;">${tccT('d4.t.h1')}</th>
+            <th style="text-align:center;padding:6px 8px;color:var(--muted);font-weight:600;">${tccT('d4.t.h2')}</th>
+            <th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600;">${tccT('d4.t.h3')}</th>
+            <th style="text-align:right;padding:6px 4px;color:var(--muted);font-weight:600;">${tccT('d4.t.h4')}</th>
+            <th style="text-align:center;padding:6px 4px;color:var(--muted);font-weight:600;">${tccT('d.th.status')}</th>
           </tr>
         </thead>
         <tbody>
@@ -20805,7 +21018,7 @@ function tcS5Referral(myId){
             const tierCommBonus = teamCommTotal * tier.pct / 100;
             const tierTotal     = tierPerMember + tierCommBonus;
             return`<tr style="border-bottom:1px solid rgba(255,255,255,.04);${isActive?'background:rgba(34,197,94,.06);':''}">
-              <td style="padding:8px;font-weight:600;color:${achieved?'var(--text)':'var(--muted)'};">${tier.label}</td>
+              <td style="padding:8px;font-weight:600;color:${achieved?'var(--text)':'var(--muted)'};">${tccT(tier.lk)}</td>
               <td style="padding:8px;text-align:center;">
                 <span style="font-family:'Orbitron',monospace;font-size:.82rem;font-weight:700;color:${achieved?'var(--gold)':'var(--muted)'};">$${REF_BONUS_PER_MEMBER}</span>
                 <span style="font-size:.62rem;color:var(--muted);"> USDT</span>
@@ -20824,10 +21037,10 @@ function tcS5Referral(myId){
               </td>
               <td style="padding:8px;text-align:center;">
                 ${isActive
-                  ?`<span style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:var(--green);font-size:.62rem;padding:2px 8px;border-radius:12px;font-weight:700;">✅ ระดับปัจจุบัน</span>`
+                  ?`<span style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:var(--green);font-size:.62rem;padding:2px 8px;border-radius:12px;font-weight:700;">${tccT('d4.t.cur')}</span>`
                   :achieved
-                    ?`<span style="background:rgba(240,185,11,.1);border:1px solid rgba(240,185,11,.2);color:var(--gold);font-size:.62rem;padding:2px 8px;border-radius:12px;">ผ่านแล้ว</span>`
-                    :`<span style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--muted);font-size:.62rem;padding:2px 8px;border-radius:12px;">ยังไม่ถึง</span>`}
+                    ?`<span style="background:rgba(240,185,11,.1);border:1px solid rgba(240,185,11,.2);color:var(--gold);font-size:.62rem;padding:2px 8px;border-radius:12px;">${tccT('d4.t.pass')}</span>`
+                    :`<span style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--muted);font-size:.62rem;padding:2px 8px;border-radius:12px;">${tccT('d4.t.no')}</span>`}
               </td>
             </tr>`;
           }).join('')}
@@ -20835,16 +21048,16 @@ function tcS5Referral(myId){
       </table>
       </div>
       <div style="margin-top:10px;font-size:.68rem;color:var(--muted);line-height:1.6;padding:8px 10px;background:rgba(255,255,255,.02);border-radius:7px;">
-        📌 <b>เงื่อนไข:</b> % ของค่าคอมมิชชั่นคำนวณจากค่าคอมมิชชั่นทีมที่ได้รับในเดือนนั้น
-        • โบนัสต่อคน: จ่ายเมื่อสมาชิกที่แนะนำได้รับการ Approve
-        • หากสมาชิกที่แนะนำถูก Rejected ภายหลัง โบนัสจะถูกยกเลิกและหักออกจากยอดคงเหลือ
+        ${tccT('d4.n1.h')}
+        • ${tccT('d4.n2')}
+        • ${tccT('d4.n3')}
       </div>
     </div>`;
 
   // ── ลิงค์แนะนำ ──────────────────────────────────────────────────
   const linkHtml=`
     <div style="background:linear-gradient(135deg,rgba(240,185,11,.1),rgba(240,185,11,.03));border:1px solid rgba(240,185,11,.3);border-radius:12px;padding:14px;margin-bottom:14px;">
-      <div style="font-size:.75rem;color:var(--text-dim);font-weight:700;margin-bottom:8px;">🔗 ลิงค์แนะนำของคุณ</div>
+      <div style="font-size:.75rem;color:var(--text-dim);font-weight:700;margin-bottom:8px;">${tccT('d4.l.title')}</div>
       <div style="display:flex;gap:8px;align-items:stretch;">
         <div style="flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(240,185,11,.25);border-radius:8px;padding:9px 12px;
           font-size:.72rem;color:var(--gold);font-family:monospace;word-break:break-all;line-height:1.5;">${refLink}</div>
@@ -20852,11 +21065,11 @@ function tcS5Referral(myId){
           style="flex-shrink:0;padding:9px 14px;background:var(--gold);color:#000;border:none;border-radius:8px;
             font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;
             touch-action:manipulation;-webkit-tap-highlight-color:transparent;">
-          📋 คัดลอก
+          ${tccT('d4.l.copy')}
         </button>
       </div>
       <div style="font-size:.68rem;color:var(--muted);margin-top:7px;">
-        แชร์ลิงค์นี้ให้เพื่อน — เมื่อสมัครสำเร็จและได้รับการ Approve คุณจะได้รับโบนัสอัตโนมัติ
+        ${tccT('d4.l.hint')}
       </div>
     </div>`;
 
@@ -20874,8 +21087,8 @@ function tcS5Referral(myId){
 
   const refMemberCards = !referred.length
     ? `<div style="text-align:center;padding:20px;color:var(--muted);font-size:.82rem;">
-        📭 ยังไม่มีสมาชิกที่คุณแนะนำ<br>
-        <span style="font-size:.72rem;">แชร์ลิงค์ด้านบนให้เพื่อนสมัครได้เลย!</span>
+        ${tccT('d4.m.empty1')}<br>
+        <span style="font-size:.72rem;">${tccT('d4.m.empty2')}</span>
       </div>`
     : pageReferred.map((m, i) => {
         const globalIdx = refMemStart + i;
@@ -20897,7 +21110,7 @@ function tcS5Referral(myId){
         const bonusTxt = isOk
           ? `<span style="font-family:'Orbitron',monospace;font-size:.7rem;font-weight:700;color:var(--green);">+$${REF_BONUS_PER_MEMBER}</span>`
           : (isTrading||isPend)
-          ? `<span style="font-size:.62rem;color:var(--gold);">⏳ รอ $${REF_BONUS_PER_MEMBER}</span>`
+          ? `<span style="font-size:.62rem;color:var(--gold);">⏳ ${tccT('d4.m.wait',{b:'$'+REF_BONUS_PER_MEMBER})}</span>`
           : '';
         return `<div style="display:flex;align-items:center;gap:10px;padding:10px 13px;
           border-bottom:1px solid rgba(255,255,255,.04);border-left:3px solid ${leftColor};background:rgba(255,255,255,.01);
@@ -20919,7 +21132,7 @@ function tcS5Referral(myId){
     <div style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.05);">
       ${refPagBtn(0,'«', refMemPage===0)}
       ${refPagBtn(refMemPage-1,'‹', refMemPage===0)}
-      <span style="font-size:.7rem;color:var(--muted);padding:0 6px;">หน้า ${refMemPage+1} / ${refMemTotalPages}</span>
+      <span style="font-size:.7rem;color:var(--muted);padding:0 6px;">${tccT('d3.pageInfo',{p:refMemPage+1,t:refMemTotalPages})}</span>
       ${refPagBtn(refMemPage+1,'›', refMemPage>=refMemTotalPages-1)}
       ${refPagBtn(refMemTotalPages-1,'»', refMemPage>=refMemTotalPages-1)}
     </div>` : '';
@@ -20927,12 +21140,12 @@ function tcS5Referral(myId){
   const memberListHtml = `
     <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;margin-bottom:14px;">
       <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <div style="font-size:.75rem;font-weight:700;color:var(--text-dim);">👥 รายชื่อสมาชิกที่แนะนำ</div>
-        <span style="font-size:.63rem;background:rgba(255,255,255,.06);border-radius:20px;padding:2px 8px;color:var(--muted);">${referred.length} คน</span>
+        <div style="font-size:.75rem;font-weight:700;color:var(--text-dim);">${tccT('d4.m.title')}</div>
+        <span style="font-size:.63rem;background:rgba(255,255,255,.06);border-radius:20px;padding:2px 8px;color:var(--muted);">${tccT('d2.people',{n:referred.length})}</span>
         <button onclick="window._refTabLoadedFor=null;_tcRefMemberPage=0;tcRender();"
           style="margin-left:auto;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
           border-radius:7px;padding:4px 10px;font-size:.67rem;color:var(--text-dim);cursor:pointer;font-weight:600;">
-          🔄 รีเฟรช</button>
+          🔄 ${tccT('common.refresh')}</button>
       </div>
       ${refMemberCards}
       ${refMemPagHtml}
@@ -20996,23 +21209,23 @@ function tcS5Referral(myId){
             <div style="font-size:.78rem;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pname}</div>
             <div style="font-size:.63rem;color:var(--muted);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;">
               <span>📅 ${dateStr||'—'}</span>
-              <span>💹 กำไร: <b style="color:var(--text);">${fmtTP(prof)}</b></span>
+              <span>${tccT('d4.p.pf')} <b style="color:var(--text);">${fmtTP(prof)}</b></span>
             </div>
           </div>
           <div style="flex-shrink:0;text-align:right;">
             <div style="font-family:'Orbitron',monospace;font-size:.8rem;font-weight:900;color:${isAppr?'var(--gold)':'var(--muted)'};">${fmtTP(comm)}</div>
-            <div style="font-size:.58rem;color:var(--muted);margin-top:2px;">ค่าคอม</div>
+            <div style="font-size:.58rem;color:var(--muted);margin-top:2px;">${tccT('d4.p.cm')}</div>
             ${isAppr ? '' : `<div style="font-size:.58rem;color:var(--gold);margin-top:2px;">⏳ Pending</div>`}
           </div>
         </div>`;
       }).join('')
-    : `<div style="text-align:center;padding:20px;color:var(--muted);font-size:.8rem;">📭 ไม่พบรายการที่ตรงกัน</div>`;
+    : `<div style="text-align:center;padding:20px;color:var(--muted);font-size:.8rem;">${tccT('d4.p.none')}</div>`;
 
   const payPagHtml = payTotalPages > 1 ? `
     <div style="display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.05);">
       ${payPagBtn(0,'«', payPage===0)}
       ${payPagBtn(payPage-1,'‹', payPage===0)}
-      <span style="font-size:.7rem;color:var(--muted);padding:0 6px;">หน้า ${payPage+1} / ${payTotalPages}</span>
+      <span style="font-size:.7rem;color:var(--muted);padding:0 6px;">${tccT('d3.pageInfo',{p:payPage+1,t:payTotalPages})}</span>
       ${payPagBtn(payPage+1,'›', payPage>=payTotalPages-1)}
       ${payPagBtn(payTotalPages-1,'»', payPage>=payTotalPages-1)}
     </div>` : '';
@@ -21021,13 +21234,13 @@ function tcS5Referral(myId){
     <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;margin-bottom:14px;">
       <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <div style="font-size:.75rem;font-weight:700;color:var(--text-dim);">💳 รายการจ่ายเงินทีม</div>
-          <span style="font-size:.63rem;background:rgba(255,255,255,.06);border-radius:20px;padding:2px 8px;color:var(--muted);">${teamPayAll.length} รายการ</span>
+          <div style="font-size:.75rem;font-weight:700;color:var(--text-dim);">${tccT('d4.p.title')}</div>
+          <span style="font-size:.63rem;background:rgba(255,255,255,.06);border-radius:20px;padding:2px 8px;color:var(--muted);">${tccT('d.items',{n:teamPayAll.length})}</span>
         </div>
         <!-- ค้นหา + เดือน -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <div style="flex:1;min-width:140px;position:relative;">
-            <input type="text" value="${sq}" placeholder="🔍 ค้นหาชื่อ / BNB ID..."
+            <input type="text" value="${_escHtml(sq)}" placeholder="${tccT('d4.p.ph')}"
               oninput="_tcRefPaySearch=this.value;_tcRefPayPage=0;tcRender();"
               style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;
               padding:6px 10px;font-size:.78rem;color:var(--text);font-family:'Prompt',sans-serif;outline:none;">
@@ -21037,19 +21250,19 @@ function tcS5Referral(myId){
           <select onchange="_tcRefPayMonth=this.value;_tcRefPayPage=0;tcRender();"
             style="background:#1a1d21;border:1px solid rgba(240,185,11,.35);border-radius:8px;color:var(--gold);
             font-family:'Prompt',sans-serif;font-size:.78rem;padding:5px 10px;outline:none;cursor:pointer;min-width:110px;">
-            <option value="" ${!_tcRefPayMonth?'selected':''}>📅 ทุกเดือน</option>
-            ${payMonths.map(k=>{const[y,mo]=k.split('-');return`<option value="${k}" ${_tcRefPayMonth===k?'selected':''}>${getThaiMonth(parseInt(mo))} ${parseInt(y)+543}</option>`;}).join('')}
+            <option value="" ${!_tcRefPayMonth?'selected':''}>${tccT('d4.p.allM')}</option>
+            ${payMonths.map(k=>{const[y,mo]=k.split('-');return`<option value="${k}" ${_tcRefPayMonth===k?'selected':''}>${tccMonthYear(parseInt(mo),parseInt(y))}</option>`;}).join('')}
           </select>
         </div>
         <!-- mini summary -->
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
           <div style="font-size:.67rem;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:7px;padding:4px 10px;color:var(--green);">
-            ค่าคอมรวม: <b style="font-family:'Orbitron',monospace;">${fmtTP(filtCommTotal)}</b>
+            ${tccT('d4.p.comm')} <b style="font-family:'Orbitron',monospace;">${fmtTP(filtCommTotal)}</b>
           </div>
           <div style="font-size:.67rem;background:rgba(240,185,11,.06);border:1px solid rgba(240,185,11,.18);border-radius:7px;padding:4px 10px;color:var(--gold);">
-            กำไรรวม: <b style="font-family:'Orbitron',monospace;">${fmtTP(filtProfTotal)}</b>
+            ${tccT('d4.p.profit')} <b style="font-family:'Orbitron',monospace;">${fmtTP(filtProfTotal)}</b>
           </div>
-          <div style="font-size:.67rem;color:var(--muted);padding:4px 6px;">${filteredTeamPay.length} รายการที่กรอง</div>
+          <div style="font-size:.67rem;color:var(--muted);padding:4px 6px;">${tccT('d4.p.filtered',{n:filteredTeamPay.length})}</div>
         </div>
       </div>
       ${payRows}
@@ -21059,13 +21272,13 @@ function tcS5Referral(myId){
   // ── เงื่อนไขการถอนโบนัส ─────────────────────────────────────────
   const condHtml=`
     <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px;">
-      <div style="font-size:.75rem;font-weight:700;color:var(--gold);margin-bottom:10px;">📋 เงื่อนไขการถอนโบนัสแนะนำสมาชิก</div>
+      <div style="font-size:.75rem;font-weight:700;color:var(--gold);margin-bottom:10px;">${tccT('d4.c.title')}</div>
       ${[
-        ['$'+REF_BONUS_PER_MEMBER+' USDT','ต่อสมาชิก 1 คน ที่ Approve แล้ว'],
-        ['รอ Admin','โบนัสจะปรากฏเป็น "รอ Admin อนุมัติ" หลังสมาชิกใหม่สมัครสำเร็จ และเปลี่ยนเป็น "ได้รับแล้ว" เมื่อ Admin อนุมัติสมาชิกนั้น'],
-        ['\u0e16\u0e2d\u0e19\u0e02\u0e31\u0e49\u0e19\u0e15\u0e48\u0e33','$'+(REF_BONUS_PER_MEMBER*5)+' USDT (\u0e40\u0e17\u0e35\u0e22\u0e1a\u0e40\u0e17\u0e48\u0e32 5 \u0e04\u0e19\u0e17\u0e35\u0e48 Approve \u0e41\u0e25\u0e49\u0e27)'],
-        ['โอนเข้า','Address Wallet (USDT BEP-20) ที่ลงทะเบียนไว้เท่านั้น ภายใน 7 วันทำการ'],
-        ['ถูก Rejected','หากสมาชิกที่แนะนำถูก Rejected ภายหลัง โบนัสจะถูกยกเลิกและหักออกจากยอดคงเหลือ'],
+        ['$'+REF_BONUS_PER_MEMBER+' USDT',tccT('d4.c1')],
+        [tccT('d4.c2t'),tccT('d4.c2')],
+        [tccT('d4.c3t'),tccT('d4.c3',{m:'$'+(REF_BONUS_PER_MEMBER*5)})],
+        [tccT('d4.c4t'),tccT('d4.c4')],
+        [tccT('d4.c5t'),tccT('d4.n3')],
       ].map(([title,desc],i)=>`
         <div style="display:flex;gap:10px;margin-bottom:9px;align-items:flex-start;">
           <div style="width:22px;height:22px;border-radius:50%;background:rgba(240,185,11,.15);border:1px solid rgba(240,185,11,.3);
@@ -21090,14 +21303,14 @@ function tcS5Referral(myId){
 
   const withdrawHtml = `
     <div id="ref-wd-balance-wrap" style="background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:14px;margin-bottom:10px;">
-      <div style="text-align:center;padding:10px;color:var(--muted);font-size:.78rem;">⏳ กำลังคำนวณยอดคงเหลือ...</div>
+      <div style="text-align:center;padding:10px;color:var(--muted);font-size:.78rem;">${tccT('d4.calc')}</div>
     </div>
     <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;margin-bottom:14px;">
       <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:.75rem;font-weight:700;color:var(--text-dim);">🧾 ประวัติการถอนโบนัส</span>
-        <button onclick="_tcLoadWdAndRenderBalance('${jsq(myId)}',${totalBonus2},'${jsq(myWallet)}')" style="background:none;border:none;color:var(--gold);font-size:.7rem;cursor:pointer;padding:2px 6px;">🔄 รีเฟรช</button>
+        <span style="font-size:.75rem;font-weight:700;color:var(--text-dim);">${tccT('d4.hist')}</span>
+        <button onclick="_tcLoadWdAndRenderBalance('${jsq(myId)}',${totalBonus2},'${jsq(myWallet)}')" style="background:none;border:none;color:var(--gold);font-size:.7rem;cursor:pointer;padding:2px 6px;">🔄 ${tccT('common.refresh')}</button>
       </div>
-      <div id="ref-wd-hist-inner" style="padding:12px;text-align:center;color:var(--muted);font-size:.78rem;">⏳ กำลังโหลด...</div>
+      <div id="ref-wd-hist-inner" style="padding:12px;text-align:center;color:var(--muted);font-size:.78rem;">${tccT('d4.loading')}</div>
     </div>`;
 
   return linkHtml + statsHtml + tierHtml + memberListHtml + teamPayHtml + withdrawHtml + condHtml;

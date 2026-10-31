@@ -5093,7 +5093,7 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
    TCC i18n — หน้า Terms & Conditions (ส่วนเนื้อหา) + About Us + Cafe (th en vi kh mm la)
    • ต้นฉบับไทยยังอยู่ใน CONTENT.termcondition / CONTENT.aboutus และ _defaultCafeCards() (ตัวแก้ไขหน้า/การ์ดของแอดมินใช้ค่านี้) — ไม่ถูกแก้
    • ภาษาอื่นแสดงจากตัวสร้างด้านล่าง "เฉพาะเมื่อเนื้อหายังเป็นค่าเริ่มต้นของไฟล์" ถ้าแอดมินแก้/บันทึกเนื้อหาหรือการ์ดเองใน DB จะแสดงตามที่แอดมินเขียนเสมอ
-   • ฟอร์มยืนยันตัวตนสมาชิก (tc-app-root) ในหน้า Terms ยังเป็นไทย — ยังไม่ได้แปล
+   • ฟอร์มยืนยันตัวตนสมาชิก (tc-app-root) ขั้นตอน 1–4 + โครงแดชบอร์ดขั้นตอน 5 แปลแล้ว (ดู tcc-i18n-tcform / tcc-i18n-tcform2) — เนื้อใน 4 แท็บของแดชบอร์ดยังเป็นไทย
    • ค่า ShopStatus ใน DB ไม่เปลี่ยน (แปลเฉพาะตอนแสดงผล) · key ที่ลงท้าย .h = มี HTML (ใช้กับ innerHTML เท่านั้น)
    ===================================================================== */
 (function(){
@@ -5273,7 +5273,7 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
 </script>
 
 <script id="tcc-i18n-tcform">
-/* TCC i18n — ฟอร์มยืนยันตัวตนสมาชิกในหน้า Terms (ขั้นตอน 1–3 + แถบขั้นตอน) · ส่วนสัญญา/ใบสมัคร/แดชบอร์ด (ขั้นตอน 4–5) ยังเป็นไทย
+/* TCC i18n — ฟอร์มยืนยันตัวตนสมาชิกในหน้า Terms (ขั้นตอน 1–3 + แถบขั้นตอน) · ขั้นตอน 4–5 อยู่ใน tcc-i18n-tcform2
    ข้อความที่ Worker ส่งกลับ (e.message) แสดงตามที่ Worker ตอบ · ค่าที่ส่งเข้า DB ไม่เปลี่ยน */
 (function(){
   Object.assign(window.TCC_I18N, {
@@ -5323,6 +5323,130 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
       ids.forEach(function(i){ var e=document.getElementById(i); if(e&&keep[i]!=null) e.value=keep[i]; });
       var fe=f&&document.getElementById(f); if(fe&&fe.focus) fe.focus();
     }catch(e){ console.warn('[i18n tcform]',e); }
+  });
+  var _e=tccI18nCheck(); if(_e.length&&window.console) console.warn('[TCC i18n] '+_e.length+' รายการผิดพลาด',_e);
+})();
+</script>
+
+<script id="tcc-i18n-tcform2">
+/* TCC i18n — ฟอร์ม Terms ต่อจาก tcc-i18n-tcform: หัวข้อ "ส่วนสัญญาและบันทึกข้อตกลง" · ป้ายสถานะ (tcBadge) · ขั้นตอน 4 (ใบสมัครเทรดเดอร์/ตำแหน่งงาน + การ์ดอ่านอย่างเดียว + ข้อความส่งใบสมัคร) · โครงแดชบอร์ดขั้นตอน 5 (แท็บ/ชื่อ/ปุ่มกลับ)
+   ค่าที่เก็บ/ส่งเข้า DB ไม่เปลี่ยน (DesiredPosition, ExtraNote วงเงินคุ้มครอง ยังเป็นค่าไทยเดิม — แปลเฉพาะตอนแสดงผลผ่าน tcPosLbl / tcProtectLbl)
+   ข้อความที่ Worker ส่งกลับ (e.message) แสดงตามที่ Worker ตอบ · เนื้อใน 4 แท็บของแดชบอร์ด (ส่วนตัว/ทีม/ดูสมาชิก/แนะนำ) ยังเป็นไทย — รอบถัดไป */
+(function(){
+  Object.assign(window.TCC_I18N, {
+    "tf.hdr": ["ส่วนสัญญาและบันทึกข้อตกลง", "Contracts & agreements", "Phần hợp đồng và biên bản thỏa thuận", "ផ្នែកកិច្ចសន្យា និងកំណត់ត្រាព្រមព្រៀង", "စာချုပ်နှင့် သဘောတူညီချက် မှတ်တမ်း အပိုင်း", "ພາກສັນຍາ ແລະ ບັນທຶກຂໍ້ຕົກລົງ", "Bahagian kontrak dan rekod perjanjian", "Bagian kontrak dan catatan perjanjian", "合同与协议书部分"],
+    "tf.st.ok": ["✅ อนุมัติแล้ว", "✅ Approved", "✅ Đã duyệt", "✅ បានអនុម័ត", "✅ အတည်ပြုပြီး", "✅ ອະນຸມັດແລ້ວ", "✅ Diluluskan", "✅ Disetujui", "✅ 已批准"],
+    "tf.st.no": ["❌ ไม่อนุมัติ", "❌ Not approved", "❌ Không được duyệt", "❌ មិនបានអនុម័ត", "❌ အတည်မပြုပါ", "❌ ບໍ່ອະນຸມັດ", "❌ Tidak diluluskan", "❌ Tidak disetujui", "❌ 未批准"],
+    "tf.st.edit": ["✏️ แก้ไขข้อมูล", "✏️ Being edited", "✏️ Đang chỉnh sửa", "✏️ កំពុងកែសម្រួល", "✏️ ပြင်ဆင်နေသည်", "✏️ ກຳລັງແກ້ໄຂ", "✏️ Sedang disunting", "✏️ Sedang diedit", "✏️ 修改中"],
+    "tf.st.pend": ["⏳ รอดำเนินการ", "⏳ Pending", "⏳ Đang chờ xử lý", "⏳ កំពុងរង់ចាំដំណើរការ", "⏳ စောင့်ဆိုင်းနေသည်", "⏳ ລໍຖ້າດຳເນີນການ", "⏳ Menunggu", "⏳ Menunggu diproses", "⏳ 待处理"],
+    "tf.ro.no": ["❌ ไม่ผ่านการอนุมัติ", "❌ Not approved", "❌ Không được phê duyệt", "❌ មិនបានអនុម័តឡើយ", "❌ အတည်ပြုချက် မရရှိပါ", "❌ ບໍ່ຜ່ານການອະນຸມັດ", "❌ Tidak lulus kelulusan", "❌ Tidak lolos persetujuan", "❌ 未通过审批"],
+    "tf.ro.edit": ["✏️ แอดมินกำลังดำเนินการแก้ไขให้", "✏️ The admin is editing this for you", "✏️ Quản trị viên đang chỉnh sửa giúp bạn", "✏️ អ្នកគ្រប់គ្រងកំពុងកែសម្រួលជូនអ្នក", "✏️ အက်ဒမင်က သင့်အတွက် ပြင်ဆင်ပေးနေသည်", "✏️ ແອດມິນກຳລັງດຳເນີນການແກ້ໄຂໃຫ້", "✏️ Admin sedang menyunting untuk anda", "✏️ Admin sedang melakukan pengeditan untuk Anda", "✏️ 管理员正在为您修改"],
+    "tf.ro.pend": ["⏳ รออนุมัติ", "⏳ Awaiting approval", "⏳ Chờ phê duyệt", "⏳ រង់ចាំការអនុម័ត", "⏳ အတည်ပြုချက် စောင့်ဆိုင်းနေသည်", "⏳ ລໍຖ້າການອະນຸມັດ", "⏳ Menunggu kelulusan", "⏳ Menunggu persetujuan", "⏳ 等待审批"],
+    "tf.ro.note": ["📝 หมายเหตุแอดมิน:", "📝 Admin note:", "📝 Ghi chú của quản trị viên:", "📝 កំណត់សម្គាល់របស់អ្នកគ្រប់គ្រង៖", "📝 အက်ဒမင် မှတ်ချက်-", "📝 ໝາຍເຫດແອດມິນ:", "📝 Nota admin:", "📝 Catatan admin:", "📝 管理员备注："],
+    "tf.ro.lock": ["🔒 หากต้องการแก้ไขกรุณาติดต่อแอดมิน", "🔒 To make changes, please contact the admin", "🔒 Nếu cần chỉnh sửa, vui lòng liên hệ quản trị viên", "🔒 ប្រសិនបើចង់កែប្រែ សូមទាក់ទងអ្នកគ្រប់គ្រង", "🔒 ပြင်ဆင်လိုပါက အက်ဒမင်ကို ဆက်သွယ်ပါ", "🔒 ຫາກຕ້ອງການແກ້ໄຂ ກະລຸນາຕິດຕໍ່ແອດມິນ", "🔒 Untuk membuat perubahan, sila hubungi admin", "🔒 Jika ingin mengubah, silakan hubungi admin", "🔒 如需修改，请联系管理员"],
+    "tf.ro.pos": ["ตำแหน่ง", "Position", "Vị trí", "តួនាទី", "ရာထူး", "ຕຳແໜ່ງ", "Jawatan", "Posisi", "职位"],
+    "tf.ro.ref": ["เลขอ้างอิง", "Reference no.", "Mã tham chiếu", "លេខយោង", "ရည်ညွှန်းနံပါတ်", "ເລກອ້າງອີງ", "No. rujukan", "Nomor referensi", "参考编号"],
+    "tf.ro.date": ["ยื่นเมื่อ", "Submitted on", "Ngày nộp", "ដាក់ពាក្យនៅថ្ងៃ", "တင်သွင်းသည့်ရက်", "ຍື່ນເມື່ອ", "Dihantar pada", "Diajukan pada", "提交日期"],
+    "tf.ro.protect": ["วงเงินคุ้มครอง", "Protection limit", "Hạn mức bảo vệ", "ទំហំការពារ", "အကာအကွယ်ပေးသည့် ပမာဏ", "ວົງເງິນຄຸ້ມຄອງ", "Had perlindungan", "Batas perlindungan", "保障额度"],
+    "tf.ro.memo": ["บันทึก", "Note", "Ghi chú", "កំណត់ចំណាំ", "မှတ်ချက်", "ບັນທຶກ", "Nota", "Catatan", "备注"],
+    "tf.ro.dur": ["ระยะเวลา", "Duration", "Thời hạn", "រយៈពេល", "ကာလ", "ໄລຍະເວລາ", "Tempoh", "Jangka waktu", "期限"],
+    "tf.ro.mo": ["{n} เดือน", "{n} months", "{n} tháng", "{n} ខែ", "{n} လ", "{n} ເດືອນ", "{n} bulan", "{n} bulan", "{n} 个月"],
+    "tf.ro.tm": ["สมาชิกเป้าหมาย", "Target members", "Thành viên mục tiêu", "សមាជិកគោលដៅ", "ပစ်မှတ် အဖွဲ့ဝင်", "ສະມາຊິກເປົ້າໝາຍ", "Ahli sasaran", "Anggota target", "目标会员"],
+    "tf.ro.pp": ["{n} คน", "{n} people", "{n} người", "{n} នាក់", "{n} ဦး", "{n} ຄົນ", "{n} orang", "{n} orang", "{n} 人"],
+    "tf.ro.vol": ["วงเงินเทรด", "Trading limit", "Hạn mức giao dịch", "ទំហំជួញដូរ", "ကုန်သွယ်မှု ပမာဏ", "ວົງເງິນເທຣດ", "Had dagangan", "Batas trading", "交易额度"],
+    "tf.ro.fee": ["ค่าบริหารรายเดือน", "Monthly management fee", "Phí quản lý hàng tháng", "ថ្លៃគ្រប់គ្រងប្រចាំខែ", "လစဉ် စီမံခန့်ခွဲမှုကြေး", "ຄ່າບໍລິຫານລາຍເດືອນ", "Yuran pengurusan bulanan", "Biaya pengelolaan bulanan", "月度管理费"],
+    "tf.ro.feeV": ["{n} บาท/เดือน", "{n} THB/month", "{n} THB/tháng", "{n} បាត/ខែ", "{n} ဘတ်/လ", "{n} ບາດ/ເດືອນ", "{n} THB/bulan", "{n} THB/bulan", "{n} 泰铢/月"],
+    "tf.ro.team": ["ค่าบริหารทีม", "Team management fee", "Phí quản lý đội nhóm", "ថ្លៃគ្រប់គ្រងក្រុម", "အဖွဲ့ စီမံခန့်ခွဲမှုကြေး", "ຄ່າບໍລິຫານທີມ", "Yuran pengurusan pasukan", "Biaya pengelolaan tim", "团队管理费"],
+    "tf.ro.thb": ["{n} บาท", "{n} THB", "{n} THB", "{n} បាត", "{n} ဘတ်", "{n} ບາດ", "{n} THB", "{n} THB", "{n} 泰铢"],
+    "tf.ro.dlT": ["📄 ดาวน์โหลดสัญญาการร่วมเทรด", "📄 Download the trading partnership agreement", "📄 Tải hợp đồng hợp tác giao dịch", "📄 ទាញយកកិច្ចសន្យាចូលរួមជួញដូរ", "📄 ကုန်သွယ်ရေး ပူးပေါင်းဆောင်ရွက်မှု စာချုပ် ဒေါင်းလုဒ်လုပ်ရန်", "📄 ດາວໂຫຼດສັນຍາການຮ່ວມເທຣດ", "📄 Muat turun kontrak perkongsian dagangan", "📄 Unduh kontrak kemitraan trading", "📄 下载合作交易合同"],
+    "tf.ro.dlJ": ["📄 ดาวน์โหลดบันทึกข้อตกลงโครงการ", "📄 Download the project agreement", "📄 Tải biên bản thỏa thuận dự án", "📄 ទាញយកកំណត់ត្រាព្រមព្រៀងគម្រោង", "📄 စီမံကိန်း သဘောတူညီချက် မှတ်တမ်း ဒေါင်းလုဒ်လုပ်ရန်", "📄 ດາວໂຫຼດບັນທຶກຂໍ້ຕົກລົງໂຄງການ", "📄 Muat turun rekod perjanjian projek", "📄 Unduh catatan perjanjian proyek", "📄 下载项目协议书"],
+    "tf.ro.tT": ["🔰 ใบสมัครเทรดเดอร์", "🔰 Trader application", "🔰 Đơn đăng ký trader", "🔰 ពាក្យសុំជាអ្នកជួញដូរ", "🔰 ကုန်သွယ်သူ လျှောက်လွှာ", "🔰 ໃບສະໝັກເທຣດເດີ", "🔰 Permohonan peniaga", "🔰 Aplikasi trader", "🔰 交易员申请表"],
+    "tf.ro.jT": ["💼 ใบสมัครตำแหน่งงาน", "💼 Job position application", "💼 Đơn đăng ký vị trí công việc", "💼 ពាក្យសុំតួនាទីការងារ", "💼 အလုပ်ရာထူး လျှောက်လွှာ", "💼 ໃບສະໝັກຕຳແໜ່ງງານ", "💼 Permohonan jawatan", "💼 Aplikasi posisi pekerjaan", "💼 职位申请表"],
+    "tf.4.dash": ["📊 ดูแดชบอร์ดของฉัน", "📊 View my dashboard", "📊 Xem bảng điều khiển của tôi", "📊 មើលផ្ទាំងគ្រប់គ្រងរបស់ខ្ញុំ", "📊 ကျွန်ုပ်၏ ဒက်ရှ်ဘုတ် ကြည့်ရန်", "📊 ເບິ່ງແດຊບອດຂອງຂ້ອຍ", "📊 Lihat papan pemuka saya", "📊 Lihat dasbor saya", "📊 查看我的控制面板"],
+    "tf.4.mem": ["👤 ข้อมูลสมาชิก", "👤 Member information", "👤 Thông tin thành viên", "👤 ព័ត៌មានសមាជិក", "👤 အဖွဲ့ဝင် အချက်အလက်", "👤 ຂໍ້ມູນສະມາຊິກ", "👤 Maklumat ahli", "👤 Informasi anggota", "👤 会员信息"],
+    "tf.4.sec1": ["① ใบสมัครเทรดเดอร์", "① Trader application", "① Đơn đăng ký trader", "① ពាក្យសុំជាអ្នកជួញដូរ", "① ကုန်သွယ်သူ လျှောက်လွှာ", "① ໃບສະໝັກເທຣດເດີ", "① Permohonan peniaga", "① Aplikasi trader", "① 交易员申请"],
+    "tf.4.sec2": ["② ใบสมัครตำแหน่งงาน", "② Job position application", "② Đơn đăng ký vị trí công việc", "② ពាក្យសុំតួនាទីការងារ", "② အလုပ်ရာထူး လျှောက်လွှာ", "② ໃບສະໝັກຕຳແໜ່ງງານ", "② Permohonan jawatan", "② Aplikasi posisi pekerjaan", "② 职位申请"],
+    "tf.tr.tip": ["💡 เทรดเดอร์ไม่ต้องกรอกเป้าหมาย — สมัครได้เพียง 1 ครั้งเท่านั้น", "💡 Traders do not need to enter targets — you can apply only once", "💡 Trader không cần nhập mục tiêu — chỉ được đăng ký 1 lần duy nhất", "💡 អ្នកជួញដូរមិនចាំបាច់បំពេញគោលដៅទេ — អាចដាក់ពាក្យបានតែម្តងប៉ុណ្ណោះ", "💡 ကုန်သွယ်သူများ ပစ်မှတ် ဖြည့်ရန်မလို — တစ်ကြိမ်သာ လျှောက်ထားနိုင်သည်", "💡 ເທຣດເດີບໍ່ຕ້ອງຕື່ມເປົ້າໝາຍ — ສະໝັກໄດ້ພຽງ 1 ຄັ້ງເທົ່ານັ້ນ", "💡 Peniaga tidak perlu mengisi sasaran — boleh memohon sekali sahaja", "💡 Trader tidak perlu mengisi target — hanya dapat mendaftar 1 kali", "💡 交易员无需填写目标 — 仅可申请 1 次"],
+    "tf.tr.protect": ["เลือกวงเงินคุ้มครองการเทรดโดยประมาณ", "Select your approximate trading protection limit", "Chọn hạn mức bảo vệ giao dịch dự kiến", "ជ្រើសរើសទំហំការពារការជួញដូរប្រហាក់ប្រហែល", "ခန့်မှန်း ကုန်သွယ်မှု အကာအကွယ်ပမာဏ ရွေးချယ်ပါ", "ເລືອກວົງເງິນຄຸ້ມຄອງການເທຣດໂດຍປະມານ", "Pilih anggaran had perlindungan dagangan", "Pilih perkiraan batas perlindungan trading", "请选择预计的交易保障额度"],
+    "tf.tr.up": ["$100,000 ขึ้นไป", "$100,000 and above", "Từ $100,000 trở lên", "$100,000 ឡើងទៅ", "$100,000 နှင့်အထက်", "$100,000 ຂຶ້ນໄປ", "$100,000 ke atas", "$100,000 ke atas", "$100,000 及以上"],
+    "tf.tr.perr": ["กรุณาเลือกวงเงินคุ้มครองการเทรด", "Please select a trading protection limit", "Vui lòng chọn hạn mức bảo vệ giao dịch", "សូមជ្រើសរើសទំហំការពារការជួញដូរ", "ကုန်သွယ်မှု အကာအကွယ်ပမာဏ ရွေးချယ်ပါ", "ກະລຸນາເລືອກວົງເງິນຄຸ້ມຄອງການເທຣດ", "Sila pilih had perlindungan dagangan", "Harap pilih batas perlindungan trading", "请选择交易保障额度"],
+    "tf.tr.note": ["บันทึกเพิ่มเติม", "Additional notes", "Ghi chú thêm", "កំណត់ចំណាំបន្ថែម", "ထပ်ဆောင်း မှတ်ချက်", "ບັນທຶກເພີ່ມເຕີມ", "Nota tambahan", "Catatan tambahan", "补充备注"],
+    "tf.tr.noteph": ["ระบุรายละเอียดเพิ่มเติม (ถ้ามี)...", "Add any extra details (optional)...", "Nhập thêm chi tiết (nếu có)...", "បញ្ជាក់ព័ត៌មានលម្អិតបន្ថែម (បើមាន)...", "ထပ်ဆောင်း အသေးစိတ် ထည့်ပါ (ရှိလျှင်)...", "ລະບຸລາຍລະອຽດເພີ່ມເຕີມ (ຖ້າມີ)...", "Nyatakan butiran tambahan (jika ada)...", "Tuliskan detail tambahan (jika ada)...", "请填写补充说明（如有）..."],
+    "tf.tr.ctr": ["📜 สัญญาการร่วมเทรด", "📜 Trading partnership agreement", "📜 Hợp đồng hợp tác giao dịch", "📜 កិច្ចសន្យាចូលរួមជួញដូរ", "📜 ကုန်သွယ်ရေး ပူးပေါင်းဆောင်ရွက်မှု စာချုပ်", "📜 ສັນຍາການຮ່ວມເທຣດ", "📜 Kontrak perkongsian dagangan", "📜 Kontrak kemitraan trading", "📜 合作交易合同"],
+    "tf.tr.agree": ["ข้าพเจ้าได้อ่านและยอมรับสัญญาการร่วมเทรดทุกประการ", "I have read and accept every term of the trading partnership agreement", "Tôi đã đọc và chấp nhận mọi điều khoản của hợp đồng hợp tác giao dịch", "ខ្ញុំបានអាន និងទទួលយកកិច្ចសន្យាចូលរួមជួញដូរគ្រប់ប្រការ", "ကုန်သွယ်ရေး ပူးပေါင်းဆောင်ရွက်မှု စာချုပ်ကို ဖတ်ရှုပြီး အားလုံး လက်ခံပါသည်", "ຂ້າພະເຈົ້າໄດ້ອ່ານ ແລະ ຍອມຮັບສັນຍາການຮ່ວມເທຣດທຸກປະການ", "Saya telah membaca dan menerima semua terma kontrak perkongsian dagangan", "Saya telah membaca dan menyetujui seluruh isi kontrak kemitraan trading", "本人已阅读并接受合作交易合同的全部条款"],
+    "tf.tr.btn": ["📨 ยื่นใบสมัครเทรดเดอร์", "📨 Submit trader application", "📨 Gửi đơn đăng ký trader", "📨 ដាក់ពាក្យសុំជាអ្នកជួញដូរ", "📨 ကုန်သွယ်သူ လျှောက်လွှာ တင်သွင်းရန်", "📨 ຍື່ນໃບສະໝັກເທຣດເດີ", "📨 Hantar permohonan peniaga", "📨 Kirim aplikasi trader", "📨 提交交易员申请"],
+    "tf.jb.tip": ["💡 เลือกสมัครได้เพียง 1 ตำแหน่งเท่านั้น (ไม่รวมเทรดเดอร์)", "💡 You can apply for only 1 position (excluding trader)", "💡 Chỉ được đăng ký 1 vị trí (không bao gồm trader)", "💡 អាចដាក់ពាក្យបានតែ 1 តួនាទីប៉ុណ្ណោះ (មិនរាប់បញ្ចូលអ្នកជួញដូរ)", "💡 ရာထူး ၁ ခုသာ လျှောက်ထားနိုင်သည် (ကုန်သွယ်သူ မပါ)", "💡 ສະໝັກໄດ້ພຽງ 1 ຕຳແໜ່ງເທົ່ານັ້ນ (ບໍ່ລວມເທຣດເດີ)", "💡 Hanya boleh memohon 1 jawatan (tidak termasuk peniaga)", "💡 Hanya dapat memilih 1 posisi (tidak termasuk trader)", "💡 仅可申请 1 个职位（不含交易员）"],
+    "tf.jb.pos": ["ตำแหน่งที่ต้องการ", "Desired position", "Vị trí mong muốn", "តួនាទីដែលចង់បាន", "လိုချင်သော ရာထူး", "ຕຳແໜ່ງທີ່ຕ້ອງການ", "Jawatan yang dikehendaki", "Posisi yang diinginkan", "希望申请的职位"],
+    "tf.jb.sel": ["-- เลือกตำแหน่ง --", "-- Select a position --", "-- Chọn vị trí --", "-- ជ្រើសរើសតួនាទី --", "-- ရာထူး ရွေးချယ်ပါ --", "-- ເລືອກຕຳແໜ່ງ --", "-- Pilih jawatan --", "-- Pilih posisi --", "-- 请选择职位 --"],
+    "tf.jb.p1": ["ผู้บริหารองค์กร", "Organization executive", "Quản lý điều hành tổ chức", "ប្រធានប្រតិបត្តិអង្គការ", "အဖွဲ့အစည်း အမှုဆောင်အရာရှိ", "ຜູ້ບໍລິຫານອົງກອນ", "Eksekutif organisasi", "Eksekutif organisasi", "机构高管"],
+    "tf.jb.p2": ["ผู้บริหารทีม", "Team manager", "Quản lý đội nhóm", "អ្នកគ្រប់គ្រងក្រុម", "အဖွဲ့ မန်နေဂျာ", "ຜູ້ບໍລິຫານທີມ", "Pengurus pasukan", "Manajer tim", "团队负责人"],
+    "tf.jb.p3": ["หัวหน้างาน", "Supervisor", "Giám sát viên", "អ្នកត្រួតពិនិត្យការងារ", "ကြီးကြပ်ရေးမှူး", "ຫົວໜ້າງານ", "Penyelia", "Supervisor", "主管"],
+    "tf.jb.p4": ["อื่นๆ", "Other", "Khác", "ផ្សេងៗ", "အခြား", "ອື່ນໆ", "Lain-lain", "Lainnya", "其他"],
+    "tf.jb.mo.h": ["ระยะเวลา <b>(เดือน)</b> *", "Duration <b>(months)</b> *", "Thời hạn <b>(tháng)</b> *", "រយៈពេល <b>(ខែ)</b> *", "ကာလ <b>(လ)</b> *", "ໄລຍະເວລາ <b>(ເດືອນ)</b> *", "Tempoh <b>(bulan)</b> *", "Jangka waktu <b>(bulan)</b> *", "期限 <b>(月)</b> *"],
+    "tf.jb.mem.h": ["สมาชิกเป้าหมาย <b>(คน)</b> *", "Target members <b>(people)</b> *", "Thành viên mục tiêu <b>(người)</b> *", "សមាជិកគោលដៅ <b>(នាក់)</b> *", "ပစ်မှတ် အဖွဲ့ဝင် <b>(ဦး)</b> *", "ສະມາຊິກເປົ້າໝາຍ <b>(ຄົນ)</b> *", "Ahli sasaran <b>(orang)</b> *", "Anggota target <b>(orang)</b> *", "目标会员 <b>(人)</b> *"],
+    "tf.jb.vol.h": ["วงเงินเทรด <b>(USDT)</b> *", "Trading limit <b>(USDT)</b> *", "Hạn mức giao dịch <b>(USDT)</b> *", "ទំហំជួញដូរ <b>(USDT)</b> *", "ကုန်သွယ်မှု ပမာဏ <b>(USDT)</b> *", "ວົງເງິນເທຣດ <b>(USDT)</b> *", "Had dagangan <b>(USDT)</b> *", "Batas trading <b>(USDT)</b> *", "交易额度 <b>(USDT)</b> *"],
+    "tf.jb.bonus.h": ["เงินโบนัสค่าบริหารตามเป้าหมาย <b>(บาท)</b>", "Management bonus for reaching targets <b>(THB)</b>", "Tiền thưởng phí quản lý theo mục tiêu <b>(THB)</b>", "ប្រាក់រង្វាន់ថ្លៃគ្រប់គ្រងតាមគោលដៅ <b>(បាត)</b>", "ပစ်မှတ်ပြည့်မီပါက စီမံခန့်ခွဲမှု ဆုကြေးငွေ <b>(ဘတ်)</b>", "ເງິນໂບນັດຄ່າບໍລິຫານຕາມເປົ້າໝາຍ <b>(ບາດ)</b>", "Bonus pengurusan mengikut sasaran <b>(THB)</b>", "Bonus pengelolaan sesuai target <b>(THB)</b>", "达成目标的管理奖金 <b>(泰铢)</b>"],
+    "tf.jb.monthly.h": ["<b>(กรณีเป็นเจ้าหน้าที่ของส่วนกลาง)</b>ค่าบริหารรายเดือน <b>(บาท/เดือน)</b>", "<b>(For head-office staff)</b> Monthly management fee <b>(THB/month)</b>", "<b>(Đối với nhân viên trung tâm)</b> Phí quản lý hàng tháng <b>(THB/tháng)</b>", "<b>(ករណីជាបុគ្គលិកផ្នែកកណ្តាល)</b> ថ្លៃគ្រប់គ្រងប្រចាំខែ <b>(បាត/ខែ)</b>", "<b>(ဌာနချုပ် ဝန်ထမ်းဖြစ်ပါက)</b> လစဉ် စီမံခန့်ခွဲမှုကြေး <b>(ဘတ်/လ)</b>", "<b>(ກໍລະນີເປັນເຈົ້າໜ້າທີ່ສ່ວນກາງ)</b> ຄ່າບໍລິຫານລາຍເດືອນ <b>(ບາດ/ເດືອນ)</b>", "<b>(Bagi kakitangan pusat)</b> Yuran pengurusan bulanan <b>(THB/bulan)</b>", "<b>(Untuk staf pusat)</b> Biaya pengelolaan bulanan <b>(THB/bulan)</b>", "<b>（总部工作人员适用）</b>月度管理费 <b>(泰铢/月)</b>"],
+    "tf.jb.eg3": ["เช่น 3", "e.g. 3", "VD: 3", "ឧ. 3", "ဥပမာ 3", "ເຊັ່ນ 3", "cth. 3", "mis. 3", "例如 3"],
+    "tf.jb.eg20": ["เช่น 20", "e.g. 20", "VD: 20", "ឧ. 20", "ဥပမာ 20", "ເຊັ່ນ 20", "cth. 20", "mis. 20", "例如 20"],
+    "tf.jb.eg10k": ["เช่น 10,000.00", "e.g. 10,000.00", "VD: 10,000.00", "ឧ. 10,000.00", "ဥပမာ 10,000.00", "ເຊັ່ນ 10,000.00", "cth. 10,000.00", "mis. 10,000.00", "例如 10,000.00"],
+    "tf.jb.eg50k": ["เช่น 50,000.00", "e.g. 50,000.00", "VD: 50,000.00", "ឧ. 50,000.00", "ဥပမာ 50,000.00", "ເຊັ່ນ 50,000.00", "cth. 50,000.00", "mis. 50,000.00", "例如 50,000.00"],
+    "tf.jb.eg15k": ["เช่น 15,000.00", "e.g. 15,000.00", "VD: 15,000.00", "ឧ. 15,000.00", "ဥပမာ 15,000.00", "ເຊັ່ນ 15,000.00", "cth. 15,000.00", "mis. 15,000.00", "例如 15,000.00"],
+    "tf.jb.note": ["บันทึกข้อตกลงหรือเงื่อนไขเพิ่มเติม", "Additional agreements or conditions", "Thỏa thuận hoặc điều kiện bổ sung", "កំណត់ត្រាព្រមព្រៀង ឬលក្ខខណ្ឌបន្ថែម", "ထပ်ဆောင်း သဘောတူညီချက် သို့မဟုတ် စည်းကမ်းချက်များ", "ບັນທຶກຂໍ້ຕົກລົງ ຫຼື ເງື່ອນໄຂເພີ່ມເຕີມ", "Perjanjian atau syarat tambahan", "Perjanjian atau ketentuan tambahan", "补充协议或附加条件"],
+    "tf.jb.noteph": ["ระบุรายละเอียด...", "Add details...", "Nhập chi tiết...", "បញ្ជាក់ព័ត៌មានលម្អិត...", "အသေးစိတ် ထည့်ပါ...", "ລະບຸລາຍລະອຽດ...", "Nyatakan butiran...", "Tuliskan detail...", "请填写详情..."],
+    "tf.jb.ctr": ["📜 บันทึกข้อตกลงเข้าร่วมโครงการ", "📜 Project participation agreement", "📜 Biên bản thỏa thuận tham gia dự án", "📜 កំណត់ត្រាព្រមព្រៀងចូលរួមគម្រោង", "📜 စီမံကိန်းတွင် ပါဝင်ရန် သဘောတူညီချက် မှတ်တမ်း", "📜 ບັນທຶກຂໍ້ຕົກລົງເຂົ້າຮ່ວມໂຄງການ", "📜 Rekod perjanjian penyertaan projek", "📜 Catatan perjanjian keikutsertaan proyek", "📜 项目参与协议书"],
+    "tf.jb.agree": ["ข้าพเจ้าได้อ่านและยอมรับบันทึกข้อตกลงทุกประการ", "I have read and accept every term of the agreement", "Tôi đã đọc và chấp nhận mọi điều khoản của biên bản thỏa thuận", "ខ្ញុំបានអាន និងទទួលយកកំណត់ត្រាព្រមព្រៀងគ្រប់ប្រការ", "သဘောတူညီချက် မှတ်တမ်းကို ဖတ်ရှုပြီး အားလုံး လက်ခံပါသည်", "ຂ້າພະເຈົ້າໄດ້ອ່ານ ແລະ ຍອມຮັບບັນທຶກຂໍ້ຕົກລົງທຸກປະການ", "Saya telah membaca dan menerima semua terma rekod perjanjian", "Saya telah membaca dan menyetujui seluruh isi catatan perjanjian", "本人已阅读并接受协议书的全部条款"],
+    "tf.jb.btn": ["📨 ยื่นใบสมัครตำแหน่งงาน", "📨 Submit job position application", "📨 Gửi đơn đăng ký vị trí", "📨 ដាក់ពាក្យសុំតួនាទីការងារ", "📨 အလုပ်ရာထူး လျှောက်လွှာ တင်သွင်းရန်", "📨 ຍື່ນໃບສະໝັກຕຳແໜ່ງງານ", "📨 Hantar permohonan jawatan", "📨 Kirim aplikasi posisi", "📨 提交职位申请"],
+    "tf.sub.saving": ["⏳ กำลังบันทึก...", "⏳ Saving...", "⏳ Đang lưu...", "⏳ កំពុងរក្សាទុក...", "⏳ သိမ်းဆည်းနေသည်...", "⏳ ກຳລັງບັນທຶກ...", "⏳ Menyimpan...", "⏳ Menyimpan...", "⏳ 正在保存..."],
+    "tf.sub.sendT": ["⏳ กำลังส่งใบสมัครเทรดเดอร์...", "⏳ Submitting trader application...", "⏳ Đang gửi đơn đăng ký trader...", "⏳ កំពុងដាក់ពាក្យសុំជាអ្នកជួញដូរ...", "⏳ ကုန်သွယ်သူ လျှောက်လွှာ တင်သွင်းနေသည်...", "⏳ ກຳລັງສົ່ງໃບສະໝັກເທຣດເດີ...", "⏳ Menghantar permohonan peniaga...", "⏳ Mengirim aplikasi trader...", "⏳ 正在提交交易员申请..."],
+    "tf.sub.sendJ": ["⏳ กำลังส่งใบสมัครตำแหน่งงาน...", "⏳ Submitting job position application...", "⏳ Đang gửi đơn đăng ký vị trí...", "⏳ កំពុងដាក់ពាក្យសុំតួនាទីការងារ...", "⏳ အလုပ်ရာထူး လျှောက်လွှာ တင်သွင်းနေသည်...", "⏳ ກຳລັງສົ່ງໃບສະໝັກຕຳແໜ່ງງານ...", "⏳ Menghantar permohonan jawatan...", "⏳ Mengirim aplikasi posisi...", "⏳ 正在提交职位申请..."],
+    "tf.sub.okT": ["ยื่นใบสมัครเทรดเดอร์เรียบร้อย", "Trader application submitted", "Đã gửi đơn đăng ký trader", "បានដាក់ពាក្យសុំជាអ្នកជួញដូររួចរាល់", "ကုန်သွယ်သူ လျှောက်လွှာ တင်သွင်းပြီးပါပြီ", "ຍື່ນໃບສະໝັກເທຣດເດີຮຽບຮ້ອຍ", "Permohonan peniaga telah dihantar", "Aplikasi trader telah terkirim", "交易员申请已提交"],
+    "tf.sub.okJ": ["ยื่นใบสมัครตำแหน่งงานเรียบร้อย", "Job position application submitted", "Đã gửi đơn đăng ký vị trí", "បានដាក់ពាក្យសុំតួនាទីការងាររួចរាល់", "အလုပ်ရာထူး လျှောက်လွှာ တင်သွင်းပြီးပါပြီ", "ຍື່ນໃບສະໝັກຕຳແໜ່ງງານຮຽບຮ້ອຍ", "Permohonan jawatan telah dihantar", "Aplikasi posisi telah terkirim", "职位申请已提交"],
+    "tf.sub.ref": ["เลขอ้างอิง: {n}", "Reference no.: {n}", "Mã tham chiếu: {n}", "លេខយោង៖ {n}", "ရည်ညွှန်းနံပါတ်- {n}", "ເລກອ້າງອີງ: {n}", "No. rujukan: {n}", "Nomor referensi: {n}", "参考编号：{n}"],
+    "tf.sub.fail": ["ส่งไม่สำเร็จ", "Submission failed", "Gửi không thành công", "ការដាក់ស្នើមិនបានជោគជ័យ", "တင်သွင်းမှု မအောင်မြင်ပါ", "ສົ່ງບໍ່ສຳເລັດ", "Penghantaran gagal", "Pengiriman gagal", "提交失败"],
+    "tf.sub.failT": ["ส่งใบสมัครไม่สำเร็จ", "Application could not be submitted", "Không gửi được đơn đăng ký", "មិនអាចដាក់ពាក្យសុំបានទេ", "လျှောက်လွှာ တင်သွင်း၍ မရပါ", "ສົ່ງໃບສະໝັກບໍ່ສຳເລັດ", "Permohonan tidak dapat dihantar", "Aplikasi tidak dapat dikirim", "无法提交申请"],
+    "tf.sub.vpos": ["กรุณาเลือกตำแหน่งที่ต้องการ", "Please select the position you want", "Vui lòng chọn vị trí mong muốn", "សូមជ្រើសរើសតួនាទីដែលចង់បាន", "လိုချင်သော ရာထူးကို ရွေးချယ်ပါ", "ກະລຸນາເລືອກຕຳແໜ່ງທີ່ຕ້ອງການ", "Sila pilih jawatan yang dikehendaki", "Harap pilih posisi yang diinginkan", "请选择希望申请的职位"],
+    "tf.sub.vfld": ["กรุณากรอกระยะเวลา จำนวนสมาชิก และวงเงินเทรดให้ครบ", "Please fill in the duration, number of members and trading limit", "Vui lòng nhập đủ thời hạn, số thành viên và hạn mức giao dịch", "សូមបំពេញរយៈពេល ចំនួនសមាជិក និងទំហំជួញដូរឱ្យគ្រប់", "ကာလ၊ အဖွဲ့ဝင်အရေအတွက်နှင့် ကုန်သွယ်မှုပမာဏ အားလုံး ဖြည့်ပါ", "ກະລຸນາຕື່ມໄລຍະເວລາ ຈຳນວນສະມາຊິກ ແລະ ວົງເງິນເທຣດໃຫ້ຄົບ", "Sila isi tempoh, bilangan ahli dan had dagangan dengan lengkap", "Harap isi jangka waktu, jumlah anggota, dan batas trading dengan lengkap", "请完整填写期限、会员人数和交易额度"],
+    "tf.5.ttl": ["📊 แดชบอร์ดของฉัน", "📊 My dashboard", "📊 Bảng điều khiển của tôi", "📊 ផ្ទាំងគ្រប់គ្រងរបស់ខ្ញុំ", "📊 ကျွန်ုပ်၏ ဒက်ရှ်ဘုတ်", "📊 ແດຊບອດຂອງຂ້ອຍ", "📊 Papan pemuka saya", "📊 Dasbor saya", "📊 我的控制面板"],
+    "tf.5.t1": ["ส่วนตัว", "Personal", "Cá nhân", "ផ្ទាល់ខ្លួន", "ကိုယ်ရေး", "ສ່ວນຕົວ", "Peribadi", "Pribadi", "个人"],
+    "tf.5.t1s": ["ผลเทรด / คอม", "Trades / commission", "Kết quả GD / hoa hồng", "លទ្ធផលជួញដូរ / កម្រៃ", "ကုန်သွယ်ရလဒ် / ကော်မရှင်", "ຜົນເທຣດ / ຄອມ", "Hasil dagangan / komisen", "Hasil trading / komisi", "交易结果 / 佣金"],
+    "tf.5.t2": ["ทีมของฉัน", "My team", "Đội của tôi", "ក្រុមរបស់ខ្ញុំ", "ကျွန်ုပ်၏ အဖွဲ့", "ທີມຂອງຂ້ອຍ", "Pasukan saya", "Tim saya", "我的团队"],
+    "tf.5.t2s": ["คอมทีม", "Team commission", "Hoa hồng đội", "កម្រៃក្រុម", "အဖွဲ့ ကော်မရှင်", "ຄອມທີມ", "Komisen pasukan", "Komisi tim", "团队佣金"],
+    "tf.5.t3": ["ดูสมาชิก", "View members", "Xem thành viên", "មើលសមាជិក", "အဖွဲ့ဝင်များ ကြည့်ရန်", "ເບິ່ງສະມາຊິກ", "Lihat ahli", "Lihat anggota", "查看会员"],
+    "tf.5.t3s": ["เฉพาะหัวหน้าทีม", "Team leaders only", "Chỉ trưởng nhóm", "សម្រាប់តែប្រធានក្រុម", "အဖွဲ့ခေါင်းဆောင်သာ", "ສະເພາະຫົວໜ້າທີມ", "Ketua pasukan sahaja", "Khusus ketua tim", "仅限团队负责人"],
+    "tf.5.t4": ["แนะนำสมาชิก", "Refer members", "Giới thiệu thành viên", "ណែនាំសមាជិក", "အဖွဲ့ဝင် ရည်ညွှန်းခြင်း", "ແນະນຳສະມາຊິກ", "Rujuk ahli", "Referral anggota", "推荐会员"],
+    "tf.5.t4s": ["โบนัส USDT", "USDT bonus", "Thưởng USDT", "ប្រាក់រង្វាន់ USDT", "USDT ဆုကြေးငွေ", "ໂບນັດ USDT", "Bonus USDT", "Bonus USDT", "USDT 奖金"],
+    "tf.5.nt": ["คุณไม่ได้เป็นเจ้าของทีม", "You are not a team owner", "Bạn không phải chủ đội", "អ្នកមិនមែនជាម្ចាស់ក្រុមទេ", "သင်သည် အဖွဲ့ပိုင်ရှင် မဟုတ်ပါ", "ທ່ານບໍ່ແມ່ນເຈົ້າຂອງທີມ", "Anda bukan pemilik pasukan", "Anda bukan pemilik tim", "您不是团队负责人"],
+    "tf.5.nt2": ["แท็บนี้แสดงเฉพาะสำหรับหัวหน้าทีมเท่านั้น", "This tab is available to team leaders only", "Tab này chỉ dành cho trưởng nhóm", "ផ្ទាំងនេះបង្ហាញសម្រាប់តែប្រធានក្រុមប៉ុណ្ណោះ", "ဤတက်ဘ်ကို အဖွဲ့ခေါင်းဆောင်များသာ မြင်ရသည်", "ແຖບນີ້ສະແດງສະເພາະຫົວໜ້າທີມເທົ່ານັ້ນ", "Tab ini hanya untuk ketua pasukan", "Tab ini hanya untuk ketua tim", "此标签页仅对团队负责人开放"]
+  });
+  var POS={'เทรดเดอร์':'tf.2.trader','ผู้บริหารองค์กร':'tf.jb.p1','ผู้บริหารทีม':'tf.jb.p2','หัวหน้างาน':'tf.jb.p3','อื่นๆ':'tf.jb.p4'};
+  window.tcPosLbl=function(v){ var k=POS[v]; return k?tccT(k):(v==null?'':v); };
+  window.tcProtectLbl=function(v){ return (typeof v==='string' && v.indexOf('ขึ้นไป')>-1)?tccT('tf.tr.up'):v; };
+  document.addEventListener('tcc-lang', function(){
+    try{
+      var r=document.getElementById('tc-app-root');
+      if(!r || !r.innerHTML.trim() || typeof TC==='undefined' || typeof tcRender!=='function') return;
+      if(TC.step===4){
+        var ids=['tc-trader-protect','tc-trader-note','tc-job-pos','tc-job-months','tc-job-mems','tc-job-vol','tc-job-bonus','tc-job-monthly','tc-job-note'], keep={}, raw={}, chk={};
+        var f=document.activeElement&&document.activeElement.id;
+        ids.forEach(function(i){ var e=document.getElementById(i); if(e){ keep[i]=e.value; if(e.dataset&&e.dataset.raw!==undefined) raw[i]=e.dataset.raw; } });
+        ['tc-trader-agree','tc-job-agree'].forEach(function(i){ var e=document.getElementById(i); if(e) chk[i]=e.checked; });
+        tcRender();
+        ids.forEach(function(i){ var e=document.getElementById(i); if(e&&keep[i]!=null){ e.value=keep[i]; if(raw[i]!==undefined) e.dataset.raw=raw[i]; } });
+        if(keep['tc-job-pos'] && typeof tcJobPosChange==='function') tcJobPosChange();
+        if(keep['tc-trader-protect'] && typeof tcSelectProtect==='function'){
+          var pb=document.querySelectorAll('.tc-protect-opt');
+          for(var k=0;k<pb.length;k++){ if(pb[k].getAttribute('data-v')===keep['tc-trader-protect']){ tcSelectProtect(pb[k],keep['tc-trader-protect']); break; } }
+        }
+        [['tc-trader-agree','tc-trader-subm'],['tc-job-agree','tc-job-subm']].forEach(function(p){
+          var c=document.getElementById(p[0]), b=document.getElementById(p[1]);
+          if(c&&chk[p[0]]){ c.checked=true; if(b) b.disabled=false; }
+        });
+        var fe=f&&document.getElementById(f); if(fe&&fe.focus) fe.focus();
+      } else if(TC.step===5){
+        tcRender();
+      }
+    }catch(e){ console.warn('[i18n tcform2]',e); }
   });
   var _e=tccI18nCheck(); if(_e.length&&window.console) console.warn('[TCC i18n] '+_e.length+' รายการผิดพลาด',_e);
 })();
@@ -19086,7 +19210,7 @@ function tcBar(cur){
   const steps=[{n:1,l:'BNB ID'},{n:2,l:tccT('tf.s2')},{n:3,l:tccT('tf.s3')},{n:4,l:tccT('tf.s4')},{n:5,l:tccT('tf.s5')}];
   let h=`<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(240,185,11,.04);border:1px solid rgba(240,185,11,.15);border-radius:12px;margin-bottom:10px;">
     <span style="font-size:1.2rem;">📝</span>
-    <div style="font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:700;color:var(--gold);letter-spacing:1px;">ส่วนสัญญาและบันทึกข้อตกลง</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:.95rem;font-weight:700;color:var(--gold);letter-spacing:1px;">${tccT('tf.hdr')}</div>
   </div>`;
   h+='<div class="tc-step-bar">';
   steps.forEach((s,i)=>{
@@ -19195,7 +19319,7 @@ function tcS2(){
     appInfo=`<div style="background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:10px 13px;margin-bottom:13px;font-size:.78rem;color:#93c5fd;">
       ℹ️ ${tccT('tf.2.found')}
       ${hasTrader?`<div style="margin-top:4px;">🔰 ${tccT('tf.2.trader')} — ${tcBadge(TC.traderApp.Status||'Pending')}</div>`:''}
-      ${hasJob?`<div style="margin-top:4px;">💼 ${TC.jobApp.DesiredPosition} — ${tcBadge(TC.jobApp.Status||'Pending')}</div>`:''}
+      ${hasJob?`<div style="margin-top:4px;">💼 ${tcPosLbl(TC.jobApp.DesiredPosition)} — ${tcBadge(TC.jobApp.Status||'Pending')}</div>`:''}
       <div style="color:var(--text-dim);font-size:.73rem;margin-top:6px;">${tccT('tf.2.hint')}</div>
     </div>`;
   }
@@ -19281,7 +19405,7 @@ function tcS4(){
         style="flex:0 0 auto;padding:8px 14px;background:rgba(255,255,255,.04);
         border:1px solid rgba(255,255,255,.1);border-radius:9px;
         color:var(--text-dim);font-size:.8rem;font-weight:600;cursor:pointer;">
-        ← กลับ
+        ${tccT('tf.back')}
       </button>
       <button onclick="TC.step=5;tcRender();"
         style="flex:1;padding:8px 14px;
@@ -19289,29 +19413,29 @@ function tcS4(){
         border:1px solid rgba(34,197,94,.45);border-radius:9px;
         color:var(--green);font-size:.8rem;font-weight:700;cursor:pointer;
         display:flex;align-items:center;justify-content:space-between;">
-        <span>📊 ดูแดชบอร์ดของฉัน</span><span>→</span>
+        <span>${tccT('tf.4.dash')}</span><span>→</span>
       </button>
     </div>
     <!-- ข้อมูลสมาชิก -->
-    <div class="tc-card-ttl" style="margin-bottom:10px;">👤 ข้อมูลสมาชิก</div>
+    <div class="tc-card-ttl" style="margin-bottom:10px;">${tccT('tf.4.mem')}</div>
     <div class="tc-mem-banner">
       <div class="tc-mem-av">${(memVal(m,'name')||'?')[0].toUpperCase()}</div>
       <div><div class="tc-mem-name">${memVal(m,'name')}</div>
-      <div class="tc-mem-sub">BNB ID: ${memVal(m,'id')} | ทีม: ${memVal(m,'team')||'—'}</div></div>
+      <div class="tc-mem-sub">BNB ID: ${memVal(m,'id')} | ${tccT('tf.2.team')}: ${memVal(m,'team')||'—'}</div></div>
     </div>
   </div>
 
   <!-- ── Section 1: เทรดเดอร์ ── -->
   <div style="font-size:.72rem;color:var(--gold);letter-spacing:1px;text-transform:uppercase;padding:6px 2px 8px;font-weight:700;border-bottom:1px solid var(--border);margin-bottom:10px;">
-    ① ใบสมัครเทรดเดอร์
+    ${tccT('tf.4.sec1')}
   </div>
-  `+(hasTrader ? tcReadonlyCard(TC.traderApp,'🔰 ใบสมัครเทรดเดอร์') : tcTraderForm())+`
+  `+(hasTrader ? tcReadonlyCard(TC.traderApp,tccT('tf.ro.tT')) : tcTraderForm())+`
 
   <!-- ── Section 2: ตำแหน่งงาน ── -->
   <div style="font-size:.72rem;color:var(--gold);letter-spacing:1px;text-transform:uppercase;padding:14px 2px 8px;font-weight:700;border-bottom:1px solid var(--border);margin-bottom:10px;">
-    ② ใบสมัครตำแหน่งงาน
+    ${tccT('tf.4.sec2')}
   </div>
-  `+(hasJob ? tcReadonlyCard(TC.jobApp,'💼 ใบสมัครตำแหน่งงาน') : tcJobForm())+`
+  `+(hasJob ? tcReadonlyCard(TC.jobApp,tccT('tf.ro.jT')) : tcJobForm())+`
 
   </div>`;
 }
@@ -19340,8 +19464,8 @@ function tcS5(){
         <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
           background:${_tcDashTab==='personal'?'rgba(240,185,11,.2)':'rgba(255,255,255,.04)'};">👤</div>
         <div style="text-align:left;">
-          <div style="font-size:.75rem;font-weight:700;color:${_tcDashTab==='personal'?'var(--gold)':'var(--text-dim)'};">ส่วนตัว</div>
-          <div style="font-size:.62rem;color:${_tcDashTab==='personal'?'rgba(240,185,11,.55)':'var(--muted)'};">ผลเทรด / คอม</div>
+          <div style="font-size:.75rem;font-weight:700;color:${_tcDashTab==='personal'?'var(--gold)':'var(--text-dim)'};">${tccT('tf.5.t1')}</div>
+          <div style="font-size:.62rem;color:${_tcDashTab==='personal'?'rgba(240,185,11,.55)':'var(--muted)'};">${tccT('tf.5.t1s')}</div>
         </div>
       </button>
       <button onclick="${`_tcDashTab='team';tcRender();`}"
@@ -19351,8 +19475,8 @@ function tcS5(){
         <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
           background:${_tcDashTab==='team'?'rgba(96,165,250,.18)':'rgba(255,255,255,.04)'};">🏠</div>
         <div style="text-align:left;">
-          <div style="font-size:.75rem;font-weight:700;color:${_tcDashTab==='team'?'rgba(96,165,250,.95)':'var(--text-dim)'};">ทีมของฉัน${!isOwner?' 🔒':''}</div>
-          <div style="font-size:.62rem;color:${_tcDashTab==='team'?'rgba(96,165,250,.45)':'var(--muted)'};">คอมทีม</div>
+          <div style="font-size:.75rem;font-weight:700;color:${_tcDashTab==='team'?'rgba(96,165,250,.95)':'var(--text-dim)'};">${tccT('tf.5.t2')}${!isOwner?' 🔒':''}</div>
+          <div style="font-size:.62rem;color:${_tcDashTab==='team'?'rgba(96,165,250,.45)':'var(--muted)'};">${tccT('tf.5.t2s')}</div>
         </div>
       </button>
       <button onclick="${isOwner?`_tcDashTab='members';tcRender();`:'void(0)'}"
@@ -19364,8 +19488,8 @@ function tcS5(){
           background:${_tcDashTab==='members'?'rgba(167,139,250,.18)':'rgba(255,255,255,.04)'};">👥</div>
         <div style="text-align:left;">
           <div style="font-size:.75rem;font-weight:700;color:${_tcDashTab==='members'?'rgba(167,139,250,.95)':(isOwner?'var(--text-dim)':'var(--muted)')};
-          ">ดูสมาชิก${!isOwner?' 🔒':''}</div>
-          <div style="font-size:.62rem;color:${_tcDashTab==='members'?'rgba(167,139,250,.45)':'var(--muted)'};">เฉพาะหัวหน้าทีม</div>
+          ">${tccT('tf.5.t3')}${!isOwner?' 🔒':''}</div>
+          <div style="font-size:.62rem;color:${_tcDashTab==='members'?'rgba(167,139,250,.45)':'var(--muted)'};">${tccT('tf.5.t3s')}</div>
         </div>
       </button>
       <button onclick="_tcDashTab='referral';tcRender();"
@@ -19376,8 +19500,8 @@ function tcS5(){
         <div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
           background:${_tcDashTab==='referral'?'rgba(34,197,94,.18)':'rgba(255,255,255,.04)'};">🔗</div>
         <div style="text-align:left;">
-          <div style="font-size:.75rem;font-weight:700;color:${_tcDashTab==='referral'?'var(--green)':'var(--text-dim)'};">แนะนำสมาชิก</div>
-          <div style="font-size:.62rem;color:${_tcDashTab==='referral'?'rgba(34,197,94,.5)':'var(--muted)'};">โบนัส USDT</div>
+          <div style="font-size:.75rem;font-weight:700;color:${_tcDashTab==='referral'?'var(--green)':'var(--text-dim)'};">${tccT('tf.5.t4')}</div>
+          <div style="font-size:.62rem;color:${_tcDashTab==='referral'?'rgba(34,197,94,.5)':'var(--muted)'};">${tccT('tf.5.t4s')}</div>
         </div>
       </button>
     </div>`;
@@ -19389,8 +19513,8 @@ function tcS5(){
     content = isOwner ? tcS5Members(ownedTeamName) :
       `<div style="text-align:center;padding:32px 16px;color:var(--muted);">
         <div style="font-size:2.5rem;margin-bottom:10px;">🔒</div>
-        <div style="font-size:.9rem;">คุณไม่ได้เป็นเจ้าของทีม</div>
-        <div style="font-size:.78rem;margin-top:6px;color:var(--text-dim);">แท็บนี้แสดงเฉพาะสำหรับหัวหน้าทีมเท่านั้น</div>
+        <div style="font-size:.9rem;">${tccT('tf.5.nt')}</div>
+        <div style="font-size:.78rem;margin-top:6px;color:var(--text-dim);">${tccT('tf.5.nt2')}</div>
       </div>`;
   } else if(_tcDashTab==='referral'){
     content = tcS5Referral(myId);
@@ -19398,18 +19522,18 @@ function tcS5(){
     content = isOwner ? tcS5Team(ownedTeamName) :
       `<div style="text-align:center;padding:32px 16px;color:var(--muted);">
         <div style="font-size:2.5rem;margin-bottom:10px;">🔒</div>
-        <div style="font-size:.9rem;">คุณไม่ได้เป็นเจ้าของทีม</div>
-        <div style="font-size:.78rem;margin-top:6px;color:var(--text-dim);">แท็บนี้แสดงเฉพาะสำหรับหัวหน้าทีมเท่านั้น</div>
+        <div style="font-size:.9rem;">${tccT('tf.5.nt')}</div>
+        <div style="font-size:.78rem;margin-top:6px;color:var(--text-dim);">${tccT('tf.5.nt2')}</div>
       </div>`;
   }
 
   return `<div class="tc-flow-wrap">${tcBar(5)}
     <div class="tc-card" style="padding-bottom:8px;">
-      <div class="tc-card-ttl">📊 แดชบอร์ดของฉัน</div>
+      <div class="tc-card-ttl">${tccT('tf.5.ttl')}</div>
       ${tabBar}
       ${content}
     </div>
-    <button class="tc-btn tc-btn-out" onclick="TC.step=4;tcRender();" style="margin-top:4px;">← กลับ</button>
+    <button class="tc-btn tc-btn-out" onclick="TC.step=4;tcRender();" style="margin-top:4px;">${tccT('tf.back')}</button>
   </div>`;
 }
 
@@ -20914,10 +21038,10 @@ function tcReadonlyCard(app,title){
   const st=app.Status||'Pending';
   const isT=(app.DesiredPosition||'')==='เทรดเดอร์';
   const stMap={
-    Approved:{bg:'rgba(34,197,94,.1)', bd:'rgba(34,197,94,.3)', msg:'✅ อนุมัติแล้ว'},
-    Rejected:{bg:'rgba(239,68,68,.1)', bd:'rgba(239,68,68,.3)', msg:'❌ ไม่ผ่านการอนุมัติ'},
-    Editing :{bg:'rgba(251,191,36,.1)',bd:'rgba(251,191,36,.3)',msg:'✏️ แอดมินกำลังดำเนินการแก้ไขให้'},
-    Pending :{bg:'rgba(96,165,250,.08)',bd:'rgba(96,165,250,.2)',msg:'⏳ รออนุมัติ'},
+    Approved:{bg:'rgba(34,197,94,.1)', bd:'rgba(34,197,94,.3)', msg:tccT('tf.st.ok')},
+    Rejected:{bg:'rgba(239,68,68,.1)', bd:'rgba(239,68,68,.3)', msg:tccT('tf.ro.no')},
+    Editing :{bg:'rgba(251,191,36,.1)',bd:'rgba(251,191,36,.3)',msg:tccT('tf.ro.edit')},
+    Pending :{bg:'rgba(96,165,250,.08)',bd:'rgba(96,165,250,.2)',msg:tccT('tf.ro.pend')},
   };
   const sc=stMap[st]||stMap.Pending;
   const fv=v=>v?tcFmtNum(v):'—';
@@ -20925,29 +21049,29 @@ function tcReadonlyCard(app,title){
     <div class="tc-card-ttl">${title}</div>
     <div style="background:${sc.bg};border:1px solid ${sc.bd};border-radius:8px;padding:10px 13px;margin-bottom:12px;font-size:.8rem;">
       <div style="font-weight:600;">${sc.msg}</div>
-      ${app.AdminNote?`<div style="color:var(--text-dim);font-size:.74rem;margin-top:4px;">📝 หมายเหตุแอดมิน: ${app.AdminNote}</div>`:''}
-      <div style="color:var(--text-dim);font-size:.72rem;margin-top:4px;">🔒 หากต้องการแก้ไขกรุณาติดต่อแอดมิน</div>
+      ${app.AdminNote?`<div style="color:var(--text-dim);font-size:.74rem;margin-top:4px;">${tccT('tf.ro.note')} ${app.AdminNote}</div>`:''}
+      <div style="color:var(--text-dim);font-size:.72rem;margin-top:4px;">${tccT('tf.ro.lock')}</div>
     </div>
     <div style="display:grid;grid-template-columns:130px 1fr;gap:5px 12px;font-size:.8rem;margin-bottom:12px;">
-      <span style="color:var(--text-dim);">ตำแหน่ง</span><span style="font-weight:600;color:var(--gold);">${app.DesiredPosition||'—'}</span>
-      <span style="color:var(--text-dim);">เลขอ้างอิง</span><span style="font-family:monospace;font-size:.74rem;">${app.Title||'—'}</span>
-      <span style="color:var(--text-dim);">ยื่นเมื่อ</span><span>${(app.SubmittedAt||'—').slice(0,10)}</span>
+      <span style="color:var(--text-dim);">${tccT('tf.ro.pos')}</span><span style="font-weight:600;color:var(--gold);">${tcPosLbl(app.DesiredPosition)||'—'}</span>
+      <span style="color:var(--text-dim);">${tccT('tf.ro.ref')}</span><span style="font-family:monospace;font-size:.74rem;">${app.Title||'—'}</span>
+      <span style="color:var(--text-dim);">${tccT('tf.ro.date')}</span><span>${(app.SubmittedAt||'—').slice(0,10)}</span>
       ${isT?(()=>{
         const lines=(app.ExtraNote||'').split('\n');
         const protect=lines[0]||'—';
         const note=lines.slice(1).join('\n').trim();
-        return `<span style="color:var(--text-dim);">วงเงินคุ้มครอง</span><span style="color:var(--gold);font-weight:600;">${protect}</span>`
-          +(note?`<span style="color:var(--text-dim);">บันทึก</span><span>${note}</span>`:'');
-      })():`<span style="color:var(--text-dim);">ระยะเวลา</span><span>${app.TargetMonths||'—'} เดือน</span>
-      <span style="color:var(--text-dim);">สมาชิกเป้าหมาย</span><span>${app.TargetMembers||'—'} คน</span>
-      <span style="color:var(--text-dim);">วงเงินเทรด</span><span>${fv(app.TargetVolume)} USDT</span>
-      ${(app.MonthlyFee!=null&&app.MonthlyFee!=='')?`<span style="color:var(--text-dim);">ค่าบริหารรายเดือน</span><span style="color:var(--gold);font-weight:600;">${fv(app.MonthlyFee)} บาท/เดือน</span>`:''}
-      ${(app.BonusAmount!=null&&app.BonusAmount!==''&&Number(app.BonusAmount)!==0)?`<span style="color:var(--text-dim);">ค่าบริหารทีม</span><span>${fv(app.BonusAmount)} บาท</span>`:''}`
-      +(app.ExtraNote?`<span style="color:var(--text-dim);">บันทึก</span><span>${app.ExtraNote}</span>`:'')}
+        return `<span style="color:var(--text-dim);">${tccT('tf.ro.protect')}</span><span style="color:var(--gold);font-weight:600;">${tcProtectLbl(protect)}</span>`
+          +(note?`<span style="color:var(--text-dim);">${tccT('tf.ro.memo')}</span><span>${note}</span>`:'');
+      })():`<span style="color:var(--text-dim);">${tccT('tf.ro.dur')}</span><span>${app.TargetMonths?tccT('tf.ro.mo',{n:app.TargetMonths}):'—'}</span>
+      <span style="color:var(--text-dim);">${tccT('tf.ro.tm')}</span><span>${app.TargetMembers?tccT('tf.ro.pp',{n:app.TargetMembers}):'—'}</span>
+      <span style="color:var(--text-dim);">${tccT('tf.ro.vol')}</span><span>${fv(app.TargetVolume)} USDT</span>
+      ${(app.MonthlyFee!=null&&app.MonthlyFee!=='')?`<span style="color:var(--text-dim);">${tccT('tf.ro.fee')}</span><span style="color:var(--gold);font-weight:600;">${tccT('tf.ro.feeV',{n:fv(app.MonthlyFee)})}</span>`:''}
+      ${(app.BonusAmount!=null&&app.BonusAmount!==''&&Number(app.BonusAmount)!==0)?`<span style="color:var(--text-dim);">${tccT('tf.ro.team')}</span><span>${tccT('tf.ro.thb',{n:fv(app.BonusAmount)})}</span>`:''}`
+      +(app.ExtraNote?`<span style="color:var(--text-dim);">${tccT('tf.ro.memo')}</span><span>${app.ExtraNote}</span>`:'')}
       
     </div>
     <button class="tc-btn tc-btn-gold" onclick="tcDownloadPDF(${isT},${isT?'TC.traderApp':'TC.jobApp'})" style="margin-bottom:0;">
-      📄 ดาวน์โหลด${isT?'สัญญาการร่วมเทรด':'บันทึกข้อตกลงโครงการ'}
+      ${isT?tccT('tf.ro.dlT'):tccT('tf.ro.dlJ')}
     </button>
   </div>`;
 }
@@ -20956,32 +21080,32 @@ function tcReadonlyCard(app,title){
 function tcTraderForm(){
   return `<div class="tc-card" id="tc-trader-form">
     <div style="background:rgba(240,185,11,.07);border:1px solid rgba(240,185,11,.2);border-radius:8px;padding:10px 13px;margin-bottom:12px;font-size:.78rem;color:#ccc;">
-      💡 เทรดเดอร์ไม่ต้องกรอกเป้าหมาย — สมัครได้เพียง 1 ครั้งเท่านั้น
+      ${tccT('tf.tr.tip')}
     </div>
-    <div class="tc-grp"><label class="tc-lbl">เลือกวงเงินคุ้มครองการเทรดโดยประมาณ <span style="color:var(--gold)">*</span></label>
+    <div class="tc-grp"><label class="tc-lbl">${tccT('tf.tr.protect')} <span style="color:var(--gold)">*</span></label>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;" id="tc-protect-btns">
         ${['$100 - $1,000','$1,000 - $10,000','$10,000 - $50,000','$50,000 - $100,000','$100,000 ขึ้นไป'].map(v=>
-          `<button type="button" class="tc-protect-opt" onclick="tcSelectProtect(this,'${jsq(v)}')"
+          `<button type="button" class="tc-protect-opt" data-v="${v}" onclick="tcSelectProtect(this,'${jsq(v)}')"
             style="padding:7px 13px;border-radius:8px;border:1px solid rgba(240,185,11,.3);background:rgba(240,185,11,.06);
             color:var(--text);font-size:.77rem;cursor:pointer;transition:all .18s;font-family:'Prompt',sans-serif;">
-            ${v}
+            ${tcProtectLbl(v)}
           </button>`
         ).join('')}
       </div>
       <input type="hidden" id="tc-trader-protect" value="">
-      <div id="tc-protect-err" style="font-size:.72rem;color:#ef4444;margin-top:4px;display:none;">กรุณาเลือกวงเงินคุ้มครองการเทรด</div>
+      <div id="tc-protect-err" style="font-size:.72rem;color:#ef4444;margin-top:4px;display:none;">${tccT('tf.tr.perr')}</div>
     </div>
-    <div class="tc-grp"><label class="tc-lbl">บันทึกเพิ่มเติม</label>
-      <textarea class="tc-inp" id="tc-trader-note" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)..." style="min-height:70px;"></textarea></div>
+    <div class="tc-grp"><label class="tc-lbl">${tccT('tf.tr.note')}</label>
+      <textarea class="tc-inp" id="tc-trader-note" placeholder="${tccT('tf.tr.noteph')}" style="min-height:70px;"></textarea></div>
     <div style="margin-top:10px;">
-      <div style="font-size:.8rem;color:var(--gold);font-weight:600;margin-bottom:6px;">📜 สัญญาการร่วมเทรด</div>
+      <div style="font-size:.8rem;color:var(--gold);font-weight:600;margin-bottom:6px;">${tccT('tf.tr.ctr')}</div>
       <div class="tc-agree-scroll">${tcGetAgreementText('เทรดเดอร์')}</div>
       <div class="tc-chk-row" style="margin-top:10px;">
         <input type="checkbox" id="tc-trader-agree" onchange="document.getElementById('tc-trader-subm').disabled=!this.checked">
-        <label for="tc-trader-agree">ข้าพเจ้าได้อ่านและยอมรับสัญญาการร่วมเทรดทุกประการ</label>
+        <label for="tc-trader-agree">${tccT('tf.tr.agree')}</label>
       </div>
       <button class="tc-btn tc-btn-gold" id="tc-trader-subm" onclick="tcSubmitTrader()" disabled style="margin-top:8px;">
-        📨 ยื่นใบสมัครเทรดเดอร์
+        ${tccT('tf.tr.btn')}
       </button>
     </div>
   </div>`;
@@ -20991,44 +21115,44 @@ function tcTraderForm(){
 function tcJobForm(){
   return `<div class="tc-card" id="tc-job-form">
     <div style="background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.18);border-radius:8px;padding:10px 13px;margin-bottom:12px;font-size:.78rem;color:#93c5fd;">
-      💡 เลือกสมัครได้เพียง 1 ตำแหน่งเท่านั้น (ไม่รวมเทรดเดอร์)
+      ${tccT('tf.jb.tip')}
     </div>
-    <div class="tc-grp"><label class="tc-lbl">ตำแหน่งที่ต้องการ <span style="color:var(--gold)">*</span></label>
+    <div class="tc-grp"><label class="tc-lbl">${tccT('tf.jb.pos')} <span style="color:var(--gold)">*</span></label>
       <select class="tc-inp" id="tc-job-pos" onchange="tcJobPosChange()">
-        <option value="">-- เลือกตำแหน่ง --</option>
-        ${['ผู้บริหารองค์กร','ผู้บริหารทีม','หัวหน้างาน','อื่นๆ'].map(v=>`<option value="${v}">${v}</option>`).join('')}
+        <option value="">${tccT('tf.jb.sel')}</option>
+        ${['ผู้บริหารองค์กร','ผู้บริหารทีม','หัวหน้างาน','อื่นๆ'].map(v=>`<option value="${v}">${tcPosLbl(v)}</option>`).join('')}
       </select>
     </div>
     <div class="tc-inp-row">
-      <div class="tc-grp"><label class="tc-lbl">ระยะเวลา <b>(เดือน)</b> *</label>
-        <input class="tc-inp" id="tc-job-months" type="text" inputmode="numeric" placeholder="เช่น 3"
+      <div class="tc-grp"><label class="tc-lbl">${tccT('tf.jb.mo.h')}</label>
+        <input class="tc-inp" id="tc-job-months" type="text" inputmode="numeric" placeholder="${tccT('tf.jb.eg3')}"
           oninput="tcNumInput('tc-job-months')" onblur="tcNumBlurSimple('tc-job-months')"></div>
-      <div class="tc-grp"><label class="tc-lbl">สมาชิกเป้าหมาย <b>(คน)</b> *</label>
-        <input class="tc-inp" id="tc-job-mems" type="text" inputmode="numeric" placeholder="เช่น 20"
+      <div class="tc-grp"><label class="tc-lbl">${tccT('tf.jb.mem.h')}</label>
+        <input class="tc-inp" id="tc-job-mems" type="text" inputmode="numeric" placeholder="${tccT('tf.jb.eg20')}"
           oninput="tcNumInput('tc-job-mems')" onblur="tcNumBlurSimple('tc-job-mems')"></div>
     </div>
     <div class="tc-inp-row">
-      <div class="tc-grp"><label class="tc-lbl">วงเงินเทรด <b>(USDT)</b> *</label>
-        <input class="tc-inp" id="tc-job-vol" type="text" inputmode="decimal" placeholder="เช่น 10,000.00"
+      <div class="tc-grp"><label class="tc-lbl">${tccT('tf.jb.vol.h')}</label>
+        <input class="tc-inp" id="tc-job-vol" type="text" inputmode="decimal" placeholder="${tccT('tf.jb.eg10k')}"
           oninput="tcNumInput('tc-job-vol')" onblur="tcNumBlurSimple('tc-job-vol')"></div>
-      <div class="tc-grp"><label class="tc-lbl">เงินโบนัสค่าบริหารตามเป้าหมาย <b>(บาท)</b></label>
-        <input class="tc-inp" id="tc-job-bonus" type="text" inputmode="decimal" placeholder="เช่น 50,000.00"
+      <div class="tc-grp"><label class="tc-lbl">${tccT('tf.jb.bonus.h')}</label>
+        <input class="tc-inp" id="tc-job-bonus" type="text" inputmode="decimal" placeholder="${tccT('tf.jb.eg50k')}"
           oninput="tcNumInput('tc-job-bonus')" onblur="tcNumBlurSimple('tc-job-bonus')"></div>
     </div>
-    <div class="tc-grp"><label class="tc-lbl"><b>(กรณีเป็นเจ้าหน้าที่ของส่วนกลาง)</b>ค่าบริหารรายเดือน <b>(บาท/เดือน)</b></label>
-      <input class="tc-inp" id="tc-job-monthly" type="text" inputmode="decimal" placeholder="เช่น 15,000.00"
+    <div class="tc-grp"><label class="tc-lbl">${tccT('tf.jb.monthly.h')}</label>
+      <input class="tc-inp" id="tc-job-monthly" type="text" inputmode="decimal" placeholder="${tccT('tf.jb.eg15k')}"
         oninput="tcNumInput('tc-job-monthly')" onblur="tcNumBlurSimple('tc-job-monthly')"></div>
-    <div class="tc-grp"><label class="tc-lbl">บันทึกข้อตกลงหรือเงื่อนใขเพิ่มเติม</label>
-      <textarea class="tc-inp" id="tc-job-note" placeholder="ระบุรายละเอียด..." style="min-height:70px;"></textarea></div>
+    <div class="tc-grp"><label class="tc-lbl">${tccT('tf.jb.note')}</label>
+      <textarea class="tc-inp" id="tc-job-note" placeholder="${tccT('tf.jb.noteph')}" style="min-height:70px;"></textarea></div>
     <div style="margin-top:10px;">
-      <div style="font-size:.8rem;color:var(--gold);font-weight:600;margin-bottom:6px;">📜 บันทึกข้อตกลงเข้าร่วมโครงการ</div>
+      <div style="font-size:.8rem;color:var(--gold);font-weight:600;margin-bottom:6px;">${tccT('tf.jb.ctr')}</div>
       <div class="tc-agree-scroll" id="tc-job-agree-content">${tcGetAgreementText('')}</div>
       <div class="tc-chk-row" style="margin-top:10px;">
         <input type="checkbox" id="tc-job-agree" onchange="document.getElementById('tc-job-subm').disabled=!this.checked">
-        <label for="tc-job-agree">ข้าพเจ้าได้อ่านและยอมรับบันทึกข้อตกลงทุกประการ</label>
+        <label for="tc-job-agree">${tccT('tf.jb.agree')}</label>
       </div>
       <button class="tc-btn tc-btn-gold" id="tc-job-subm" onclick="tcSubmitJob()" disabled style="margin-top:8px;">
-        📨 ยื่นใบสมัครตำแหน่งงาน
+        ${tccT('tf.jb.btn')}
       </button>
     </div>
   </div>`;
@@ -21410,11 +21534,11 @@ async function tcSubmitTrader(){
   if(!protect){
     const err=document.getElementById('tc-protect-err');
     if(err)err.style.display='block';
-    tcBarShow('error','❌ กรุณาเลือกวงเงินคุ้มครองการเทรด');
+    tcBarShow('error','❌ '+tccT('tf.tr.perr'));
     return;
   }
-  if(btn){btn.disabled=true;btn.textContent='⏳ กำลังบันทึก...';}
-  tcBarShow('loading','⏳ กำลังส่งใบสมัครเทรดเดอร์...');
+  if(btn){btn.disabled=true;btn.textContent=tccT('tf.sub.saving');}
+  tcBarShow('loading',tccT('tf.sub.sendT'));
   const extraNote=protect?(protect+(note?'\n'+note:'')):note;
   const payload={Title:'',kind:'trader',ExtraNote:extraNote};
   try{
@@ -21423,12 +21547,12 @@ async function tcSubmitTrader(){
     TC.pw='';TC.hasPassword=true;
     await tcLoadMe();
     tcBarRemove();
-    tccNotif('success','ยื่นใบสมัครเทรดเดอร์เรียบร้อย',`เลขอ้างอิง: ${payload.Title}`);
+    tccNotif('success',tccT('tf.sub.okT'),tccT('tf.sub.ref',{n:payload.Title}));
     tcRender(); // re-render step 4 → แสดง readonly card
   }catch(e){
-    tcBarRemove();tcBarShow('error','❌ ส่งไม่สำเร็จ: '+e.message);
-    tccNotif('error','ส่งใบสมัครไม่สำเร็จ',e.message);
-    if(btn){btn.disabled=false;btn.textContent='📨 ยื่นใบสมัครเทรดเดอร์';}
+    tcBarRemove();tcBarShow('error','❌ '+tccT('tf.sub.fail')+': '+e.message);
+    tccNotif('error',tccT('tf.sub.failT'),e.message);
+    if(btn){btn.disabled=false;btn.textContent=tccT('tf.tr.btn');}
   }
 }
 
@@ -21458,10 +21582,10 @@ async function tcSubmitJob(){
   const months=Math.round(gn('tc-job-months')),mems=Math.round(gn('tc-job-mems'));
   const vol=gn('tc-job-vol'),bonus=gn('tc-job-bonus'),monthly=gn('tc-job-monthly');
   const note=document.getElementById('tc-job-note')?.value||'';
-  if(!pos){tcBarShow('error','❌ กรุณาเลือกตำแหน่งที่ต้องการ');return;}
-  if(!months||!mems||!vol){tcBarShow('error','❌ กรุณากรอกระยะเวลา จำนวนสมาชิก และวงเงินเทรดให้ครบ');return;}
-  if(btn){btn.disabled=true;btn.textContent='⏳ กำลังบันทึก...';}
-  tcBarShow('loading','⏳ กำลังส่งใบสมัครตำแหน่งงาน...');
+  if(!pos){tcBarShow('error','❌ '+tccT('tf.sub.vpos'));return;}
+  if(!months||!mems||!vol){tcBarShow('error','❌ '+tccT('tf.sub.vfld'));return;}
+  if(btn){btn.disabled=true;btn.textContent=tccT('tf.sub.saving');}
+  tcBarShow('loading',tccT('tf.sub.sendJ'));
   const payload={Title:''};
   try{
     const res=await tcApi('/api/me/application',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'job',DesiredPosition:pos,TargetMonths:months,TargetMembers:mems,TargetVolume:vol,BonusAmount:bonus,MonthlyFee:monthly,ExtraNote:note,password:TC.hasPassword?undefined:TC.pw})});
@@ -21469,12 +21593,12 @@ async function tcSubmitJob(){
     TC.pw='';TC.hasPassword=true;
     await tcLoadMe();
     tcBarRemove();
-    tccNotif('success','ยื่นใบสมัครตำแหน่งงานเรียบร้อย',`เลขอ้างอิง: ${payload.Title}`);
+    tccNotif('success',tccT('tf.sub.okJ'),tccT('tf.sub.ref',{n:payload.Title}));
     tcRender(); // re-render step 4 → แสดง readonly card
   }catch(e){
-    tcBarRemove();tcBarShow('error','❌ ส่งไม่สำเร็จ: '+e.message);
-    tccNotif('error','ส่งใบสมัครไม่สำเร็จ',e.message);
-    if(btn){btn.disabled=false;btn.textContent='📨 ยื่นใบสมัครตำแหน่งงาน';}
+    tcBarRemove();tcBarShow('error','❌ '+tccT('tf.sub.fail')+': '+e.message);
+    tccNotif('error',tccT('tf.sub.failT'),e.message);
+    if(btn){btn.disabled=false;btn.textContent=tccT('tf.jb.btn');}
   }
 }
 
@@ -21886,10 +22010,10 @@ function tcBack(){
 }
 function tcErr(el,msg){if(el){el.textContent=msg;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),4500);}}
 function tcBadge(st){
-  if(st==='Approved')return'<span class="tc-stat tc-st-appr">✅ อนุมัติแล้ว</span>';
-  if(st==='Rejected')return'<span class="tc-stat tc-st-rejt">❌ ไม่อนุมัติ</span>';
-  if(st==='Editing') return'<span class="tc-stat tc-st-edit">✏️ แก้ไขข้อมูล</span>';
-  return'<span class="tc-stat tc-st-pend">⏳ รอดำเนินการ</span>';
+  if(st==='Approved')return'<span class="tc-stat tc-st-appr">'+tccT('tf.st.ok')+'</span>';
+  if(st==='Rejected')return'<span class="tc-stat tc-st-rejt">'+tccT('tf.st.no')+'</span>';
+  if(st==='Editing') return'<span class="tc-stat tc-st-edit">'+tccT('tf.st.edit')+'</span>';
+  return'<span class="tc-stat tc-st-pend">'+tccT('tf.st.pend')+'</span>';
 }
 (function(){
   const _go=window.go;

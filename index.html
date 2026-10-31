@@ -1657,6 +1657,29 @@ button:disabled{opacity:0.5;cursor:not-allowed;transform:none!important;}
   .pay-modal-card .wallet-addr{word-break:break-all;min-width:0;}
   .pay-modal-card img{max-width:100%;}
 
+  /* ── Payment detail: ออกแบบกล่องสมาชิก/LEVEL/สรุป ให้เป็นระเบียบ ── */
+  .pm-member{display:grid !important;grid-template-columns:48px minmax(0,1fr);gap:10px 12px !important;align-items:center;padding:14px !important;}
+  .pm-avatar{width:48px !important;height:48px !important;font-size:1.2rem !important;}
+  .pm-name{font-size:1.05rem !important;line-height:1.25;overflow-wrap:anywhere;}
+  .pm-meta{flex-direction:column;gap:3px !important;margin-top:3px !important;}
+  .pm-meta span{display:block;font-size:.76rem !important;line-height:1.35;}
+  .pm-comm{grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:0 !important;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,.22);font-size:.74rem !important;}
+  .pm-comm b{font-size:.95rem;white-space:nowrap;}
+  .pm-badge{grid-column:1 / -1;grid-row:3;align-self:stretch !important;text-align:center;padding:7px 10px !important;font-size:.76rem !important;}
+  .pm-info{display:contents;}
+  .pm-name{grid-column:2;grid-row:1;}
+  .pm-meta{grid-column:1 / -1;grid-row:2;flex-direction:row !important;flex-wrap:wrap;gap:4px 14px !important;}
+  .pm-comm{grid-row:3;}
+  .pm-badge{grid-row:4;}
+  .pm-avatar{grid-column:1;grid-row:1;}
+  /* LEVEL + สรุป: จัดกึ่งกลางทุกกล่อง ตัวเลขอยู่แนวเดียวกัน */
+  .pay-modal-card div[style*="grid-template-columns:1fr 1fr;gap:10px"] > div,
+  .pay-modal-card div[style*="grid-template-columns:1fr 1fr 1fr"] > div{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:4px;padding:12px 8px !important;}
+  .pay-modal-card div[style*="grid-template-columns:1fr 1fr;gap:10px"] > div > div,
+  .pay-modal-card div[style*="grid-template-columns:1fr 1fr 1fr"] > div > div{margin:0 !important;text-align:center;width:100%;}
+  .pay-modal-card div[style*="grid-template-columns:1fr 1fr;gap:10px"] > div > div:first-child,
+  .pay-modal-card div[style*="grid-template-columns:1fr 1fr 1fr"] > div > div:first-child{min-height:2.4em;display:flex;align-items:center;justify-content:center;line-height:1.25;overflow-wrap:anywhere;}
+
   /* ── Member search page ── */
   #page-member-search .card{padding:12px;}
   .info-row{padding:7px 0;}
@@ -13901,17 +13924,17 @@ function showPaymentDetail(rowId){
     </div>
     <div style="padding:16px 20px;">
       <!-- Member Info -->
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;background:rgba(240,185,11,0.04);border:1px solid var(--border2);border-radius:12px;padding:12px;">
-        <div style="width:50px;height:50px;background:linear-gradient(135deg,var(--gold),var(--gold-d));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">👤</div>
-        <div style="flex:1;">
-          <div style="font-size:1.05rem;font-weight:700;">${name}</div>
-          <div style="display:flex;gap:12px;margin-top:4px;flex-wrap:wrap;">
+      <div class="pm-member" style="display:flex;align-items:center;gap:14px;margin-bottom:16px;background:rgba(240,185,11,0.04);border:1px solid var(--border2);border-radius:12px;padding:12px;">
+        <div class="pm-avatar" style="width:50px;height:50px;background:linear-gradient(135deg,var(--gold),var(--gold-d));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">👤</div>
+        <div class="pm-info" style="flex:1;">
+          <div class="pm-name" style="font-size:1.05rem;font-weight:700;">${name}</div>
+          <div class="pm-meta" style="display:flex;gap:12px;margin-top:4px;flex-wrap:wrap;">
             <span style="font-size:0.72rem;color:var(--muted);">🪙 UID: <b style="color:var(--gold)">${bnbId}</b></span>
             <span style="font-size:0.72rem;color:var(--muted);">🏆 ${team}</span>
           </div>
-          <div style="font-size:0.72rem;color:var(--muted);margin-top:3px;">📈 ${tccT('pd.teamComm')}: <b style="color:var(--gold)">${fmtUSD(comm)}</b></div>
+          <div class="pm-comm" style="font-size:0.72rem;color:var(--muted);margin-top:3px;">📈 ${tccT('pd.teamComm')}: <b style="color:var(--gold)">${fmtUSD(comm)}</b></div>
         </div>
-        <span class="badge ${isPending?'badge-pending':'badge-approve'}" style="align-self:flex-start;">${isPending?tccT('pay.status.unpaid'):tccT('pay.status.paid')}</span>
+        <span class="badge pm-badge ${isPending?'badge-pending':'badge-approve'}" style="align-self:flex-start;">${isPending?tccT('pay.status.unpaid'):tccT('pay.status.paid')}</span>
       </div>
 
       <!-- Level Commission -->
@@ -18780,17 +18803,17 @@ function buildPayDetailHTML(p, walletObj){
     +'</div>'
     +'<div style="padding:16px 20px;">'
       // Member info
-      +'<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;background:rgba(240,185,11,0.04);border:1px solid var(--border2);border-radius:12px;padding:12px;">'
-        +'<div style="width:50px;height:50px;background:linear-gradient(135deg,var(--gold),var(--gold-d));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">👤</div>'
-        +'<div style="flex:1;">'
-          +'<div style="font-size:1.05rem;font-weight:700;">'+name+'</div>'
-          +'<div style="display:flex;gap:12px;margin-top:4px;flex-wrap:wrap;">'
+      +'<div class="pm-member" style="display:flex;align-items:center;gap:14px;margin-bottom:16px;background:rgba(240,185,11,0.04);border:1px solid var(--border2);border-radius:12px;padding:12px;">'
+        +'<div class="pm-avatar" style="width:50px;height:50px;background:linear-gradient(135deg,var(--gold),var(--gold-d));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">👤</div>'
+        +'<div class="pm-info" style="flex:1;">'
+          +'<div class="pm-name" style="font-size:1.05rem;font-weight:700;">'+name+'</div>'
+          +'<div class="pm-meta" style="display:flex;gap:12px;margin-top:4px;flex-wrap:wrap;">'
             +'<span style="font-size:0.72rem;color:var(--muted);">🪙UID: <b style="color:var(--gold)">'+bnbId+'</b></span>'
             +'<span style="font-size:0.72rem;color:var(--muted);">🏆 '+team+'</span>'
           +'</div>'
-          +'<div style="font-size:0.72rem;color:var(--muted);margin-top:3px;">📈 TEAM COMMISSION: <b style="color:var(--gold)">'+fD(comm)+'</b></div>'
+          +'<div class="pm-comm" style="font-size:0.72rem;color:var(--muted);margin-top:3px;">📈 TEAM COMMISSION: <b style="color:var(--gold)">'+fD(comm)+'</b></div>'
         +'</div>'
-        +'<span class="badge '+badgeClass+'" style="align-self:flex-start;">'+badgeText+'</span>'
+        +'<span class="badge pm-badge '+badgeClass+'" style="align-self:flex-start;">'+badgeText+'</span>'
       +'</div>'
       // Level A/B
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">'

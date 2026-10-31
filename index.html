@@ -13322,6 +13322,7 @@ function renderAdminTeams(){
       </div>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-outline btn-sm" onclick="showTeamMembers('${jsq(name)}')">👥 ดูสมาชิก</button>
+        <button class="btn btn-outline btn-sm" onclick="openEditTeamModal('${jsq(String(t._row||t.Id))}')">✏️ แก้ไข</button>
       </div>
     </div>`;
   }).join('');
@@ -14034,8 +14035,11 @@ async function doChangePass(){
 }
 
 // ═══════════════ TEAM MANAGEMENT ═══════════════
+var editingTeamRow=null;
 function openAddTeamModal(){
+  editingTeamRow=null;
   document.getElementById('add-team-title').textContent='➕ เพิ่มทีมใหม่';
+  document.getElementById('new-team-status').value='Beginner';
   document.getElementById('new-team-name').value='';
   document.getElementById('new-team-owner-search').value='';
   document.getElementById('new-team-owner-id').value='';
@@ -14043,16 +14047,40 @@ function openAddTeamModal(){
   document.getElementById('team-owner-results').innerHTML='';
   document.getElementById('team-owner-preview').style.display='none';
   document.getElementById('new-team-country').value='';
-  refreshTeamSupportOptions();
+  refreshTeamSupportOptions('');
   document.getElementById('add-team-modal').classList.add('open');
 }
-// ทีมแม่ (Support Team) เลือกได้เฉพาะทีมในประเทศเดียวกับทีมที่กำลังเพิ่ม
-function refreshTeamSupportOptions(){
+// ทีมแม่ (Support Team) — ตัวเลือก = ทีมในประเทศเดียวกับทีมนี้ · selected = ค่าที่ต้องการเลือก (ชื่อล้วน หรือ คีย์ถ้าต่างประเทศ)
+function refreshTeamSupportOptions(selected){
   const cc=(document.getElementById('new-team-country')?.value||'').toUpperCase();
   const sel=document.getElementById('new-team-support');
   if(!sel) return;
-  sel.innerHTML='<option value="">-- ไม่มี (ทีมหลัก) --</option>'+
-    (cc?TEAMS.filter(t=>teamVal(t,'country')===cc).map(t=>`<option value="${esc(teamVal(t,'plain'))}">${esc(teamVal(t,'plain'))}</option>`).join(''):'');
+  const keep=(typeof selected==='string')?selected:sel.value;
+  const selfKey=editingTeamRow?teamVal(TEAMS.find(t=>String(t._row||t.Id)===String(editingTeamRow))||{},'name'):'';
+  let opts=cc?TEAMS.filter(t=>teamVal(t,'country')===cc&&teamVal(t,'name')!==selfKey).map(t=>({v:teamVal(t,'plain'),l:teamVal(t,'plain')})):[];
+  const ks=teamSplit(keep);
+  if(keep&&ks.cc&&ks.cc!==cc) opts.unshift({v:keep,l:teamLabel(keep)});     // ทีมแม่ต่างประเทศ
+  sel.innerHTML='<option value="">-- ไม่มี (ทีมหลัก) --</option>'+opts.map(o=>`<option value="${esc(o.v)}">${esc(o.l)}</option>`).join('');
+  if(keep&&[...sel.options].some(o=>o.value===keep)) sel.value=keep;
+}
+// แอดมินแก้ไขทีมภายหลังได้ (ชื่อ/ประเทศ/เจ้าของ/ทีมแม่/สถานะ) — Worker จะย้ายอ้างอิงใน Members/Payments/Commission ให้อัตโนมัติ
+function openEditTeamModal(row){
+  const t=TEAMS.find(x=>String(x._row||x.Id)===String(row));
+  if(!t) return;
+  editingTeamRow=row;
+  document.getElementById('add-team-title').textContent='✏️ แก้ไขทีม';
+  document.getElementById('new-team-country').value=teamVal(t,'country');
+  document.getElementById('new-team-name').value=teamVal(t,'plain');
+  const oid=teamVal(t,'memberid'),oname=teamVal(t,'owner');
+  document.getElementById('new-team-owner-id').value=oid;
+  document.getElementById('new-team-owner-name').value=oname;
+  document.getElementById('new-team-owner-search').value=oid?`${oname} (${oid})`:'';
+  document.getElementById('team-owner-results').innerHTML='';
+  document.getElementById('team-owner-preview').style.display='none';
+  document.getElementById('new-team-status').value=teamVal(t,'status')||'Beginner';
+  const par=teamVal(t,'support'),ps=teamSplit(par);
+  refreshTeamSupportOptions(par&&ps.cc===teamVal(t,'country')?ps.name:par);
+  document.getElementById('add-team-modal').classList.add('open');
 }
 function searchTeamOwner(){
   const q=document.getElementById('new-team-owner-search').value.toLowerCase().trim();
@@ -14070,6 +14098,12 @@ function selectTeamOwner(id){
   document.getElementById('new-team-owner-name').value=memVal(m,'name');
   document.getElementById('new-team-owner-search').value=`${memVal(m,'name')} (${id})`;
   document.getElementById('team-owner-results').innerHTML='';
+  // v NV11: ดึงทีมที่เจ้าของสังกัดอยู่ ขึ้นเป็น Support Team (ทีมแม่) อัตโนมัติ — แอดมินเปลี่ยนเองได้
+  const cSel=document.getElementById('new-team-country');
+  const ownTeam=memVal(m,'team');
+  if(!cSel.value) cSel.value=(String(m.Country||'').trim().toUpperCase())||teamSplit(ownTeam).cc||'TH';
+  if(ownTeam&&!_teamNone(ownTeam)){const os=teamSplit(ownTeam);refreshTeamSupportOptions(os.cc===cSel.value?os.name:ownTeam);}
+  else refreshTeamSupportOptions('');
   const prev=document.getElementById('team-owner-preview');
   prev.style.display='block';
   document.getElementById('team-owner-info').innerHTML=`
@@ -14088,10 +14122,21 @@ async function saveTeam(){
   if(!country){tccNotif('warn','กรอกข้อมูลไม่ครบ','กรุณาเลือกประเทศของทีม');return;}
   if(!name){tccNotif('warn','กรอกข้อมูลไม่ครบ','กรุณากรอกชื่อทีม');return;}
   if(name.includes('|')){tccNotif('warn','ชื่อทีมไม่ถูกต้อง','ห้ามใช้เครื่องหมาย | ในชื่อทีม');return;}
-  if(TEAMS.some(t=>teamVal(t,'plain')===name&&teamVal(t,'country')===country)){tccNotif('warn','ทีมซ้ำ',`มีทีม "${name}" ในประเทศ ${country} อยู่แล้ว`);return;}
+  if(!editingTeamRow&&TEAMS.some(t=>teamVal(t,'plain')===name&&teamVal(t,'country')===country)){tccNotif('warn','ทีมซ้ำ',`มีทีม "${name}" ในประเทศ ${country} อยู่แล้ว`);return;}
   try{
-    await ndbInsert('teams',{'ฐานข้อมูลทีม':name,'Country':country,'Field 2':support,'Field 3':ownerId,'Field 4':ownerName,'สถานะของทีม':status});
-    await loadTeams();
+    const data={'ฐานข้อมูลทีม':name,'Country':country,'Field 2':support,'Field 3':ownerId,'Field 4':ownerName,'สถานะของทีม':status};
+    if(editingTeamRow){
+      const old=TEAMS.find(t=>String(t._row||t.Id)===String(editingTeamRow));
+      if(TEAMS.some(t=>t!==old&&teamVal(t,'plain')===name&&teamVal(t,'country')===country)){tccNotif('warn','ทีมซ้ำ',`มีทีม "${name}" ในประเทศ ${country} อยู่แล้ว`);return;}
+      await ndbUpdate('teams',editingTeamRow,data);
+      editingTeamRow=null;
+      await Promise.all([loadTeams(true),loadMembers(true),loadPayments(true)]);   // ชื่อ/ประเทศเปลี่ยน → รีโหลดข้อมูลที่อ้างอิงทีม
+      document.getElementById('add-team-modal').classList.remove('open');
+      showSuccess('แก้ไขทีมสำเร็จ!',`ทีม "${name}" (${country}) อัปเดตแล้ว`);
+      return;
+    }
+    await ndbInsert('teams',data);
+    await loadTeams(true);
     document.getElementById('add-team-modal').classList.remove('open');
     showSuccess('เพิ่มทีมสำเร็จ!',`ทีม "${name}" (${country}) เพิ่มเข้าระบบแล้ว`);
   }catch(e){tccNotif('error','เกิดข้อผิดพลาด',e.message);}

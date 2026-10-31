@@ -2344,6 +2344,9 @@ input[type=number].tc-inp::-webkit-inner-spin-button{-webkit-appearance:none;mar
     <div class="modal-hd"><span class="modal-title" id="add-team-title">➕ เพิ่มทีมใหม่</span><button class="modal-close" onclick="document.getElementById('add-team-modal').classList.remove('open')" title="ปิด" data-i18n-title="common.close">✕</button></div>
     <div class="modal-body">
       <div class="grid-2">
+        <div class="form-group"><label class="form-label">ประเทศของทีม (Country) *</label>
+          <select class="form-control" id="new-team-country" onchange="refreshTeamSupportOptions()"><option value="">-- เลือกประเทศ --</option><option value="TH">🇹🇭 TH</option><option value="MM">🇲🇲 MM</option><option value="KH">🇰🇭 KH</option><option value="LA">🇱🇦 LA</option><option value="VN">🇻🇳 VN</option><option value="MY">🇲🇾 MY</option><option value="ID">🇮🇩 ID</option><option value="CN">🇨🇳 CN</option><option value="GLOBAL">🌐 GLOBAL</option></select>
+        </div>
         <div class="form-group"><label class="form-label">ชื่อทีม (Team Name) *</label><input type="text" class="form-control" id="new-team-name" placeholder="เช่น Star Cafe"></div>
         <div class="form-group"><label class="form-label">ค้นหาเจ้าของทีม (Owner)</label>
           <input type="text" class="form-control" id="new-team-owner-search" placeholder="ค้นชื่อหรือ ID..." oninput="searchTeamOwner()">
@@ -6784,9 +6787,8 @@ MENU.forEach(m=>{
           <div class="grid-2">
             <div class="form-group"><label class="form-label" data-i18n="reg.f.name">${tccT('reg.f.name')}</label><input type="text" class="form-control" id="reg-name" placeholder="${tccT('reg.f.name.ph')}" data-i18n-ph="reg.f.name.ph"></div>
             <div class="form-group"><label class="form-label" data-i18n="reg.f.phone">${tccT('reg.f.phone')}</label><input type="tel" class="form-control" id="reg-phone" placeholder="+66 8x-xxx-xxxx"></div>
-            <div class="form-group"><label class="form-label" data-i18n="reg.f.team">${tccT('reg.f.team')}</label><select class="form-control" id="reg-team"><option value="" data-i18n="reg.f.teamPick">${tccT('reg.f.teamPick')}</option></select></div>
             <div class="form-group"><label class="form-label" data-i18n="reg.f.country">${tccT('reg.f.country')}</label>
-              <select class="form-control" id="reg-country" onchange="toggleProvince()">
+              <select class="form-control" id="reg-country" onchange="toggleProvince();populateRegTeams()">
                 <option value="TH" selected data-i18n="reg.c.TH">${tccT('reg.c.TH')}</option>
                 <option value="MM" data-i18n="reg.c.MM">${tccT('reg.c.MM')}</option>
                 <option value="KH" data-i18n="reg.c.KH">${tccT('reg.c.KH')}</option>
@@ -6798,6 +6800,7 @@ MENU.forEach(m=>{
                 <option value="GLOBAL" data-i18n="reg.c.GLOBAL">${tccT('reg.c.GLOBAL')}</option>
               </select>
             </div>
+            <div class="form-group"><label class="form-label" data-i18n="reg.f.team">${tccT('reg.f.team')}</label><select class="form-control" id="reg-team"><option value="" data-i18n="reg.f.teamPick">${tccT('reg.f.teamPick')}</option></select></div>
             <div class="form-group" id="province-group" style="grid-column:1/-1;">
               <label class="form-label" data-i18n="reg.f.province">${tccT('reg.f.province')}</label>
               <select class="form-control" id="reg-province"><option value="" data-i18n="reg.f.provincePick">${tccT('reg.f.provincePick')}</option></select>
@@ -7791,6 +7794,7 @@ function buildSystemPanel(){
     <div class="card">
       <div class="card-hd"><div class="card-icon">🏆</div><span class="card-title">จัดการทีม</span><button class="btn btn-gold btn-sm" onclick="openAddTeamModal()" style="margin-left:auto">+ เพิ่มทีม</button></div>
       <div class="search-box"><span class="search-icon">🔍</span><input type="text" class="form-control" id="team-search" placeholder="ค้นหาชื่อทีม..." oninput="renderAdminTeams()"></div>
+      <div style="margin:8px 0 12px;"><select class="form-control" id="team-country-filter" onchange="renderAdminTeams()" style="max-width:220px;"><option value="">🌍 ทุกประเทศ</option><option value="TH">🇹🇭 TH</option><option value="MM">🇲🇲 MM</option><option value="KH">🇰🇭 KH</option><option value="LA">🇱🇦 LA</option><option value="VN">🇻🇳 VN</option><option value="MY">🇲🇾 MY</option><option value="ID">🇮🇩 ID</option><option value="CN">🇨🇳 CN</option><option value="GLOBAL">🌐 GLOBAL</option></select></div>
       <div id="admin-teams-list"></div>
     </div>
   </div>
@@ -12413,7 +12417,7 @@ const _PAY_LEG={profit:'Field 7',commission:'Field 8',guarantee:'Field 9',balanc
 function _hasMoney(v){return v!==undefined&&v!==null&&/\d/.test(String(v))&&/^[\s$฿,.\-+\d]+$/.test(String(v));}
 function _payLegacy(p){return _hasMoney(p['Field 7'])&&_hasMoney(p['Field 12']);}
 function payVal(p,f){
-  const fix={bnb_id:p['Field 1'],name:p['Field 2'],team:p['Field 3'],lva:p['Field 4'],lvb:p['Field 5'],date:p['Field 6']};
+  const fix={bnb_id:p['Field 1'],name:p['Field 2'],team:_payTeam(p,p['Field 3']),lva:_payTeam(p,p['Field 4']),lvb:_payTeam(p,p['Field 5']),date:p['Field 6']};
   let v;
   if(f==='position') return _payStatusOf(p);
   if(f in fix) v=fix[f];
@@ -12426,8 +12430,55 @@ function payVal(p,f){
 function payNum(p,f){return parseFloat(String(payVal(p,f)).replace(/[$,\s]/g,''))||0;}
 function fmt(n){return n.toLocaleString("en",{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtUSD(n){return "$"+fmt(n);}
-function memVal(m,f){const M={'id':m['BNB_ID'],'name':m['Name'],'team':m['Team'],'wallet':m['Address Wallet'],'status':m['Status'],'qr':m['QR Code'],'lva':m['Level A'],'lvb':m['Level B'],'referrer':m['ReferrerId']};const v=M[f];return(v===undefined||v===null)?'':String(v);}
-function teamVal(t,f){const M={'name':t['ฐานข้อมูลทีม'],'support':t['Field 2'],'memberid':t['Field 3'],'owner':t['Field 4'],'qr':t['Field 5'],'wallet':t['Field 6'],'status':t['สถานะของทีม']};const v=M[f];return(v===undefined||v===null)?'':String(v);}
+function memVal(m,f){const M={'id':m['BNB_ID'],'name':m['Name'],'team':teamCanon(m['Team'],m['Country']),'wallet':m['Address Wallet'],'status':m['Status'],'qr':m['QR Code'],'lva':m['Level A'],'lvb':m['Level B'],'referrer':m['ReferrerId']};const v=M[f];return(v===undefined||v===null)?'':String(v);}
+
+// ═══════════════ TEAM KEY — ทีมแยกตามประเทศ (v NV11) ═══════════════
+//  คีย์ทีม = "ชื่อทีม|ประเทศ" (เช่น Star Cafe|TH) · ชีต Teams มีคอลัมน์ Country (ว่าง = TH)
+//  memVal(m,'team') / payVal(p,'team'|'lva'|'lvb') / teamVal(t,'name') คืน "คีย์" เสมอ → เทียบกันได้ตรง ๆ ไม่ปนข้ามประเทศ
+//  ค่าเดิมที่เป็นชื่อล้วน ๆ จะ map ประเทศจากสมาชิก (BNB ID) → ไม่เจอใช้ TH · แสดงผลด้วย teamLabel(key) = "ชื่อ (🇹🇭 TH)"
+var TEAM_DEF_CC='TH';
+var TEAM_COUNTRIES=['TH','MM','KH','LA','VN','MY','ID','CN','GLOBAL'];
+function _cc(v){return String(v==null?'':v).trim().toUpperCase();}
+function _teamNone(v){v=String(v==null?'':v).trim().toLowerCase();return v===''||v==='—'||v==='-'||v==='non'||v==='none';}
+function teamSplit(k){var s=String(k==null?'':k).trim(),i=s.lastIndexOf('|');return i>0?{name:s.slice(0,i).trim(),cc:_cc(s.slice(i+1))}:{name:s,cc:''};}
+function teamFlag(cc){cc=_cc(cc);if(cc==='GLOBAL')return '🌐';if(!/^[A-Z]{2}$/.test(cc))return '';return String.fromCodePoint(0x1F1E6+cc.charCodeAt(0)-65,0x1F1E6+cc.charCodeAt(1)-65);}
+function teamLabel(k){var s=teamSplit(k);if(!s.cc)return s.name;return s.name+' ('+teamFlag(s.cc)+' '+s.cc+')';}
+function teamRowCc(t){return _cc(t&&t.Country)||TEAM_DEF_CC;}
+function teamRowKeyC(t){var n=String(t&&t['ฐานข้อมูลทีม']!=null?t['ฐานข้อมูลทีม']:'').trim();return n?n+'|'+teamRowCc(t):'';}
+function _teamIdx(){
+  if(_teamIdx.src===TEAMS&&_teamIdx.n===TEAMS.length) return _teamIdx;
+  var by=Object.create(null);
+  TEAMS.forEach(function(t){var n=String(t['ฐานข้อมูลทีม']==null?'':t['ฐานข้อมูลทีม']).trim();if(!n)return;(by[n]=by[n]||[]).push({cc:teamRowCc(t),key:n+'|'+teamRowCc(t)});});
+  _teamIdx.by=by;_teamIdx.src=TEAMS;_teamIdx.n=TEAMS.length;return _teamIdx;
+}
+function _teamPick(name,cc){                 // ชื่อล้วน → รายการทีม (ประเทศตรง → TH → ตัวแรก)
+  var c=_teamIdx().by[name];if(!c)return null;cc=_cc(cc)||TEAM_DEF_CC;
+  for(var i=0;i<c.length;i++)if(c[i].cc===cc)return c[i];
+  for(var j=0;j<c.length;j++)if(c[j].cc===TEAM_DEF_CC)return c[j];
+  return c[0];
+}
+function teamCanon(v,cc){
+  v=String(v==null?'':v).trim();if(_teamNone(v))return v;
+  var sp=teamSplit(v);if(sp.cc)return sp.name+'|'+sp.cc;
+  var pk=_teamPick(sp.name,cc);return pk?pk.key:v;
+}
+function teamParentKey(t){                   // Field 2 → คีย์ทีมแม่ (หาในประเทศเดียวกับทีมลูกก่อน)
+  var raw=String(t&&t['Field 2']!=null?t['Field 2']:'').trim();if(_teamNone(raw))return '';
+  var sp=teamSplit(raw);if(sp.cc)return sp.name+'|'+sp.cc;
+  var pk=_teamPick(sp.name,teamRowCc(t));return pk?pk.key:raw;
+}
+function _memCc(bnb){
+  if(_memCc.src!==MEMBERS||_memCc.n!==MEMBERS.length){var m=Object.create(null);MEMBERS.forEach(function(x){m[String(x['BNB_ID']==null?'':x['BNB_ID']).trim().toLowerCase()]=_cc(x.Country)||TEAM_DEF_CC;});_memCc.map=m;_memCc.src=MEMBERS;_memCc.n=MEMBERS.length;}
+  return _memCc.map[String(bnb==null?'':bnb).trim().toLowerCase()]||'';
+}
+function _payTeam(p,raw){                    // ค่าทีมใน Payments (ชื่อล้วน/คีย์) → คีย์ · ประเทศ = ประเทศของทีมสมาชิก ไม่เจอใช้ประเทศสมาชิก
+  raw=String(raw==null?'':raw).trim();if(_teamNone(raw))return raw;
+  var sp=teamSplit(raw);if(sp.cc)return sp.name+'|'+sp.cc;
+  var mc=_memCc(p&&p['Field 1'])||TEAM_DEF_CC,own=String(p&&p['Field 3']!=null?p['Field 3']:'').trim(),cc=mc;
+  if(!_teamNone(own)){var so=teamSplit(own);if(so.cc)cc=so.cc;else{var pk=_teamPick(so.name,mc);if(pk)cc=pk.cc;}}
+  var pk2=_teamPick(sp.name,cc);return pk2?pk2.key:raw;
+}
+function teamVal(t,f){const M={'name':teamRowKeyC(t),'label':teamLabel(teamRowKeyC(t)),'country':teamRowCc(t),'plain':String(t['ฐานข้อมูลทีม']==null?'':t['ฐานข้อมูลทีม']).trim(),'support':teamParentKey(t),'memberid':t['Field 3'],'owner':t['Field 4'],'qr':t['Field 5'],'wallet':t['Field 6'],'status':t['สถานะของทีม']};const v=M[f];return(v===undefined||v===null)?'':String(v);}
 
 // ═══════════════ API ═══════════════
 async function ndbFetch(table,params={},_retry=0){
@@ -13217,7 +13268,7 @@ function renderAdminPayments(){
       <td>${payVal(p,'date')}</td>
       <td style="color:var(--muted);font-size:0.75rem;">${payVal(p,'bnb_id')}</td>
       <td style="font-weight:600;">${payVal(p,'name')}</td>
-      <td style="color:var(--muted);">${payVal(p,'team')}</td>
+      <td style="color:var(--muted);">${teamLabel(payVal(p,'team'))}</td>
       <td style="color:var(--gold);font-weight:700;">${fmtUSD(profit)}</td>
       <td style="color:var(--green);">${fmtUSD(member)}</td>
       <td style="color:var(--gold);">${fmtUSD(transfer)}</td>
@@ -13235,12 +13286,12 @@ function renderTeams(){
   if(!container)return;
   if(!TEAMS.length){container.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);">ไม่มีข้อมูล</div>';return;}
   container.innerHTML=TEAMS.map(t=>{
-    const name=teamVal(t,'name'),owner=teamVal(t,'owner'),support=teamVal(t,'support'),status=teamVal(t,'status');
+    const name=teamVal(t,'name'),owner=teamVal(t,'owner'),support=teamLabel(teamVal(t,'support')),status=teamVal(t,'status');
     const cnt=teamCount(name);
     return`<div class="team-card" onclick="showTeamMembers('${jsq(name)}')">
       <div class="team-card-hd">
         <div>
-          <div class="team-name">${name||'—'}</div>
+          <div class="team-name">${teamLabel(name)||'—'}</div>
           <div class="team-meta">เจ้าของ: ${owner||'—'}${support?' | สนับสนุน: '+support:''}</div>
         </div>
         <span class="badge ${status==='Pending'?'badge-pending':status==='Active'?'badge-approve':'badge-beginner'}">${status||'—'}</span>
@@ -13257,15 +13308,16 @@ function renderAdminTeams(){
   const container=document.getElementById('admin-teams-list');
   if(!container)return;
   const q=(document.getElementById('team-search')?.value||'').toLowerCase();
-  const filtered=TEAMS.filter(t=>!q||teamVal(t,'name').toLowerCase().includes(q));
+  const ccF=(document.getElementById('team-country-filter')?.value||'').toUpperCase();
+  const filtered=TEAMS.filter(t=>(!q||teamVal(t,'plain').toLowerCase().includes(q))&&(!ccF||teamVal(t,'country')===ccF));
   if(!filtered.length){container.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">ไม่พบข้อมูล</div>';return;}
   container.innerHTML=filtered.map((t,i)=>{
-    const name=teamVal(t,'name'),owner=teamVal(t,'owner'),support=teamVal(t,'support'),status=teamVal(t,'status');
+    const name=teamVal(t,'name'),owner=teamVal(t,'owner'),support=teamLabel(teamVal(t,'support')),status=teamVal(t,'status');
     const cnt=teamCount(name);
     return`<div class="wallet-item" style="cursor:default;">
       <div style="width:36px;height:36px;background:rgba(240,185,11,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;">🏆</div>
       <div class="wallet-info">
-        <div class="wallet-label">${name||'—'} <span class="badge ${status==='Pending'?'badge-pending':status==='Active'?'badge-approve':'badge-beginner'}" style="font-size:0.65rem;">${status||'—'}</span></div>
+        <div class="wallet-label">${teamLabel(name)||'—'} <span class="badge ${status==='Pending'?'badge-pending':status==='Active'?'badge-approve':'badge-beginner'}" style="font-size:0.65rem;">${status||'—'}</span></div>
         <div class="wallet-address">เจ้าของ: ${owner||'—'} | สนับสนุน: ${support||'—'} | สมาชิก: ${cnt} คน</div>
       </div>
       <div style="display:flex;gap:6px;">
@@ -13279,7 +13331,7 @@ function renderAdminTeams(){
 function showTeamMembers(teamName){
   const members=MEMBERS.filter(m=>memVal(m,'team')===teamName);
   const _pubCnt=teamCount(teamName);
-  document.getElementById('team-members-title').textContent=tccT('yt.tm.title',{team:teamName,n:(members.length||_pubCnt)});
+  document.getElementById('team-members-title').textContent=tccT('yt.tm.title',{team:teamLabel(teamName),n:(members.length||_pubCnt)});
   const content=document.getElementById('team-members-content');
   if(!members.length && _pubCnt){ content.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">'+tccT('yt.tm.locked')+'</div>'; document.getElementById('team-members-modal').classList.add('open'); return; }
   if(!members.length){content.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">'+tccT('yt.tm.none')+'</div>';}
@@ -13349,7 +13401,7 @@ function selectAdminMember(memberId){
   selectedAdminMember=m;
   document.getElementById('af-id-full').textContent=memVal(m,'id');
   document.getElementById('af-name-full').textContent=memVal(m,'name');
-  document.getElementById('af-team-full').textContent=memVal(m,'team');
+  document.getElementById('af-team-full').textContent=teamLabel(memVal(m,'team'));
   
   // ดึง Level A/B จาก TEAMS table (Support Team column)
   const memberTeam=memVal(m,'team');
@@ -13372,8 +13424,10 @@ function selectAdminMember(memberId){
     }
   }
   
-  document.getElementById('af-lva-full').textContent=lvaVal;
-  document.getElementById('af-lvb-full').textContent=lvbVal;
+  // v NV11: แสดงเป็นป้าย (ชื่อ + ธง) แต่เก็บ "คีย์" ไว้ใน dataset ใช้ส่งไป Worker
+  const _lvaEl=document.getElementById('af-lva-full'),_lvbEl=document.getElementById('af-lvb-full');
+  _lvaEl.textContent=teamLabel(lvaVal); _lvaEl.dataset.key=lvaVal;
+  _lvbEl.textContent=teamLabel(lvbVal); _lvbEl.dataset.key=lvbVal;
   document.getElementById('af-wallet-addr-top').textContent=memVal(m,'wallet')||'ยังไม่ได้ตั้งค่า';
   
   // แสดง QR Code
@@ -13988,11 +14042,17 @@ function openAddTeamModal(){
   document.getElementById('new-team-owner-name').value='';
   document.getElementById('team-owner-results').innerHTML='';
   document.getElementById('team-owner-preview').style.display='none';
-  // populate support team dropdown
-  const sel=document.getElementById('new-team-support');
-  sel.innerHTML='<option value="">-- ไม่มี (ทีมหลัก) --</option>'+
-    TEAMS.map(t=>`<option value="${teamVal(t,'name')}">${teamVal(t,'name')}</option>`).join('');
+  document.getElementById('new-team-country').value='';
+  refreshTeamSupportOptions();
   document.getElementById('add-team-modal').classList.add('open');
+}
+// ทีมแม่ (Support Team) เลือกได้เฉพาะทีมในประเทศเดียวกับทีมที่กำลังเพิ่ม
+function refreshTeamSupportOptions(){
+  const cc=(document.getElementById('new-team-country')?.value||'').toUpperCase();
+  const sel=document.getElementById('new-team-support');
+  if(!sel) return;
+  sel.innerHTML='<option value="">-- ไม่มี (ทีมหลัก) --</option>'+
+    (cc?TEAMS.filter(t=>teamVal(t,'country')===cc).map(t=>`<option value="${esc(teamVal(t,'plain'))}">${esc(teamVal(t,'plain'))}</option>`).join(''):'');
 }
 function searchTeamOwner(){
   const q=document.getElementById('new-team-owner-search').value.toLowerCase().trim();
@@ -14000,7 +14060,7 @@ function searchTeamOwner(){
   if(q.length<2){c.innerHTML='';return;}
   const results=MEMBERS.filter(m=>memVal(m,'name').toLowerCase().includes(q)||memVal(m,'id').includes(q));
   c.innerHTML=results.slice(0,4).map(m=>`<div onclick="selectTeamOwner('${jsq(memVal(m,'id'))}')" style="padding:8px;background:var(--dark3);border-radius:6px;cursor:pointer;margin-bottom:3px;font-size:0.83rem;" onmouseover="this.style.background='var(--dark4)'" onmouseout="this.style.background='var(--dark3)'">
-    <b>${memVal(m,'name')}</b> <span style="color:var(--muted);">ID: ${memVal(m,'id')} | ${memVal(m,'team')}</span>
+    <b>${memVal(m,'name')}</b> <span style="color:var(--muted);">ID: ${memVal(m,'id')} | ${teamLabel(memVal(m,'team'))}</span>
   </div>`).join('');
 }
 function selectTeamOwner(id){
@@ -14015,7 +14075,7 @@ function selectTeamOwner(id){
   document.getElementById('team-owner-info').innerHTML=`
     <div class="info-row"><span class="info-k">ชื่อ-สกุล</span><span class="info-v">${memVal(m,'name')}</span></div>
     <div class="info-row"><span class="info-k">หมายเลขสมาชิก</span><span class="info-v">${memVal(m,'id')}</span></div>
-    <div class="info-row"><span class="info-k">ทีมสังกัดปัจจุบัน</span><span class="info-v">${memVal(m,'team')}</span></div>
+    <div class="info-row"><span class="info-k">ทีมสังกัดปัจจุบัน</span><span class="info-v">${teamLabel(memVal(m,'team'))}</span></div>
     <div class="info-row"><span class="info-k">กระเป๋า USDT</span><span class="info-v" style="font-size:0.72rem;font-family:monospace;">${memVal(m,'wallet').slice(0,20)}...</span></div>`;
 }
 async function saveTeam(){
@@ -14024,12 +14084,16 @@ async function saveTeam(){
   const ownerName=document.getElementById('new-team-owner-name').value;
   const support=document.getElementById('new-team-support').value;
   const status=document.getElementById('new-team-status').value;
+  const country=(document.getElementById('new-team-country')?.value||'').toUpperCase();
+  if(!country){tccNotif('warn','กรอกข้อมูลไม่ครบ','กรุณาเลือกประเทศของทีม');return;}
   if(!name){tccNotif('warn','กรอกข้อมูลไม่ครบ','กรุณากรอกชื่อทีม');return;}
+  if(name.includes('|')){tccNotif('warn','ชื่อทีมไม่ถูกต้อง','ห้ามใช้เครื่องหมาย | ในชื่อทีม');return;}
+  if(TEAMS.some(t=>teamVal(t,'plain')===name&&teamVal(t,'country')===country)){tccNotif('warn','ทีมซ้ำ',`มีทีม "${name}" ในประเทศ ${country} อยู่แล้ว`);return;}
   try{
-    await ndbInsert('teams',{'ฐานข้อมูลทีม':name,'Field 2':support,'Field 3':ownerId,'Field 4':ownerName,'สถานะของทีม':status});
+    await ndbInsert('teams',{'ฐานข้อมูลทีม':name,'Country':country,'Field 2':support,'Field 3':ownerId,'Field 4':ownerName,'สถานะของทีม':status});
     await loadTeams();
     document.getElementById('add-team-modal').classList.remove('open');
-    showSuccess('เพิ่มทีมสำเร็จ!',`ทีม "${name}" เพิ่มเข้าระบบแล้ว`);
+    showSuccess('เพิ่มทีมสำเร็จ!',`ทีม "${name}" (${country}) เพิ่มเข้าระบบแล้ว`);
   }catch(e){tccNotif('error','เกิดข้อผิดพลาด',e.message);}
 }
 
@@ -14049,8 +14113,8 @@ async function savePayment(){
   const tradeNote=tradeRows.map((t,i)=>`ครั้งที่${i+1}: ${t.coin} +$${(Math.round((t.profit||0)*100)/100).toFixed(2)}`).join(' | ');
   
   // ดึง lva/lvb จาก DOM elements (คำนวณจาก TEAMS)
-  const lvaFromDOM=document.getElementById('af-lva-full')?.textContent||'—';
-  const lvbFromDOM=document.getElementById('af-lvb-full')?.textContent||'—';
+  const lvaFromDOM=document.getElementById('af-lva-full')?.dataset.key||'—';
+  const lvbFromDOM=document.getElementById('af-lvb-full')?.dataset.key||'—';
   
   const payload={'Field 1':memVal(selectedAdminMember,'id'),'Field 2':memVal(selectedAdminMember,'name'),'Field 3':memVal(selectedAdminMember,'team'),'Field 4':lvaFromDOM,'Field 5':lvbFromDOM,'Field 6':dateStr,'Field 8':total.toFixed(2),'Field 15':status,'Field 16':note||tradeNote};
   const btn=document.querySelector('[onclick="savePayment()"]');
@@ -14296,6 +14360,7 @@ function populateRegTeams(){
   const sel=document.getElementById('reg-team');
   if(!sel) return;
   // ล้าง options เก่าออกก่อน (เหลือแค่ option แรก "-- เลือกทีม --")
+  const prev=sel.value;
   while(sel.options.length > 1) sel.remove(1);
   if(!TEAMS.length){
     // ถ้า data ยังไม่โหลด รอแล้วลองใหม่ (ไม่ loopซ้ำถ้ากำลังโหลดอยู่)
@@ -14307,14 +14372,16 @@ function populateRegTeams(){
     return;
   }
   populateRegTeams._loading=false;
-  // เรียงชื่อทีม A-Z
-  const teams=[...TEAMS].sort((a,b)=>teamVal(a,'name').localeCompare(teamVal(b,'name'),'th'));
+  // เลือกประเทศก่อน → แสดงเฉพาะทีมของประเทศนั้น (value = คีย์ ชื่อ|ประเทศ)
+  const cc=(document.getElementById('reg-country')?.value||'TH').toUpperCase();
+  const teams=TEAMS.filter(t=>teamVal(t,'country')===cc).sort((a,b)=>teamVal(a,'plain').localeCompare(teamVal(b,'plain'),'th'));
   teams.forEach(t=>{
-    const name=teamVal(t,'name');
+    const name=teamVal(t,'plain');
     if(name&&name.toLowerCase()!=='non'&&name.toLowerCase()!=='team'&&name.trim()!==''){
-      const o=document.createElement('option');o.value=name;o.textContent=name;sel.appendChild(o);
+      const o=document.createElement('option');o.value=teamVal(t,'name');o.textContent=name;sel.appendChild(o);
     }
   });
+  if(prev&&[...sel.options].some(o=>o.value===prev)) sel.value=prev;   // ประเทศเดิม → คงทีมที่เลือกไว้
 }
 function populateRegProvinces(){
   const sel=document.getElementById('reg-province');
@@ -14394,7 +14461,7 @@ function renderRegisterMemberList(q){
       <td style="color:var(--text-dim);font-size:.73rem;">${i+1}</td>
       <td style="color:var(--gold);font-family:monospace;font-weight:600;font-size:.73rem;">${memVal(m,'id')}</td>
       <td style="font-weight:500;color:var(--text);font-size:.75rem;">${memVal(m,'name')||'—'}</td>
-      <td style="color:#94a3b8;font-size:.73rem;">${memVal(m,'team')||'—'}</td>
+      <td style="color:#94a3b8;font-size:.73rem;">${teamLabel(memVal(m,'team'))||'—'}</td>
       <td>${badge(memVal(m,'status'))}</td>
     </tr>`).join('');
 }
@@ -14684,7 +14751,7 @@ async function submitRegistration(){
       'ReferrerId'     : referrerId || '',  // [REF-3] บันทึก BNB_ID ของผู้แนะนำ
     });
     // v1.3.4: จำรายการที่เพิ่งสมัคร เพื่อแสดงในรายชื่อทันที (ผู้ใช้สาธารณะไม่ได้รับรายชื่อเต็ม)
-    (window._myRegs=window._myRegs||[]).unshift({id:bnbid,name:name,team:team,row:regRes&&(regRes.Id||regRes._row)});
+    (window._myRegs=window._myRegs||[]).unshift({id:bnbid,name:name,team:teamSplit(team).name,row:regRes&&(regRes.Id||regRes._row)});
     // ── แสดง success notification (action bar) ──
     showSuccess(tccT('reg.ok.title'),
       tccT('reg.ok.msg',{name:esc(name),id:esc(bnbid)}));
@@ -14699,6 +14766,7 @@ async function submitRegistration(){
       const el=document.getElementById(id);
       if(el){ el.selectedIndex=0; }
     });
+    populateRegTeams();   // country กลับเป็น TH → โหลดทีมของ TH ใหม่
     // reset country → ซ่อน province
     const pgEl=document.getElementById('province-group');
     if(pgEl) pgEl.style.display='block';
@@ -14954,7 +15022,7 @@ function renderMonthlySummary(year,month){
     const hasYT=ytComm>0, hasLA=laComm>0, hasLB=lbComm>0;
     return '<div style="background:rgba(0,0,0,0.25);border:1px solid rgba(240,185,11,0.15);border-radius:10px;padding:14px;">'
       +'<div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">'
-      +'<span>🏆 '+teamName+'</span>'
+      +'<span>🏆 '+esc(teamLabel(teamName))+'</span>'
       +'<span style="font-family:\'Orbitron\',monospace;color:var(--gold);font-size:0.9rem;">'+fmt(total)+'</span>'
       +'</div>'
       +(hasYT?'<div style="display:flex;justify-content:space-between;font-size:0.75rem;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);">'
@@ -15217,7 +15285,7 @@ function renderAdminCommList(monthKey){
       +' id="cgc_'+esc(teamName)+'_'+esc(monthKey)+'">'
       +'<div class="comm-group-hd">'
       +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">'
-      +'<span class="comm-group-name">🏆 '+teamName+'</span>'
+      +'<span class="comm-group-name">🏆 '+esc(teamLabel(teamName))+'</span>'
       +(allApproved
         ? '<span class="comm-paid">✅ อนุมัติทั้งหมดแล้ว</span>'
         : '<span class="comm-unpaid">⏳ '+approvedCount+'/'+typeList.length+' อนุมัติ</span>')
@@ -15295,7 +15363,7 @@ async function approveTeamAll(teamName, monthKey){
   });
   saveCommApprovals();
   renderAdminCommList(monthKey);
-  showToast('✅ อนุมัติทุกเลเวลของ '+teamName+' แล้ว');
+  showToast('✅ อนุมัติทุกเลเวลของ '+teamLabel(teamName)+' แล้ว');
 
   // [v3.3] บันทึกลง Sheet
   if(items.length===0) return;
@@ -15398,7 +15466,7 @@ function renderCommDashboard(monthKey, page){
       :`<td style="text-align:center;color:var(--muted);font-size:0.82rem;">${rank}</td>`;
     tableRows+=`<tr>
       ${rankCell}
-      <td style="font-weight:700;${medal?`color:${medal};`:''}">${r.teamName}</td>
+      <td style="font-weight:700;${medal?`color:${medal};`:''}">${teamLabel(r.teamName)}</td>
       <td style="color:var(--gold);">${r.ytC>0?fmt(r.ytC):'<span style="opacity:0.25;">—</span>'}</td>
       <td style="color:var(--green);">${r.laC>0?fmt(r.laC):'<span style="opacity:0.25;">—</span>'}</td>
       <td style="color:var(--blue);">${r.lbC>0?fmt(r.lbC):'<span style="opacity:0.25;">—</span>'}</td>
@@ -15420,7 +15488,7 @@ function renderCommDashboard(monthKey, page){
         ${medal?medalEmoji[rank-1]:rank}
       </div>
       <div class="comm-league-body">
-        <div class="comm-league-name" style="${medal?`color:${medal};`:''}">${r.teamName}</div>
+        <div class="comm-league-name" style="${medal?`color:${medal};`:''}">${teamLabel(r.teamName)}</div>
         <div class="comm-league-bars">
           <div class="comm-league-bar-seg" style="width:${ytW}%;background:var(--gold);"></div>
           <div class="comm-league-bar-seg" style="width:${laW}%;background:var(--green);"></div>
@@ -15468,11 +15536,11 @@ function renderCommDashboard(monthKey, page){
 function renderCommTeamSelector(){
   const dropdown=document.getElementById('comm-team-dropdown');
   if(!dropdown) return;
-  const teams=TEAMS.filter(t=>teamVal(t,'name')&&teamVal(t,'name').toLowerCase()!=='non');
+  const teams=TEAMS.filter(t=>teamVal(t,'plain')&&teamVal(t,'plain').toLowerCase()!=='non');
   dropdown.innerHTML='<option value="">'+tccT('yt.pick.opt')+'</option>'+
     teams.map(t=>{
       const name=teamVal(t,'name');
-      return`<option value="${name.replace(/"/g,'&quot;')}" ${commSelectedTeam===name?'selected':''}>${name}</option>`;
+      return`<option value="${name.replace(/"/g,'&quot;')}" ${commSelectedTeam===name?'selected':''}>${esc(teamLabel(name))}</option>`;
     }).join('');
   if(commSelectedTeam) updateTeamInfoCard(commSelectedTeam);
 }
@@ -15495,7 +15563,7 @@ function updateTeamInfoCard(teamName){
   const ytC=PAYMENTS.filter(p=>payVal(p,'team')===teamName).reduce((s,p)=>s+payNum(p,'profit'),0)*0.10;
   const laC=PAYMENTS.filter(p=>payVal(p,'lva')===teamName).reduce((s,p)=>s+payNum(p,'profit'),0)*0.10*0.15;
   const lbC=PAYMENTS.filter(p=>payVal(p,'lvb')===teamName).reduce((s,p)=>s+payNum(p,'profit'),0)*0.10*0.10;
-  document.getElementById('tinfo-name').textContent=teamName;
+  document.getElementById('tinfo-name').textContent=teamLabel(teamName);
   document.getElementById('tinfo-sub').textContent=`YT: ${fmt(ytC)} · LA: ${fmt(laC)} · LB: ${fmt(lbC)}`;
   document.getElementById('tinfo-members').textContent=cnt;
   document.getElementById('tinfo-payments').textContent=allP.length;
@@ -15516,7 +15584,7 @@ async function approveComm(teamName,monthKey,type,amount,owner,ownerBnbId){
     });
     const d = await r.json().catch(()=>({}));
     if(!r.ok||!d.ok) throw new Error(d.error||('HTTP '+r.status));
-    showToast(`✅ อนุมัติค่าคอม ${teamName} (${type}) แล้ว`);
+    showToast(`✅ อนุมัติค่าคอม ${teamLabel(teamName)} (${type}) แล้ว`);
   }catch(e){
     if(prev===undefined) delete commApprovals[k]; else commApprovals[k]=prev;   // rollback
     renderAdminCommList(monthKey);
@@ -15538,7 +15606,7 @@ async function unapproveComm(teamName,monthKey,type,btnEl){
     if(!r.ok||!d.ok) throw new Error(d.error||('HTTP '+r.status));
     delete commApprovals[k];
     renderAdminCommList(monthKey);
-    showToast(`↩️ ยกเลิกการอนุมัติ ${teamName} (${type})`);
+    showToast(`↩️ ยกเลิกการอนุมัติ ${teamLabel(teamName)} (${type})`);
   }catch(e){ tccNotif('error','ยกเลิกไม่สำเร็จ',e.message); }
 }
 
@@ -15714,7 +15782,7 @@ function selectCommTeam(teamName){
   if(dd) dd.value=teamName;
   updateTeamInfoCard(teamName);
   document.getElementById('comm-detail').style.display = 'block';
-  document.getElementById('comm-selected-team-name').textContent = teamName;
+  document.getElementById('comm-selected-team-name').textContent = teamLabel(teamName);
   buildMonthTabs(teamName);
   renderCommission(teamName, null);
   document.getElementById('comm-detail').scrollIntoView({behavior:'smooth'});
@@ -15904,7 +15972,7 @@ function renderCommMemberRows(containerId, payments, type){
       <div class="mem-pay-avatar" style="background:rgba(240,185,11,0.12);">👤</div>
       <div style="flex:1;min-width:0;">
         <div style="font-weight:600;font-size:0.88rem;">${mem.name}</div>
-        <div style="font-size:0.72rem;color:var(--muted);">ID: ${mem.id} | ${mem.team}</div>
+        <div style="font-size:0.72rem;color:var(--muted);">ID: ${mem.id} | ${teamLabel(mem.team)}</div>
       </div>
       <div style="text-align:right;flex-shrink:0;">
         <div style="font-size:0.68rem;color:var(--muted);">${tccT('yt.row.profit')} <span style="color:var(--gold);">${fmt(totalProfit)}</span></div>
@@ -16554,7 +16622,7 @@ function buildClaimTable(rows, isAdmin=false){
     return `<tr ${rowClickAttr}>
       <td style="text-align:left;">${r.Name||'-'}</td>
       <td style="text-align:left;">${r.BnbId||'-'}</td>
-      <td style="text-align:left;">${r.Team||'-'}</td>
+      <td style="text-align:left;">${teamLabel(r.Team)||'-'}</td>
       <td>${fmtDate(r.LastCapitalDate)}</td>
       <td>${fmtDate(r.DamageDate)}</td>
       <td>${fmtNum(c.capital)}</td>
@@ -16779,7 +16847,7 @@ function buildClaimCardsUser(rows){
       + '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px;">'
       + '<div style="flex:1;min-width:0;">'
       + '<div style="font-family:\'Rajdhani\',sans-serif;font-size:.98rem;font-weight:700;color:var(--gold);">'+(r.Name||'-')+'</div>'
-      + '<div style="font-size:.72rem;color:var(--text-dim);margin-top:2px;">🆔 '+(r.BnbId||'-')+' · 👥 '+(r.Team||'-')+'</div>'
+      + '<div style="font-size:.72rem;color:var(--text-dim);margin-top:2px;">🆔 '+(r.BnbId||'-')+' · 👥 '+(teamLabel(r.Team)||'-')+'</div>'
       + '</div>'
       + '<span style="background:'+si.bg+';border:1px solid '+si.border+';border-radius:8px;'
       + 'padding:3px 8px;font-size:.68rem;color:'+si.color+';white-space:nowrap;flex-shrink:0;">'
@@ -16827,7 +16895,7 @@ function _showClpDetail(idx){
     + '<div class="cld-cell"><div class="cld-cell-label">'+T('cl.d.name')+'</div><div class="cld-cell-val gold">'+(r.Name||'-')+'</div></div>'
     + '<div class="cld-cell"><div class="cld-cell-label">'+T('cl.d.phone')+'</div><div class="cld-cell-val dim">'+_maskPhone(r.Phone)+'</div></div>'
     + '<div class="cld-cell"><div class="cld-cell-label">🆔 Binance ID</div><div class="cld-cell-val dim">'+(r.BnbId||'-')+'</div></div>'
-    + '<div class="cld-cell"><div class="cld-cell-label">'+T('cl.d.team')+'</div><div class="cld-cell-val">'+(r.Team||'-')+'</div></div>'
+    + '<div class="cld-cell"><div class="cld-cell-label">'+T('cl.d.team')+'</div><div class="cld-cell-val">'+(teamLabel(r.Team)||'-')+'</div></div>'
     + '</div>'
     + '<div class="cld-section-label">'+T('cl.d.claimSec')+'</div>'
     + '<div class="cld-highlight"><div class="cld-highlight-label">'+T('cl.d.claimAmt')+'</div><div class="cld-highlight-val red">'+fmtNum(c.claimAmt)+'</div></div>'
@@ -17289,7 +17357,7 @@ function clmAutoFill(){
 
   if(spinEl) spinEl.style.display='inline';
   tccMemberLookup(bnbid).then(function(d){
-    if(d&&d.found) applyMember(d.name||'', d.team||''); else notFound();
+    if(d&&d.found) applyMember(d.name||'', teamLabel(d.team||'')); else notFound();
   }).catch(function(){ notFound(); });
 }
 
@@ -17492,7 +17560,7 @@ function buildClaim10Table(rows, isAdmin=false){
     return `<tr ${rowClickAttr10}>
       <td style="text-align:left;">${r.Name||'-'}</td>
       <td style="text-align:left;">${r.BnbId||'-'}</td>
-      <td style="text-align:left;">${r.Team||'-'}</td>
+      <td style="text-align:left;">${teamLabel(r.Team)||'-'}</td>
       <td style="text-align:left;">${c.tradeMonth}</td>
       <td>${fmtDate(r.StartDate)}</td>
       <td>${fmtDate(r.EndDate)}</td>
@@ -17710,7 +17778,7 @@ function buildClaim10CardsUser(rows){
       + '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px;">'
       + '<div style="flex:1;min-width:0;">'
       + '<div style="font-family:\'Rajdhani\',sans-serif;font-size:.98rem;font-weight:700;color:var(--gold);">'+(r.Name||'-')+'</div>'
-      + '<div style="font-size:.72rem;color:var(--text-dim);margin-top:2px;">🆔 '+(r.BnbId||'-')+' · 👥 '+(r.Team||'-')+'</div>'
+      + '<div style="font-size:.72rem;color:var(--text-dim);margin-top:2px;">🆔 '+(r.BnbId||'-')+' · 👥 '+(teamLabel(r.Team)||'-')+'</div>'
       + '</div>'
       + '<span style="background:'+si.bg+';border:1px solid '+si.border+';border-radius:8px;'
       + 'padding:3px 8px;font-size:.68rem;color:'+si.color+';white-space:nowrap;flex-shrink:0;">'
@@ -17765,7 +17833,7 @@ function _showC10Detail(idx){
     + '<div class="cld-cell"><div class="cld-cell-label">'+T('cl.d.name')+'</div><div class="cld-cell-val gold">'+(r.Name||'-')+'</div></div>'
     + '<div class="cld-cell"><div class="cld-cell-label">'+T('cl.d.phone')+'</div><div class="cld-cell-val dim">'+_maskPhone(r.Phone)+'</div></div>'
     + '<div class="cld-cell"><div class="cld-cell-label">🆔 Binance ID</div><div class="cld-cell-val dim">'+(r.BnbId||'-')+'</div></div>'
-    + '<div class="cld-cell"><div class="cld-cell-label">'+T('cl.d.team')+'</div><div class="cld-cell-val">'+(r.Team||'-')+'</div></div>'
+    + '<div class="cld-cell"><div class="cld-cell-label">'+T('cl.d.team')+'</div><div class="cld-cell-val">'+(teamLabel(r.Team)||'-')+'</div></div>'
     + '</div>'
     + '<div class="cld-section-label">'+T('cl.d.monthSum')+'</div>'
     + '<div style="display:flex;gap:8px;margin-bottom:4px;">'
@@ -18184,7 +18252,7 @@ function c10AutoFill(){
   }
   if(spinEl) spinEl.style.display='inline';
   tccMemberLookup(bnbid).then(function(d){
-    if(d&&d.found) applyMember(d.name||'', d.team||''); else notFound();
+    if(d&&d.found) applyMember(d.name||'', teamLabel(d.team||'')); else notFound();
   }).catch(function(){ notFound(); });
 }
 
@@ -18651,7 +18719,7 @@ function openCommPayModal(teamName, monthKey, amtNum, owner, members, wallet, qr
   function fmt2(v){ return '$'+parseFloat(v||0).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}); }
   function setEl(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
 
-  setEl('cpm-team-name',     '🏆 '+(teamName||'—'));
+  setEl('cpm-team-name',     '🏆 '+(teamLabel(teamName)||'—'));
   setEl('cpm-owner',         owner||'—');
   setEl('cpm-members',       (members||'0')+' คน');
   setEl('cpm-month',         monthLabel||'—');
@@ -19222,7 +19290,7 @@ window.memRowClick = function(idx){
   var setText = function(id,v){ var e=document.getElementById(id); if(e) e.textContent=(v||'—'); };
   setText('mdi-bnbid', memVal(m,'id'));
   setText('mdi-name',  memVal(m,'name'));
-  setText('mdi-team',  '🏆 '+memVal(m,'team'));
+  setText('mdi-team',  '🏆 '+teamLabel(memVal(m,'team')));
   var badgeEl = document.getElementById('mdi-badge');
   if(badgeEl){
     var st = memVal(m,'status');
@@ -19244,10 +19312,13 @@ window.memRowClick = function(idx){
   // dropdown ทีม
   var teamSel = document.getElementById('md-team');
   if(teamSel){
-    var teams   = [...new Set(MEMBERS.map(function(x){ return memVal(x,'team'); }).filter(Boolean))].sort();
+    // v NV11: ทีมที่เลือกได้ = ทีมในประเทศของสมาชิกคนนี้ (+ ทีมปัจจุบัน ถ้าไม่อยู่ในรายการ)
+    var mcc     = (String(m.Country||'').trim().toUpperCase())||'TH';
     var curTeam = memVal(m,'team');
+    var teams   = TEAMS.filter(function(t){ return teamVal(t,'country')===mcc; }).map(function(t){ return teamVal(t,'name'); }).filter(Boolean).sort();
+    if(curTeam && teams.indexOf(curTeam)<0) teams.unshift(curTeam);
     teamSel.innerHTML = '<option value="">— เลือกทีม —</option>'
-      + teams.map(function(t){ return '<option value="'+t+'"'+(t===curTeam?' selected':'')+'>'+t+'</option>'; }).join('');
+      + teams.map(function(t){ return '<option value="'+esc(t)+'"'+(t===curTeam?' selected':'')+'>'+esc(teamLabel(t))+'</option>'; }).join('');
   }
 
   // dropdown สถานะ
@@ -19367,7 +19438,7 @@ function _buildMemberTeamFilter(){
   var curVal = sel.value;
   var teams = [...new Set(MEMBERS.map(function(m){ return memVal(m,'team'); }).filter(Boolean))].sort();
   sel.innerHTML='<option value="">🏆 ทีมทั้งหมด</option>'
-    +teams.map(function(t){ return '<option value="'+t+'"'+(t===curVal?' selected':'')+'>'+t+'</option>'; }).join('');
+    +teams.map(function(t){ return '<option value="'+esc(t)+'"'+(t===curVal?' selected':'')+'>'+esc(teamLabel(t))+'</option>'; }).join('');
 }
 
 function renderMembersAdminTable(){
@@ -19424,7 +19495,7 @@ function renderMembersAdminTable(){
       +'<td style="color:var(--text-dim);">'+(i+1)+'</td>'
       +'<td style="color:var(--gold);font-family:monospace;font-weight:600;">'+memVal(m,'id')+'</td>'
       +'<td style="font-weight:500;color:var(--text);" title="'+safeName+'">'+memVal(m,'name')+'</td>'
-      +'<td style="color:#94a3b8;">'+memVal(m,'team')+'</td>'
+      +'<td style="color:#94a3b8;">'+teamLabel(memVal(m,'team'))+'</td>'
       +'<td>'+badge(memVal(m,'status'))+'</td>'
       +'<td style="font-family:monospace;font-size:.74rem;">'+(m['Phone']||'—')+'</td>'
       +'<td>'+(m['Country']||'—')+'</td>'
@@ -19611,7 +19682,7 @@ function tcS2(){
     <div class="tc-mem-banner">
       <div class="tc-mem-av">${(name||'?')[0].toUpperCase()}</div>
       <div><div class="tc-mem-name">${masked}</div>
-      <div class="tc-mem-sub">${tccT('tf.2.team')}: ${memVal(m,'team')||'—'} | ID: ${memVal(m,'id')}</div></div>
+      <div class="tc-mem-sub">${tccT('tf.2.team')}: ${teamLabel(memVal(m,'team'))||'—'} | ID: ${memVal(m,'id')}</div></div>
     </div>
     ${appInfo}
     <div class="tc-grp"><label class="tc-lbl">${tccT('tf.2.phone')}</label>
@@ -19703,7 +19774,7 @@ function tcS4(){
     <div class="tc-mem-banner">
       <div class="tc-mem-av">${(memVal(m,'name')||'?')[0].toUpperCase()}</div>
       <div><div class="tc-mem-name">${memVal(m,'name')}</div>
-      <div class="tc-mem-sub">BNB ID: ${memVal(m,'id')} | ${tccT('tf.2.team')}: ${memVal(m,'team')||'—'}</div></div>
+      <div class="tc-mem-sub">BNB ID: ${memVal(m,'id')} | ${tccT('tf.2.team')}: ${teamLabel(memVal(m,'team'))||'—'}</div></div>
     </div>
   </div>
 
@@ -20269,7 +20340,7 @@ function tcS5Team(teamName){
     const t=payVal(p,'team'),la=payVal(p,'lva'),lb=payVal(p,'lvb');
     return t===teamName||la===teamName||lb===teamName;
   });
-  if(!allRows.length) return `<div style="text-align:center;padding:24px;color:var(--muted);">${tccT('d2.empty.h',{t:teamName})}</div>`;
+  if(!allRows.length) return `<div style="text-align:center;padding:24px;color:var(--muted);">${tccT('d2.empty.h',{t:teamLabel(teamName)})}</div>`;
 
   // ── เดือน dropdown ────────────────────────────────────────────
   const months={};
@@ -20312,7 +20383,7 @@ function tcS5Team(teamName){
       display:flex;align-items:center;gap:12px;">
     <div style="font-size:2rem;">🏆</div>
     <div style="flex:1;">
-      <div style="font-size:.95rem;font-weight:800;color:var(--gold);">${teamName}</div>
+      <div style="font-size:.95rem;font-weight:800;color:var(--gold);">${teamLabel(teamName)}</div>
       <div style="font-size:.72rem;color:var(--text-dim);margin-top:3px;">YT: ${fmtD(ytAmt)} · LA: ${fmtD(laAmt)} · LB: ${fmtD(lbAmt)}</div>
     </div>
     <div style="text-align:right;">
@@ -20512,7 +20583,7 @@ function tcS5Members(teamName){
         display:flex;align-items:center;gap:12px;">
       <div style="font-size:1.8rem;">👥</div>
       <div style="flex:1;">
-        <div style="font-size:.92rem;font-weight:800;color:rgba(96,165,250,.95);">${teamName}</div>
+        <div style="font-size:.92rem;font-weight:800;color:rgba(96,165,250,.95);">${teamLabel(teamName)}</div>
         <div style="font-size:.7rem;color:var(--text-dim);margin-top:2px;">${tccT('d3.hdr')}</div>
       </div>
       <div style="text-align:right;">
@@ -22339,7 +22410,7 @@ function renderAdminApps(){
       <td style="padding:9px 10px;color:var(--text-dim);">${i+1}</td>
       <td style="padding:9px 10px;color:var(--gold);font-family:monospace;font-weight:600;">${esc(r.BNB_ID)||'—'}</td>
       <td style="padding:9px 10px;font-weight:500;">${esc(r.MemberName)||'—'}</td>
-      <td style="padding:9px 10px;color:#94a3b8;">${esc(r.Team)||'—'}</td>
+      <td style="padding:9px 10px;color:#94a3b8;">${esc(teamLabel(r.Team))||'—'}</td>
       <td style="padding:9px 10px;text-align:center;font-size:.74rem;">
         <span style="color:${isT?'#60a5fa':'var(--gold)'};">${r.DesiredPosition||'—'}</span><br>
         <span style="color:var(--text-dim);">${r.TargetMonths||'—'}เดือน|${r.TargetMembers||'—'}คน</span></td>
@@ -22391,7 +22462,7 @@ function openAppDetail(id){
       <div style="display:grid;grid-template-columns:130px 1fr;gap:5px 12px;font-size:.79rem;">
         <span style="color:var(--text-dim);">ชื่อ-สกุล</span><span style="font-weight:600;">${r.MemberName||'—'}</span>
         <span style="color:var(--text-dim);">BNB ID</span><span style="font-family:monospace;color:var(--gold);">${r.BNB_ID||'—'}</span>
-        <span style="color:var(--text-dim);">ทีม</span><span>${r.Team||'—'}</span>
+        <span style="color:var(--text-dim);">ทีม</span><span>${teamLabel(r.Team)||'—'}</span>
         <span style="color:var(--text-dim);">เบอร์โทร</span><span>${r.Phone||'—'}</span>
         <span style="color:var(--text-dim);">ยื่นวันที่</span><span>${(r.SubmittedAt||'—').slice(0,10)}</span>
         <span style="color:var(--text-dim);">สถานะ</span><span>${tcBadge(r.Status||'Pending')}</span>

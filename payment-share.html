@@ -370,6 +370,24 @@
     .summary-grid { grid-template-columns: 1fr 1fr; }
     .summary-grid .highlight { grid-column: span 2; }
   }
+
+  .top-banner-right { display:flex; align-items:center; gap:8px; min-width:0; flex:1; justify-content:flex-end; }
+  .top-banner-badge { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+  .wallet-click { cursor:pointer; margin-top:4px; }
+  .wallet-click:hover { color: var(--gold); }
+
+  /* ── ปุ่ม/เมนูเลือกภาษา (เหมือนไฟล์หลัก) ── */
+  .lang-btn{flex-shrink:0;height:28px;padding:0 10px;border-radius:14px;cursor:pointer;white-space:nowrap;
+    background:rgba(240,185,11,.1);color:var(--gold);border:1px solid rgba(240,185,11,.28);
+    font:600 .72rem 'Rajdhani',sans-serif;letter-spacing:.5px;transition:background .2s;}
+  .lang-btn:hover{background:rgba(240,185,11,.2);}
+  #tcc-lang-menu{display:none;position:fixed;top:54px;right:10px;z-index:400;min-width:150px;
+    background:#131820;border:1px solid var(--border);border-radius:12px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.6);}
+  #tcc-lang-menu.open{display:block;}
+  #tcc-lang-menu button{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;
+    background:none;border:none;color:var(--text);padding:9px 12px;border-radius:8px;cursor:pointer;font-size:.85rem;text-align:left;font-family:'Rajdhani',sans-serif;}
+  #tcc-lang-menu button:hover{background:rgba(240,185,11,.1);}
+  #tcc-lang-menu button.on{color:var(--gold);font-weight:700;}
 </style>
 </head>
 <body>
@@ -380,24 +398,28 @@
     <img src="https://i.ibb.co/NbQpSTX/TCC-Logo.png" onerror="this.style.display='none'" alt="TCC">
     <div class="top-banner-brand-text">TRADERCAFECLUB</div>
   </div>
-  <div class="top-banner-badge">🔒 SECURED PAYMENT REPORT</div>
+  <div class="top-banner-right">
+    <div class="top-banner-badge" data-i18n="ps.badge">🔒 SECURED PAYMENT REPORT</div>
+    <button class="lang-btn" id="langBtnMain" type="button" aria-label="Language">🌐 TH</button>
+  </div>
 </div>
 
 <!-- Loading -->
 <div id="loading-screen">
   <div class="spinner"></div>
-  <div class="loading-text">⏳ กำลังโหลดข้อมูล...</div>
+  <div class="loading-text" data-i18n="ps.loading">⏳ กำลังโหลดข้อมูล...</div>
 </div>
 
 <!-- Error -->
 <div id="error-screen" style="display:none">
   <div style="background:linear-gradient(160deg,#131820,#0b0e13);border:1px solid rgba(239,68,68,0.3);border-radius:18px;padding:32px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,0.7);">
     <div style="font-size:3rem;margin-bottom:16px;">🔒</div>
-    <div style="font-family:'Orbitron',monospace;font-size:0.88rem;color:#f87171;letter-spacing:1.5px;margin-bottom:10px;">LINK INVALID</div>
-    <div class="error-msg" id="error-msg" style="color:#94a3b8;font-size:0.82rem;line-height:1.7;margin-bottom:20px;">ลิงก์นี้อาจหมดอายุหรือไม่ถูกต้อง กรุณาติดต่อแอดมิน</div>
+    <div style="font-family:'Orbitron',monospace;font-size:0.88rem;color:#f87171;letter-spacing:1.5px;margin-bottom:10px;" data-i18n="ps.err.title">LINK INVALID</div>
+    <div class="error-msg" id="error-msg" data-i18n="ps.err.default" style="color:#94a3b8;font-size:0.82rem;line-height:1.7;margin-bottom:20px;">ลิงก์นี้อาจหมดอายุหรือไม่ถูกต้อง กรุณาติดต่อแอดมิน</div>
     <div style="background:rgba(240,185,11,0.06);border:1px solid rgba(240,185,11,0.2);border-radius:10px;padding:12px 16px;">
-      <div style="font-size:0.68rem;color:#f0b90b;font-weight:600;letter-spacing:1px;margin-bottom:4px;">ℹ️ SECURE SHARE LINK</div>
-      <div style="font-size:0.72rem;color:#64748b;line-height:1.6;">ลิงก์แชร์มีอายุ 7 วัน และสร้างได้เฉพาะแอดมินเท่านั้น<br>เพื่อความปลอดภัยของข้อมูล</div>
+      <div style="font-size:0.68rem;color:#f0b90b;font-weight:600;letter-spacing:1px;margin-bottom:4px;" data-i18n="ps.err.infoT">ℹ️ SECURE SHARE LINK</div>
+      <div style="font-size:0.72rem;color:#64748b;line-height:1.6;white-space:pre-line;" data-i18n="ps.err.infoM">ลิงก์แชร์มีอายุ 7 วัน และสร้างได้เฉพาะแอดมินเท่านั้น
+เพื่อความปลอดภัยของข้อมูล</div>
     </div>
   </div>
 </div>
@@ -407,6 +429,171 @@
 
 <!-- Toast -->
 <div id="toast"></div>
+
+<!-- ═══ TCC i18n — 9 ภาษา (th en vi kh mm la ms id zh) · โครงสร้างเดียวกับ index_L_Main (ใช้ key pd.* ชุดเดียวกัน) ═══ -->
+<script id="tcc-i18n">
+/* =====================================================================
+   TCC i18n — โครงสร้างภาษา (เหมือนไฟล์หลัก index_L_Main)
+   ลำดับภาษา (ห้ามสลับ): th en vi kh mm la ms id zh   ·   key → [th, en, vi, kh, mm, la, ms, id, zh]
+   วิธีใช้
+     • JS        : tccT('pd.copy')  ·  tccT('pd.tradeN',{n:3}) แทน {n} ในข้อความ
+     • HTML      : data-i18n="key" (ข้อความ) · data-i18n-ph="key" (placeholder) · data-i18n-title="key" (title)
+     • เพิ่มคำ   : Object.assign(TCC_I18N, { 'page.key': [th,en,vi,kh,mm,la,ms,id,zh] })  แล้วเรียก tccI18nCheck() ต้องได้ []
+     • หน้าที่วาดเอง : ฟัง document.addEventListener('tcc-lang', e => render())  (e.detail.lang)
+   ภาษา: จำใน localStorage "tcc_lang" (+ ?lang=xx ใน URL) — ใช้ร่วมกับหน้าหลัก
+   คีย์ pd.* / pay.status.* / common.* / lang.* คัดลอกจากไฟล์หลักตรงตัว · คีย์ ps.* เป็นของหน้า payment-share เท่านั้น
+   ===================================================================== */
+(function(){
+  var LANGS=['th','en','vi','kh','mm','la','ms','id','zh'], IDX={th:0,en:1,vi:2,kh:3,mm:4,la:5,ms:6,id:7,zh:8};
+  var HTML_LANG={th:'th',en:'en',vi:'vi',kh:'km',mm:'my',la:'lo',ms:'ms',id:'id',zh:'zh-CN'};
+  var NATIVE={th:'ไทย',en:'English',vi:'Tiếng Việt',kh:'ខ្មែរ',mm:'မြန်မာ',la:'ລາວ',ms:'Bahasa Melayu',id:'Bahasa Indonesia',zh:'简体中文'};
+  var KEY='tcc_lang', CHAT_KEY='sc_lang', cur='th';
+  function lsGet(k){try{return localStorage.getItem(k)||'';}catch(e){return '';}}
+  function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+  function has(l){return Object.prototype.hasOwnProperty.call(IDX,l);}
+  function $(id){return document.getElementById(id);}
+  function qa(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
+
+  var D = window.TCC_I18N = {
+    // ── คีย์ที่คัดลอกจากไฟล์หลักตรงตัว (common.* · lang.* · pay.status.* · pd.*) ──
+    'common.copied':  ['คัดลอกแล้ว!','Copied!','Đã sao chép!','បានចម្លង!','ကူးယူပြီး!','ສຳເນົາແລ້ວ!','Disalin!','Tersalin!','已复制！'],
+    'common.retry':   ['ลองใหม่อีกครั้ง','Try again','Thử lại','ព្យាយាមម្តងទៀត','ထပ်ကြိုးစားပါ','ລອງໃໝ່ອີກຄັ້ງ','Cuba lagi','Coba lagi','重试'],
+    'lang.title':     ['ภาษา','Language','Ngôn ngữ','ភាសា','ဘာသာစကား','ພາສາ','Bahasa','Bahasa','语言'],
+    "pay.status.paid": ["✅ จ่ายแล้ว", "✅ Paid", "✅ Đã thanh toán", "✅ បានបង់", "✅ ပေးချေပြီး", "✅ ຈ່າຍແລ້ວ","✅ Dibayar","✅ Dibayar","✅ 已支付"],
+    "pay.status.unpaid": ["⏳ รอชำระ", "⏳ Awaiting payment", "⏳ Chờ thanh toán", "⏳ រង់ចាំការទូទាត់", "⏳ ငွေပေးချေရန် စောင့်ဆိုင်းဆဲ", "⏳ ລໍຖ້າຊຳລະ","⏳ Menunggu pembayaran","⏳ Menunggu pembayaran","⏳ 待支付"],
+    "pd.share": ["🔗 แชร์", "🔗 Share", "🔗 Chia sẻ", "🔗 ចែករំលែក", "🔗 မျှဝေရန်", "🔗 ແບ່ງປັນ","🔗 Kongsi","🔗 Bagikan","🔗 分享"],
+    "pd.report": ["PAYMENT REPORT", "PAYMENT REPORT", "BÁO CÁO THANH TOÁN", "របាយការណ៍ការទូទាត់", "ငွေပေးချေမှု အစီရင်ခံစာ", "ລາຍງານການຊຳລະ","LAPORAN PEMBAYARAN","LAPORAN PEMBAYARAN","支付报告"],
+    "pd.live": ["LIVE REPORT", "LIVE REPORT", "BÁO CÁO TRỰC TIẾP", "របាយការណ៍ផ្ទាល់", "တိုက်ရိုက် အစီရင်ခံစာ", "ລາຍງານສົດ","LAPORAN LANGSUNG","LAPORAN LANGSUNG","实时报告"],
+    "pd.official": ["✦ OFFICIAL REPORT No.{id}", "✦ OFFICIAL REPORT No.{id}", "✦ BÁO CÁO CHÍNH THỨC Số {id}", "✦ របាយការណ៍ផ្លូវការ លេខ {id}", "✦ တရားဝင် အစီရင်ခံစာ အမှတ် {id}", "✦ ລາຍງານຢ່າງເປັນທາງການ ເລກທີ {id}","✦ LAPORAN RASMI No.{id}","✦ LAPORAN RESMI No.{id}","✦ 正式报告 No.{id}"],
+    "pd.teamComm": ["TEAM COMMISSION", "TEAM COMMISSION", "HOA HỒNG ĐỘI", "កម្រៃជើងសារក្រុម", "အသင်း ကော်မရှင်", "ຄ່າຄອມມິດຊັນທີມ","KOMISEN PASUKAN","KOMISI TIM","团队佣金"],
+    "pd.ofComm": ["{p}% ของค่าคอม", "{p}% of commission", "{p}% hoa hồng", "{p}% នៃកម្រៃជើងសារ", "ကော်မရှင်၏ {p}%", "{p}% ຂອງຄ່າຄອມ","{p}% daripada komisen","{p}% dari komisi","佣金的 {p}%"],
+    "pd.memShare": ["ส่วนแบ่งสมาชิก (50%)", "Member share (50%)", "Phần của thành viên (50%)", "ចំណែកសមាជិក (50%)", "အဖွဲ့ဝင် ရရှိမည့်အစု (50%)", "ສ່ວນແບ່ງສະມາຊິກ (50%)","Bahagian ahli (50%)","Bagian anggota (50%)","会员分成 (50%)"],
+    "pd.guarShare": ["ส่วนประกันกำไร (10%)", "Profit guarantee (10%)", "Phần bảo đảm lợi nhuận (10%)", "ចំណែកធានាប្រាក់ចំណេញ (10%)", "အမြတ်အာမခံ အစု (10%)", "ສ່ວນປະກັນກຳໄລ (10%)","Jaminan keuntungan (10%)","Jaminan keuntungan (10%)","利润保障 (10%)"],
+    "pd.totalIncome": ["⭐ ส่วนรายได้รวม", "⭐ Total income share", "⭐ Tổng phần thu nhập", "⭐ ចំណែកប្រាក់ចំណូលសរុប", "⭐ စုစုပေါင်း ဝင်ငွေအစု", "⭐ ສ່ວນລາຍໄດ້ລວມ","⭐ Jumlah bahagian pendapatan","⭐ Total bagian pendapatan","⭐ 收入分成合计"],
+    "pd.shareDetail": ["📊 รายละเอียดส่วนแบ่ง", "📊 Share breakdown", "📊 Chi tiết phân chia", "📊 ព័ត៌មានលម្អិតនៃការបែងចែក", "📊 အစုခွဲဝေမှု အသေးစိတ်", "📊 ລາຍລະອຽດສ່ວນແບ່ງ","📊 Butiran pembahagian","📊 Rincian pembagian","📊 分成明细"],
+    "pd.r.profit": ["กำไรรวม (100%)", "Total profit (100%)", "Tổng lợi nhuận (100%)", "ប្រាក់ចំណេញសរុប (100%)", "အမြတ် စုစုပေါင်း (100%)", "ກຳໄລລວມ (100%)","Jumlah keuntungan (100%)","Total keuntungan (100%)","总利润 (100%)"],
+    "pd.r.guar": ["ประกันกำไร (10%)", "Profit guarantee (10%)", "Bảo đảm lợi nhuận (10%)", "ការធានាប្រាក់ចំណេញ (10%)", "အမြတ်အာမခံ (10%)", "ປະກັນກຳໄລ (10%)","Jaminan keuntungan (10%)","Jaminan keuntungan (10%)","利润保障 (10%)"],
+    "pd.r.comm": ["ค่าคอมมิชั่น (10%)", "Commission (10%)", "Hoa hồng (10%)", "កម្រៃជើងសារ (10%)", "ကော်မရှင် (10%)", "ຄ່າຄອມມິດຊັນ (10%)","Komisen (10%)","Komisi (10%)","佣金 (10%)"],
+    "pd.r.net": ["คงเหลือสุทธิ (80%)", "Net remaining (80%)", "Còn lại ròng (80%)", "សល់សុទ្ធ (80%)", "အသားတင် ကျန်ငွေ (80%)", "ຍັງເຫຼືອສຸດທິ (80%)","Baki bersih (80%)","Sisa bersih (80%)","净余额 (80%)"],
+    "pd.r.trader": ["ส่วนผู้เทรด (50%)", "Trader share (50%)", "Phần của nhà giao dịch (50%)", "ចំណែកអ្នកជួញដូរ (50%)", "ကုန်သွယ်သူ အစု (50%)", "ສ່ວນຜູ້ຊື້ຂາຍ (50%)","Bahagian peniaga (50%)","Bagian trader (50%)","交易员分成 (50%)"],
+    "pd.r.system": ["ส่วนระบบ (50%)", "System share (50%)", "Phần của hệ thống (50%)", "ចំណែកប្រព័ន្ធ (50%)", "စနစ် အစု (50%)", "ສ່ວນລະບົບ (50%)","Bahagian sistem (50%)","Bagian sistem (50%)","系统分成 (50%)"],
+    "pd.intoSystem": ["💳 รายละเอียดเข้าระบบ", "💳 System deposit details", "💳 Chi tiết nộp vào hệ thống", "💳 ព័ត៌មានលម្អិតចូលប្រព័ន្ធ", "💳 စနစ်သို့ ဝင်ငွေ အသေးစိတ်", "💳 ລາຍລະອຽດເຂົ້າລະບົບ","💳 Butiran deposit sistem","💳 Rincian setoran ke sistem","💳 系统入账明细"],
+    "pd.commission": ["ค่าคอมมิชั่น", "Commission", "Hoa hồng", "កម្រៃជើងសារ", "ကော်မရှင်", "ຄ່າຄອມມິດຊັນ","Komisen","Komisi","佣金"],
+    "pd.systemShare": ["ส่วนระบบ", "System share", "Phần hệ thống", "ចំណែកប្រព័ន្ធ", "စနစ် အစု", "ສ່ວນລະບົບ","Bahagian sistem","Bagian sistem","系统分成"],
+    "pd.sum": ["🔖 ยอดรวม", "🔖 Total", "🔖 Tổng cộng", "🔖 សរុប", "🔖 စုစုပေါင်း", "🔖 ຍອດລວມ","🔖 Jumlah","🔖 Total","🔖 合计"],
+    "pd.totalTransfer": ["TOTAL TRANSFER AMOUNT", "TOTAL TRANSFER AMOUNT", "TỔNG SỐ TIỀN CHUYỂN", "ចំនួនទឹកប្រាក់ត្រូវផ្ទេរសរុប", "လွှဲပြောင်းရမည့် စုစုပေါင်းပမာဏ", "ຍອດເງິນໂອນທັງໝົດ","JUMLAH PINDAHAN","TOTAL TRANSFER","转账总额"],
+    "pd.trades": ["📈 ประวัติการเทรด", "📈 Trading history", "📈 Lịch sử giao dịch", "📈 ប្រវត្តិជួញដូរ", "📈 ကုန်သွယ်မှု မှတ်တမ်း", "📈 ປະຫວັດການຊື້ຂາຍ","📈 Sejarah dagangan","📈 Riwayat trading","📈 交易记录"],
+    "pd.tradeN": ["ครั้งที่ {n}", "Trade #{n}", "Lần {n}", "លើកទី {n}", "အကြိမ် {n}", "ຄັ້ງທີ {n}","Dagangan #{n}","Trading #{n}","第 {n} 笔交易"],
+    "pd.senderMismatch": ["⚠️ ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียนไว้ — ระบบอนุมัติให้แล้ว และแจ้งแอดมินตรวจสอบเพิ่มเติม", "⚠️ The sender does not match the registered wallet — the system has approved it and notified an admin to review further", "⚠️ Người chuyển không khớp với ví đã đăng ký — hệ thống đã duyệt và thông báo cho quản trị viên kiểm tra thêm", "⚠️ អ្នកផ្ទេរមិនត្រូវនឹងកាបូបដែលបានចុះឈ្មោះទេ — ប្រព័ន្ធបានអនុម័ត ហើយជូនដំណឹងអ្នកគ្រប់គ្រងឱ្យពិនិត្យបន្ថែម", "⚠️ ငွေလွှဲသူသည် မှတ်ပုံတင်ထားသော ပိုက်ဆံအိတ်နှင့် မကိုက်ညီပါ — စနစ်က အတည်ပြုပေးပြီး အက်မင်ကို ထပ်မံစစ်ဆေးရန် အသိပေးထားသည်", "⚠️ ຜູ້ໂອນບໍ່ກົງກັບກະເປົາທີ່ລົງທະບຽນໄວ້ — ລະບົບອະນຸມັດໃຫ້ແລ້ວ ແລະ ແຈ້ງແອດມິນກວດສອບເພີ່ມເຕີມ","⚠️ Penghantar tidak sepadan dengan dompet yang didaftarkan — sistem telah meluluskannya dan memaklumkan admin untuk semakan lanjut","⚠️ Pengirim tidak sesuai dengan dompet yang terdaftar — sistem telah menyetujuinya dan memberi tahu admin untuk pemeriksaan lebih lanjut","⚠️ 转账方与已注册的钱包不一致 — 系统已予通过，并通知管理员进一步核查"],
+    "pd.review.mismatch": ["🔎 พบการโอนแล้ว — แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน แอดมินกำลังตรวจสอบ", "🔎 Transfer found — but the sender does not match the registered wallet. An admin is reviewing it", "🔎 Đã thấy giao dịch chuyển — nhưng người chuyển không khớp với ví đã đăng ký. Quản trị viên đang kiểm tra", "🔎 រកឃើញការផ្ទេរ — ប៉ុន្តែអ្នកផ្ទេរមិនត្រូវនឹងកាបូបដែលបានចុះឈ្មោះ។ អ្នកគ្រប់គ្រងកំពុងពិនិត្យ", "🔎 ငွေလွှဲမှု တွေ့ရှိပါပြီ — သို့သော် ငွေလွှဲသူသည် မှတ်ပုံတင်ထားသော ပိုက်ဆံအိတ်နှင့် မကိုက်ညီပါ။ အက်မင်က စစ်ဆေးနေသည်", "🔎 ພົບການໂອນແລ້ວ — ແຕ່ຜູ້ໂອນບໍ່ກົງກັບກະເປົາທີ່ລົງທະບຽນ. ແອດມິນກຳລັງກວດສອບ","🔎 Pindahan ditemui — tetapi penghantar tidak sepadan dengan dompet yang didaftarkan. Admin sedang menyemaknya","🔎 Transfer ditemukan — tetapi pengirim tidak sesuai dengan dompet yang terdaftar. Admin sedang memeriksanya","🔎 已发现转账 — 但转账方与已注册的钱包不一致，管理员正在核查"],
+    "pd.review.amount": ["🔎 พบการโอนแล้ว — แอดมินกำลังตรวจสอบยอด", "🔎 Transfer found — an admin is verifying the amount", "🔎 Đã thấy giao dịch chuyển — quản trị viên đang kiểm tra số tiền", "🔎 រកឃើញការផ្ទេរ — អ្នកគ្រប់គ្រងកំពុងពិនិត្យចំនួនទឹកប្រាក់", "🔎 ငွေလွှဲမှု တွေ့ရှိပါပြီ — အက်မင်က ပမာဏကို စစ်ဆေးနေသည်", "🔎 ພົບການໂອນແລ້ວ — ແອດມິນກຳລັງກວດສອບຍອດ","🔎 Pindahan ditemui — admin sedang mengesahkan jumlahnya","🔎 Transfer ditemukan — admin sedang memverifikasi jumlahnya","🔎 已发现转账 — 管理员正在核实金额"],
+    "pd.notice.title": ["⚠️ ก่อนโอน: กรุณาโอนจากเลขกระเป๋าที่ท่านลงทะเบียนไว้เท่านั้น", "⚠️ Before transferring: please send only from the wallet address you registered", "⚠️ Trước khi chuyển: vui lòng chỉ chuyển từ địa chỉ ví bạn đã đăng ký", "⚠️ មុនពេលផ្ទេរ៖ សូមផ្ទេរពីអាសយដ្ឋានកាបូបដែលអ្នកបានចុះឈ្មោះប៉ុណ្ណោះ", "⚠️ မလွှဲမီ — သင်မှတ်ပုံတင်ထားသော ပိုက်ဆံအိတ်လိပ်စာမှသာ လွှဲပါ", "⚠️ ກ່ອນໂອນ: ກະລຸນາໂອນຈາກເລກກະເປົາທີ່ທ່ານລົງທະບຽນໄວ້ເທົ່ານັ້ນ","⚠️ Sebelum memindahkan: sila hantar hanya dari alamat dompet yang anda daftarkan","⚠️ Sebelum transfer: harap kirim hanya dari alamat dompet yang Anda daftarkan","⚠️ 转账前：请仅使用您已注册的钱包地址转账"],
+    "pd.notice.sub": ["เพื่อความสะดวกรวดเร็วต่อการอนุมัติของระบบ หากโอนจากกระเป๋าอื่น อาจจะต้องตรวจสอบก่อนอนุมัติ", "For faster system approval. A transfer from another wallet may need to be checked before approval.", "Để hệ thống duyệt nhanh hơn. Nếu chuyển từ ví khác, có thể cần kiểm tra trước khi duyệt.", "ដើម្បីឱ្យប្រព័ន្ធអនុម័តបានលឿន។ ប្រសិនបើផ្ទេរពីកាបូបផ្សេង អាចត្រូវពិនិត្យមុនអនុម័ត។", "စနစ်၏ အတည်ပြုမှု မြန်ဆန်စေရန်။ အခြားပိုက်ဆံအိတ်မှ လွှဲပါက အတည်မပြုမီ စစ်ဆေးရန် လိုနိုင်သည်။", "ເພື່ອໃຫ້ລະບົບອະນຸມັດໄດ້ໄວ. ຖ້າໂອນຈາກກະເປົາອື່ນ ອາດຕ້ອງກວດສອບກ່ອນອະນຸມັດ.","Untuk kelulusan sistem yang lebih pantas. Pindahan dari dompet lain mungkin perlu disemak sebelum diluluskan.","Agar persetujuan sistem lebih cepat. Transfer dari dompet lain mungkin perlu diperiksa sebelum disetujui.","以便系统更快审批。若从其他钱包转账，可能需要先核查再审批。"],
+    "pd.scan": ["🔐 SCAN QR CODE FOR PAYMENT", "🔐 SCAN QR CODE FOR PAYMENT", "🔐 QUÉT MÃ QR ĐỂ THANH TOÁN", "🔐 ស្កេនកូដ QR ដើម្បីទូទាត់", "🔐 ငွေပေးချေရန် QR ကုဒ်ကို စကင်န်ဖတ်ပါ", "🔐 ສະແກນ QR ເພື່ອຊຳລະ","🔐 IMBAS KOD QR UNTUK BAYARAN","🔐 PINDAI KODE QR UNTUK PEMBAYARAN","🔐 扫描二维码付款"],
+    "pd.copy": ["📋 Copy", "📋 Copy", "📋 Sao chép", "📋 ចម្លង", "📋 ကူးယူရန်", "📋 ສຳເນົາ","📋 Salin","📋 Salin","📋 复制"],
+    "pd.usdtOnly": ["โอนเฉพาะ USDT บนเครือข่าย BEP-20 เท่านั้น — ระบบตรวจยอดอัตโนมัติ", "Transfer only USDT on the BEP-20 network — the system verifies the amount automatically", "Chỉ chuyển USDT trên mạng BEP-20 — hệ thống tự động kiểm tra số tiền", "ផ្ទេរតែ USDT លើបណ្តាញ BEP-20 ប៉ុណ្ណោះ — ប្រព័ន្ធពិនិត្យចំនួនទឹកប្រាក់ដោយស្វ័យប្រវត្តិ", "BEP-20 ကွန်ရက်ပေါ်ရှိ USDT ကိုသာ လွှဲပါ — စနစ်က ပမာဏကို အလိုအလျောက် စစ်ဆေးသည်", "ໂອນສະເພາະ USDT ໃນເຄືອຂ່າຍ BEP-20 ເທົ່ານັ້ນ — ລະບົບກວດຍອດອັດຕະໂນມັດ","Pindahkan hanya USDT melalui rangkaian BEP-20 — sistem mengesahkan jumlah secara automatik","Transfer hanya USDT melalui jaringan BEP-20 — sistem memverifikasi jumlah secara otomatis","仅限通过 BEP-20 网络转账 USDT — 系统将自动核对金额"],
+    "pd.exactAmt": [" (โอนยอดให้ตรงตามที่ระบุ)", " (transfer the exact amount shown)", " (chuyển đúng số tiền đã nêu)", " (ផ្ទេរចំនួនឱ្យត្រូវតាមដែលបានបញ្ជាក់)", " (ဖော်ပြထားသည့် ပမာဏအတိုင်း အတိအကျ လွှဲပါ)", " (ໂອນຍອດໃຫ້ຕົງຕາມທີ່ລະບຸ)"," (pindahkan jumlah tepat seperti yang dinyatakan)"," (transfer sesuai jumlah yang tertera)"," （请按所示金额准确转账）"],
+    "pd.clickCopy": ["CLICK ADDRESS TO COPY", "CLICK ADDRESS TO COPY", "NHẤN VÀO ĐỊA CHỈ ĐỂ SAO CHÉP", "ចុចលើអាសយដ្ឋានដើម្បីចម្លង", "ကူးယူရန် လိပ်စာကို နှိပ်ပါ", "ກົດທີ່ທີ່ຢູ່ເພື່ອສຳເນົາ","KLIK ALAMAT UNTUK SALIN","KLIK ALAMAT UNTUK MENYALIN","点击地址即可复制"],
+    "pd.waiting": ["⏳ รอการชำระเงิน", "⏳ Awaiting payment", "⏳ Đang chờ thanh toán", "⏳ កំពុងរង់ចាំការទូទាត់", "⏳ ငွေပေးချေမှု စောင့်ဆိုင်းနေသည်", "⏳ ລໍຖ້າການຊຳລະເງິນ","⏳ Menunggu pembayaran","⏳ Menunggu pembayaran","⏳ 等待付款"],
+    "pd.paidDone": ["✅ จ่ายเงินแล้ว", "✅ Paid", "✅ Đã thanh toán", "✅ បានបង់ប្រាក់រួច", "✅ ငွေပေးချေပြီး", "✅ ຈ່າຍເງິນແລ້ວ","✅ Telah dibayar","✅ Sudah dibayar","✅ 已付款"],
+    "pd.verified": ["🔗 VERIFIED ON BLOCKCHAIN", "🔗 VERIFIED ON BLOCKCHAIN", "🔗 ĐÃ XÁC MINH TRÊN BLOCKCHAIN", "🔗 បានផ្ទៀងផ្ទាត់លើប៊្លុកឆេន", "🔗 ဘလော့ခ်ချိန်းပေါ်တွင် အတည်ပြုပြီး", "🔗 ຢືນຢັນແລ້ວໃນບລັອກເຊນ","🔗 DISAHKAN DI BLOCKCHAIN","🔗 TERVERIFIKASI DI BLOCKCHAIN","🔗 已在区块链上验证"],
+    "pd.openBsc": ["เปิดดูบน BSCScan", "View on BSCScan", "Xem trên BSCScan", "មើលនៅលើ BSCScan", "BSCScan တွင် ကြည့်ရန်", "ເບິ່ງໃນ BSCScan","Lihat di BSCScan","Lihat di BSCScan","在 BSCScan 查看"],
+    "pd.clickBsc": ["คลิกเพื่อตรวจสอบบน BscScan.com", "Click to verify on BscScan.com", "Nhấn để kiểm tra trên BscScan.com", "ចុចដើម្បីផ្ទៀងផ្ទាត់នៅលើ BscScan.com", "BscScan.com တွင် စစ်ဆေးရန် နှိပ်ပါ", "ກົດເພື່ອກວດສອບໃນ BscScan.com","Klik untuk mengesahkan di BscScan.com","Klik untuk memverifikasi di BscScan.com","点击前往 BscScan.com 验证"],
+    "pd.mainWallet": ["กระเป๋าหลัก", "Main wallet", "Ví chính", "កាបូបមេ", "ပင်မပိုက်ဆံအိတ်", "ກະເປົາຫຼັກ","Dompet utama","Dompet utama","主钱包"],
+    "pd.secured": ["🔒 Secured & Encrypted ✦ Verified", "🔒 Secured & Encrypted ✦ Verified", "🔒 Bảo mật & Mã hóa ✦ Đã xác minh", "🔒 សុវត្ថិភាព និងអ៊ិនគ្រីប ✦ បានផ្ទៀងផ្ទាត់", "🔒 လုံခြုံပြီး ကုဒ်ဝှက်ထားသည် ✦ အတည်ပြုပြီး", "🔒 ປອດໄພ ແລະ ເຂົ້າລະຫັດ ✦ ຢືນຢັນແລ້ວ","🔒 Selamat & Disulitkan ✦ Disahkan","🔒 Aman & Terenkripsi ✦ Terverifikasi","🔒 安全加密 ✦ 已验证"],
+    "reg.loadingRow": ["⏳ กำลังโหลดข้อมูล...", "⏳ Loading data...", "⏳ Đang tải dữ liệu...", "⏳ កំពុងផ្ទុកទិន្នន័យ...", "⏳ ဒေတာ ရယူနေသည်...", "⏳ ກຳລັງໂຫຼດຂໍ້ມູນ...","⏳ Memuatkan data...","⏳ Memuat data...","⏳ 正在加载数据..."],
+    // ── ข้อความเฉพาะหน้า payment-share (คีย์ ps.*) ──
+    "ps.badge": ["🔒 SECURED PAYMENT REPORT","🔒 SECURED PAYMENT REPORT","🔒 BÁO CÁO THANH TOÁN BẢO MẬT","🔒 របាយការណ៍ការទូទាត់សុវត្ថិភាព","🔒 လုံခြုံသော ငွေပေးချေမှု အစီရင်ခံစာ","🔒 ລາຍງານການຊຳລະທີ່ປອດໄພ","🔒 LAPORAN PEMBAYARAN SELAMAT","🔒 LAPORAN PEMBAYARAN AMAN","🔒 安全支付报告"],
+    "ps.loading": ["⏳ กำลังโหลดข้อมูล...","⏳ Loading data...","⏳ Đang tải dữ liệu...","⏳ កំពុងផ្ទុកទិន្នន័យ...","⏳ ဒေတာ ရယူနေသည်...","⏳ ກຳລັງໂຫຼດຂໍ້ມູນ...","⏳ Memuatkan data...","⏳ Memuat data...","⏳ 正在加载数据..."],
+    "ps.err.title": ["LINK INVALID","LINK INVALID","LIÊN KẾT KHÔNG HỢP LỆ","តំណមិនត្រឹមត្រូវ","လင့်ခ် မမှန်ကန်ပါ","ລິ້ງບໍ່ຖືກຕ້ອງ","PAUTAN TIDAK SAH","TAUTAN TIDAK VALID","链接无效"],
+    "ps.err.default": ["ลิงก์นี้อาจหมดอายุหรือไม่ถูกต้อง กรุณาติดต่อแอดมิน","This link may have expired or is invalid. Please contact the admin.","Liên kết này có thể đã hết hạn hoặc không hợp lệ. Vui lòng liên hệ quản trị viên.","តំណនេះអាចផុតកំណត់ ឬមិនត្រឹមត្រូវ។ សូមទាក់ទងអ្នកគ្រប់គ្រង។","ဤလင့်ခ်သည် သက်တမ်းကုန်သွားနိုင်သည် သို့မဟုတ် မမှန်ကန်ပါ။ အက်မင်ကို ဆက်သွယ်ပါ။","ລິ້ງນີ້ອາດໝົດອາຍຸ ຫຼື ບໍ່ຖືກຕ້ອງ. ກະລຸນາຕິດຕໍ່ແອດມິນ.","Pautan ini mungkin telah tamat tempoh atau tidak sah. Sila hubungi admin.","Tautan ini mungkin sudah kedaluwarsa atau tidak valid. Silakan hubungi admin.","此链接可能已过期或无效，请联系管理员。"],
+    "ps.err.infoT": ["ℹ️ SECURE SHARE LINK","ℹ️ SECURE SHARE LINK","ℹ️ LIÊN KẾT CHIA SẺ BẢO MẬT","ℹ️ តំណចែករំលែកសុវត្ថិភាព","ℹ️ လုံခြုံသော မျှဝေလင့်ခ်","ℹ️ ລິ້ງແບ່ງປັນທີ່ປອດໄພ","ℹ️ PAUTAN KONGSI SELAMAT","ℹ️ TAUTAN BERBAGI AMAN","ℹ️ 安全分享链接"],
+    "ps.err.infoM": ["ลิงก์แชร์มีอายุ 7 วัน และสร้างได้เฉพาะแอดมินเท่านั้น\nเพื่อความปลอดภัยของข้อมูล","Share links are valid for 7 days and can only be created by admins\nfor data security","Liên kết chia sẻ có hiệu lực 7 ngày và chỉ quản trị viên mới tạo được\nnhằm bảo mật dữ liệu","តំណចែករំលែកមានសុពលភាព ៧ ថ្ងៃ ហើយអាចបង្កើតបានដោយអ្នកគ្រប់គ្រងតែប៉ុណ្ណោះ\nដើម្បីសុវត្ថិភាពនៃទិន្នន័យ","မျှဝေလင့်ခ်သည် ၇ ရက်သာ သက်တမ်းရှိပြီး အက်မင်များသာ ဖန်တီးနိုင်သည်\nဒေတာ လုံခြုံရေးအတွက် ဖြစ်သည်","ລິ້ງແບ່ງປັນມີອາຍຸ 7 ວັນ ແລະ ສ້າງໄດ້ສະເພາະແອດມິນເທົ່ານັ້ນ\nເພື່ອຄວາມປອດໄພຂອງຂໍ້ມູນ","Pautan kongsi sah selama 7 hari dan hanya boleh dicipta oleh admin\ndemi keselamatan data","Tautan berbagi berlaku 7 hari dan hanya dapat dibuat oleh admin\ndemi keamanan data","分享链接有效期为 7 天，仅管理员可生成\n以保障数据安全"],
+    "ps.r.expired": ["ลิงก์นี้หมดอายุแล้ว (มีอายุ 7 วัน) กรุณาติดต่อแอดมินเพื่อขอลิงก์ใหม่","This link has expired (valid for 7 days). Please contact the admin for a new link.","Liên kết này đã hết hạn (hiệu lực 7 ngày). Vui lòng liên hệ quản trị viên để xin liên kết mới.","តំណនេះបានផុតកំណត់ហើយ (មានសុពលភាព ៧ ថ្ងៃ)។ សូមទាក់ទងអ្នកគ្រប់គ្រងដើម្បីសុំតំណថ្មី។","ဤလင့်ခ်သည် သက်တမ်းကုန်သွားပြီ (၇ ရက်သာ ခံသည်)။ လင့်ခ်အသစ်ရရန် အက်မင်ကို ဆက်သွယ်ပါ။","ລິ້ງນີ້ໝົດອາຍຸແລ້ວ (ມີອາຍຸ 7 ວັນ). ກະລຸນາຕິດຕໍ່ແອດມິນເພື່ອຂໍລິ້ງໃໝ່.","Pautan ini telah tamat tempoh (sah selama 7 hari). Sila hubungi admin untuk pautan baharu.","Tautan ini sudah kedaluwarsa (berlaku 7 hari). Silakan hubungi admin untuk meminta tautan baru.","此链接已过期（有效期 7 天），请联系管理员获取新链接。"],
+    "ps.r.not_found": ["ไม่พบรายการการชำระเงิน (อาจถูกลบแล้ว) กรุณาติดต่อแอดมิน","Payment record not found (it may have been deleted). Please contact the admin.","Không tìm thấy giao dịch thanh toán (có thể đã bị xóa). Vui lòng liên hệ quản trị viên.","រកមិនឃើញកំណត់ត្រាការទូទាត់ (អាចត្រូវបានលុបហើយ)។ សូមទាក់ទងអ្នកគ្រប់គ្រង។","ငွေပေးချေမှု မှတ်တမ်း မတွေ့ပါ (ဖျက်ပြီးသားဖြစ်နိုင်သည်)။ အက်မင်ကို ဆက်သွယ်ပါ။","ບໍ່ພົບລາຍການຊຳລະເງິນ (ອາດຖືກລຶບແລ້ວ). ກະລຸນາຕິດຕໍ່ແອດມິນ.","Rekod pembayaran tidak dijumpai (mungkin telah dipadam). Sila hubungi admin.","Data pembayaran tidak ditemukan (mungkin sudah dihapus). Silakan hubungi admin.","未找到该支付记录（可能已被删除），请联系管理员。"],
+    "ps.r.invalid": ["ลิงก์ไม่ถูกต้องหรือถูกแก้ไข กรุณาติดต่อแอดมินเพื่อขอลิงก์ใหม่","The link is invalid or has been altered. Please contact the admin for a new link.","Liên kết không hợp lệ hoặc đã bị chỉnh sửa. Vui lòng liên hệ quản trị viên để xin liên kết mới.","តំណមិនត្រឹមត្រូវ ឬត្រូវបានកែប្រែ។ សូមទាក់ទងអ្នកគ្រប់គ្រងដើម្បីសុំតំណថ្មី។","လင့်ခ် မမှန်ကန်ပါ သို့မဟုတ် ပြင်ထားသည်။ လင့်ခ်အသစ်ရရန် အက်မင်ကို ဆက်သွယ်ပါ။","ລິ້ງບໍ່ຖືກຕ້ອງ ຫຼື ຖືກແກ້ໄຂ. ກະລຸນາຕິດຕໍ່ແອດມິນເພື່ອຂໍລິ້ງໃໝ່.","Pautan tidak sah atau telah diubah. Sila hubungi admin untuk pautan baharu.","Tautan tidak valid atau telah diubah. Silakan hubungi admin untuk meminta tautan baru.","链接无效或已被修改，请联系管理员获取新链接。"],
+    "ps.err.legacy": ["ลิงก์รูปแบบเก่าถูกปิดใช้งานเพื่อความปลอดภัย กรุณาติดต่อแอดมินเพื่อขอลิงก์ใหม่","Old-format links have been disabled for security. Please contact the admin for a new link.","Liên kết định dạng cũ đã bị vô hiệu hóa vì lý do bảo mật. Vui lòng liên hệ quản trị viên để xin liên kết mới.","តំណទម្រង់ចាស់ត្រូវបានបិទដើម្បីសុវត្ថិភាព។ សូមទាក់ទងអ្នកគ្រប់គ្រងដើម្បីសុំតំណថ្មី។","လုံခြုံရေးအတွက် ပုံစံဟောင်း လင့်ခ်များကို ပိတ်ထားသည်။ လင့်ခ်အသစ်ရရန် အက်မင်ကို ဆက်သွယ်ပါ။","ລິ້ງຮູບແບບເກົ່າຖືກປິດໃຊ້ງານເພື່ອຄວາມປອດໄພ. ກະລຸນາຕິດຕໍ່ແອດມິນເພື່ອຂໍລິ້ງໃໝ່.","Pautan format lama telah dilumpuhkan atas sebab keselamatan. Sila hubungi admin untuk pautan baharu.","Tautan format lama telah dinonaktifkan demi keamanan. Silakan hubungi admin untuk meminta tautan baru.","出于安全考虑，旧格式链接已停用，请联系管理员获取新链接。"],
+    "ps.err.notoken": ["ไม่พบ token ในลิงก์ กรุณาขอลิงก์ใหม่จากแอดมิน","No token found in the link. Please request a new link from the admin.","Không tìm thấy token trong liên kết. Vui lòng xin liên kết mới từ quản trị viên.","រកមិនឃើញ token ក្នុងតំណ។ សូមសុំតំណថ្មីពីអ្នកគ្រប់គ្រង។","လင့်ခ်တွင် token မတွေ့ပါ။ အက်မင်ထံမှ လင့်ခ်အသစ် တောင်းပါ။","ບໍ່ພົບ token ໃນລິ້ງ. ກະລຸນາຂໍລິ້ງໃໝ່ຈາກແອດມິນ.","Token tidak dijumpai dalam pautan. Sila minta pautan baharu daripada admin.","Token tidak ditemukan di tautan. Silakan minta tautan baru dari admin.","链接中未找到 token，请向管理员索取新链接。"],
+    "ps.err.generic": ["เกิดข้อผิดพลาด: {m} — กรุณาลองใหม่อีกครั้ง","An error occurred: {m} — please try again.","Đã xảy ra lỗi: {m} — vui lòng thử lại.","មានកំហុសកើតឡើង៖ {m} — សូមព្យាយាមម្តងទៀត។","အမှားတစ်ခု ဖြစ်ပွားခဲ့သည်: {m} — ထပ်မံကြိုးစားပါ။","ເກີດຂໍ້ຜິດພາດ: {m} — ກະລຸນາລອງໃໝ່ອີກຄັ້ງ.","Ralat berlaku: {m} — sila cuba lagi.","Terjadi kesalahan: {m} — silakan coba lagi.","发生错误：{m} — 请重试。"],
+    "ps.noWallet": ["ไม่พบข้อมูลกระเป๋ารับเงิน กรุณาติดต่อแอดมิน","Receiving wallet not found. Please contact the admin.","Không tìm thấy thông tin ví nhận tiền. Vui lòng liên hệ quản trị viên.","រកមិនឃើញព័ត៌មានកាបូបទទួលប្រាក់។ សូមទាក់ទងអ្នកគ្រប់គ្រង។","ငွေလက်ခံ ပိုက်ဆံအိတ် အချက်အလက် မတွေ့ပါ။ အက်မင်ကို ဆက်သွယ်ပါ။","ບໍ່ພົບຂໍ້ມູນກະເປົາຮັບເງິນ. ກະລຸນາຕິດຕໍ່ແອດມິນ.","Maklumat dompet penerima tidak dijumpai. Sila hubungi admin.","Informasi dompet penerima tidak ditemukan. Silakan hubungi admin.","未找到收款钱包信息，请联系管理员。"],
+    "ps.expires": ["ลิงก์นี้หมดอายุ {d}","This link expires {d}","Liên kết này hết hạn {d}","តំណនេះផុតកំណត់ {d}","ဤလင့်ခ် သက်တမ်းကုန်ချိန် {d}","ລິ້ງນີ້ໝົດອາຍຸ {d}","Pautan ini tamat tempoh pada {d}","Tautan ini kedaluwarsa pada {d}","此链接将于 {d} 过期"],
+    "ps.og.desc": ["{st} • ยอดรับ {amt} • ทีม {team} • {date} • Secured & Verified","{st} • Amount {amt} • Team {team} • {date} • Secured & Verified","{st} • Số tiền {amt} • Đội {team} • {date} • Secured & Verified","{st} • ចំនួន {amt} • ក្រុម {team} • {date} • Secured & Verified","{st} • ပမာဏ {amt} • အသင်း {team} • {date} • Secured & Verified","{st} • ຍອດ {amt} • ທີມ {team} • {date} • Secured & Verified","{st} • Jumlah {amt} • Pasukan {team} • {date} • Secured & Verified","{st} • Jumlah {amt} • Tim {team} • {date} • Secured & Verified","{st} • 金额 {amt} • 团队 {team} • {date} • Secured & Verified"],
+  };
+
+  // ── เลือกภาษาเริ่มต้น: ?lang=xx > ค่าที่จำไว้ > th ──
+  (function(){
+    var q=''; try{ q=(new URLSearchParams(location.search).get('lang')||'').toLowerCase(); }catch(e){}
+    var s=lsGet(KEY);
+    if(has(q)){ cur=q; lsSet(KEY,q); } else if(has(s)){ cur=s; }
+  })();
+
+  function tccT(k,v){
+    var a=D[k], s=a?(a[IDX[cur]]||a[1]||a[0]):k;
+    if(v) s=String(s).replace(/\{(\w+)\}/g,function(m,n){return v[n]!=null?v[n]:m;});
+    return s;
+  }
+
+  function tccApplyI18n(){
+    var de=document.documentElement; de.lang=HTML_LANG[cur]; de.setAttribute('data-lang',cur);
+    qa('[data-i18n]').forEach(function(e){ e.textContent=tccT(e.getAttribute('data-i18n')); });
+    qa('[data-i18n-ph]').forEach(function(e){ e.placeholder=tccT(e.getAttribute('data-i18n-ph')); });
+    qa('[data-i18n-title]').forEach(function(e){ e.title=tccT(e.getAttribute('data-i18n-title')); });
+    var lb=$('langBtnMain'); if(lb){ lb.textContent='🌐 '+cur.toUpperCase(); lb.title=tccT('lang.title'); }
+    qa('#tcc-lang-menu button').forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-l')===cur); });
+  }
+
+  function tccSetLang(l){
+    if(!has(l)||l===cur) return;
+    cur=l; lsSet(KEY,l); lsSet(CHAT_KEY,l);
+    tccApplyI18n();
+    try{ document.dispatchEvent(new CustomEvent('tcc-lang',{detail:{lang:l}})); }catch(e){}
+  }
+
+  // ── ปุ่ม/เมนูเลือกภาษา ──
+  function buildMenu(){
+    var m=document.createElement('div'); m.id='tcc-lang-menu';
+    m.innerHTML=LANGS.map(function(l){ return '<button type="button" data-l="'+l+'"><span>'+NATIVE[l]+'</span><b>'+l.toUpperCase()+'</b></button>'; }).join('');
+    m.addEventListener('click',function(ev){
+      var b=ev.target.closest('button[data-l]'); if(!b) return;
+      m.classList.remove('open'); tccSetLang(b.getAttribute('data-l'));
+    });
+    document.body.appendChild(m);
+    document.addEventListener('click',function(ev){ if(!ev.target.closest('#tcc-lang-menu,#langBtnMain')) m.classList.remove('open'); });
+    document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') m.classList.remove('open'); });
+    return m;
+  }
+  function init(){
+    var menu=buildMenu(), btn=$('langBtnMain');
+    if(btn) btn.addEventListener('click',function(){ menu.classList.toggle('open'); });
+    tccApplyI18n();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+
+  // ── ตัวตรวจ (เหมือนไฟล์หลัก): ต้องได้ [] ──
+  function tccI18nCheck(){
+    var errs=[], ph=function(s){return (String(s).match(/\{\w+\}/g)||[]).sort().join();};
+    Object.keys(D).forEach(function(k){
+      var a=D[k];
+      if(!Array.isArray(a)||a.length!==LANGS.length){ errs.push(k+': ต้องมี '+LANGS.length+' ค่า ('+LANGS.join(' ')+')'); return; }
+      a.forEach(function(s,i){
+        if(!String(s==null?'':s).trim()) errs.push(k+': ขาดภาษา '+LANGS[i]);
+        else if(ph(s)!==ph(a[0])) errs.push(k+': ตัวแปร {} ภาษา '+LANGS[i]+' ไม่ตรงกับฉบับไทย');
+      });
+    });
+    qa('[data-i18n],[data-i18n-ph],[data-i18n-title]').forEach(function(e){
+      ['data-i18n','data-i18n-ph','data-i18n-title'].forEach(function(at){
+        var k=e.getAttribute(at); if(k&&!D[k]) errs.push('HTML '+at+'="'+k+'": ไม่มี key ใน TCC_I18N');
+      });
+    });
+    return errs;
+  }
+
+  window.TCC_LANGS=LANGS; window.TCC_LANG_NATIVE=NATIVE;
+  window.tccT=tccT; window.tccLang=function(){return cur;};
+  window.tccSetLang=tccSetLang; window.tccApplyI18n=tccApplyI18n; window.tccI18nCheck=tccI18nCheck;
+  var _e=tccI18nCheck(); if(_e.length&&window.console) console.warn('[TCC i18n] '+_e.length+' รายการผิดพลาด',_e);
+})();
+</script>
 
 <script>
 // ── Config ──
@@ -418,7 +605,7 @@ const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 const safeImg = u => /^https:\/\/[^\s"'<>]+$/.test(String(u||'')) ? String(u) : '';
 const EVM = /^0x[0-9a-fA-F]{40}$/, TXH = /^0x[0-9a-fA-F]{64}$/;
 const POLL_MS = 20000;
-let _token = '', _pollTimer = null, _lastSig = '';
+let _token = '', _pollTimer = null, _lastSig = '';   // (_errState/_lastData อยู่ด้านล่างใกล้ Main)
 
 // ── Field map ──
 // v1.3: แถวใน Sheet มี 2 เลย์เอาต์ — (ก) แถวเดิม/legacy: ข้อมูลชิดซ้าย Field 7..Field 13 + โน้ตที่ '50.00%'  (ข) แถวที่ระบบสร้างเอง: ตามหัวคอลัมน์เดิม Field 8/10.00%/.../Field 17
@@ -477,7 +664,7 @@ function showToast(msg) {
 // ── Copy to clipboard ──
 function copyAddr(addr) {
   navigator.clipboard.writeText(addr)
-    .then(() => showToast('✅ คัดลอกที่อยู่กระเป๋าแล้ว!'))
+    .then(() => showToast('✅ ' + tccT('common.copied')))
     .catch(() => {
       // fallback
       const el = document.createElement('textarea');
@@ -486,7 +673,7 @@ function copyAddr(addr) {
       el.select();
       document.execCommand('copy');
       document.body.removeChild(el);
-      showToast('✅ คัดลอกแล้ว!');
+      showToast('✅ ' + tccT('common.copied'));
     });
 }
 
@@ -500,6 +687,15 @@ async function fetchShare(token) {
 }
 
 // ── Render ──
+// T = tccT + escape HTML (ข้อความจากพจนานุกรมใส่ใน innerHTML ได้อย่างปลอดภัย เช่น "Secured & Encrypted")
+const T = (k, v) => esc(tccT(k, v));
+const LOCALE = { th:'th-TH', en:'en-GB', vi:'vi-VN', kh:'km-KH', mm:'my-MM', la:'lo-LA', ms:'ms-MY', id:'id-ID', zh:'zh-CN' };
+function fmtExp(exp) {
+  const d = new Date(exp);
+  if (isNaN(d.getTime())) return '';
+  try { return d.toLocaleString(LOCALE[tccLang()] || 'en-GB'); } catch (e) { return d.toLocaleString(); }
+}
+
 function renderPayment(p, wallet, exp, payer) {
   const now = new Date();
   const profit = payNum(p,'profit'), comm = payNum(p,'commission'), guar = payNum(p,'guarantee');
@@ -508,17 +704,17 @@ function renderPayment(p, wallet, exp, payer) {
   const txhash = String(payVal(p,'txhash') || '').trim();
   const lvaComm = comm * 0.15, lvbComm = comm * 0.10;
   const name = payVal(p,'name'), bnbId = payVal(p,'bnb_id'), team = payVal(p,'team');
-  const date = payVal(p,'date'), note = payVal(p,'note');
+  const date = payVal(p,'date'), note = String(payVal(p,'note') || '');
   const lva = payVal(p,'lva'), lvb = payVal(p,'lvb');
   const tradeHistory = note ? note.split(' | ').filter(x => x.includes(':') && !/^\s*\[auto:/.test(x)) : [];
 
-  // ── อัพเดท OG meta tags ด้วยข้อมูลจริงของ payment ──
+  // ── อัพเดท OG meta tags ด้วยข้อมูลจริงของ payment (ตามภาษาที่เลือก) ──
   // (LINE/Facebook อ่าน og:title + og:description แม้จะ dynamic)
   const fmtAmt = v => '$' + (parseFloat(v)||0).toFixed(2);
   const totalAmt  = fmtAmt(trans || bal);
-  const statusTxt = isPending ? '⏳ รอชำระ' : '✅ จ่ายแล้ว';
+  const statusTxt = tccT(isPending ? 'pay.status.unpaid' : 'pay.status.paid');
   const ogTitle   = `💳 Payment #${p.Id} — ${name} | ${totalAmt} | TRADERCAFECLUB`;   // ใช้ผ่าน setAttribute/textContent เท่านั้น
-  const ogDesc    = `${statusTxt} • ยอดรับ ${totalAmt} • ทีม ${team||'—'} • ${date||'—'} • Secured & Verified`;
+  const ogDesc    = tccT('ps.og.desc', { st: statusTxt, amt: totalAmt, team: team || '—', date: date || '—' });
   const pageUrl   = window.location.href;
   const s = (id,attr,v) => { const el=document.getElementById(id); if(el) el.setAttribute(attr,v); };
   s('og-title',       'content', ogTitle);
@@ -532,18 +728,19 @@ function renderPayment(p, wallet, exp, payer) {
 
   // Wallet: มาจาก server (snapshot ของกระเป๋าตอนสร้างรายการ) — ตรวจรูปแบบ address ก่อนแสดง
   const aw = (wallet && EVM.test(wallet.addr || '')) ? wallet : null;
+  const walletLabel = aw ? (aw.label === 'กระเป๋าหลัก' ? tccT('pd.mainWallet') : aw.label) : '';
 
   const dateStr = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
 
   const tradeHTML = tradeHistory.length ? `
-    <div class="section-title">📈 ประวัติการเทรด</div>
+    <div class="section-title">${T('pd.trades')}</div>
     <div class="trade-grid" style="margin-bottom:14px;">
       ${tradeHistory.map((t, idx) => {
         const tr = parseTrade(t);
         const isNeg = !tr.raw && tr.neg;
         const amtTxt = tr.raw !== undefined ? tr.raw : ((isNeg ? '-' : '+') + fmtUSD(tr.val).replace('-',''));
         return `<div class="trade-card${isNeg ? ' neg' : ''}">
-          <div class="trade-no">ครั้งที่ ${idx+1}</div>
+          <div class="trade-no">${T('pd.tradeN', { n: idx+1 })}</div>
           <div class="trade-coin">${esc(tr.coin)||'—'}</div>
           <div class="trade-amt${isNeg ? ' neg' : ''}">${esc(amtTxt)}</div>
         </div>`;
@@ -552,29 +749,32 @@ function renderPayment(p, wallet, exp, payer) {
 
   const walletHTML = isPending ? (aw ? `
     <div class="qr-section">
-      <div class="qr-section-title">🔐 SCAN QR CODE FOR PAYMENT</div>
+      <div class="qr-section-title">${T('pd.scan')}</div>
       <div class="qr-img-wrap"><img class="qr-img" src="${esc(safeImg(aw.qr) || ('https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=' + encodeURIComponent(aw.addr)))}" data-fb="${esc('https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=' + encodeURIComponent(aw.addr))}" alt="QR Code" referrerpolicy="no-referrer" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.fb;}else{this.parentNode.style.display='none';}"></div>
       <div class="wallet-box">
         <div class="wallet-addr" id="wal-addr">${esc(aw.addr)}</div>
-        <button class="copy-btn" data-addr="${esc(aw.addr)}" onclick="copyAddr(this.dataset.addr)">📋 Copy</button>
+        <button class="copy-btn" data-addr="${esc(aw.addr)}" onclick="copyAddr(this.dataset.addr)">${T('pd.copy')}</button>
       </div>
-      <div class="wallet-chain">✦ USDT BNB Smart Chain (BEP-20) — ${esc(aw.label)}</div>
-      <div class="wallet-hint">โอนเฉพาะ USDT บนเครือข่าย BEP-20 เท่านั้น — ระบบตรวจยอดอัตโนมัติ${isReview ? '' : ' (โอนยอดให้ตรงตามที่ระบุ)'}</div>
-    </div>` : `<div class="qr-section"><div class="wallet-hint">ไม่พบข้อมูลกระเป๋ารับเงิน กรุณาติดต่อแอดมิน</div></div>`) : '';
+      <div class="wallet-chain">✦ USDT BNB Smart Chain (BEP-20) — ${esc(walletLabel)}</div>
+      <div class="wallet-hint">${T('pd.usdtOnly')}${isReview ? '' : T('pd.exactAmt')}</div>
+      <div class="wallet-hint wallet-click" data-addr="${esc(aw.addr)}" onclick="copyAddr(this.dataset.addr)">${T('pd.clickCopy')}</div>
+    </div>` : `<div class="qr-section"><div class="wallet-hint">${T('ps.noWallet')}</div></div>`) : '';
   // v1.5: ข้อความก่อนโอน — ให้โอนจากกระเป๋าที่สมาชิกลงทะเบียนไว้ + แสดงเลขย่อ (หน้า 5 / ท้าย 5 ตัว จาก Worker)
   const noticeHTML = (isPending && !isReview) ? `<div class="pay-notice">
-      <div class="pay-notice-t">⚠️ ก่อนโอน: กรุณาโอนจากเลขกระเป๋าที่ท่านลงทะเบียนไว้เท่านั้น</div>
+      <div class="pay-notice-t">${T('pd.notice.title')}</div>
       ${payer ? `<div class="pay-notice-w">${esc(payer)}</div>` : ''}
-      <div class="pay-notice-s">เพื่อความสะดวกรวดเร็วต่อการอนุมัติของระบบ หากโอนจากกระเป๋าอื่น อาจจะต้องตรวจสอบก่อนอนุมัติ</div>
+      <div class="pay-notice-s">${T('pd.notice.sub')}</div>
     </div>` : '';
-  const reviewHTML = isReview ? `<div class="status-bar" style="border:1px solid rgba(96,165,250,.35);margin-bottom:10px;"><span class="status-text" style="color:#60a5fa;">${/sender_mismatch/.test(String(payVal(p,'sysnote')||note||'')) ? '🔎 พบการโอนแล้ว — แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน แอดมินกำลังตรวจสอบ' : '🔎 พบการโอนแล้ว — แอดมินกำลังตรวจสอบยอด'}</span></div>` : '';
+  const reviewHTML = isReview ? `<div class="status-bar" style="border:1px solid rgba(96,165,250,.35);margin-bottom:10px;"><span class="status-text" style="color:#60a5fa;">${/sender_mismatch/.test(String(payVal(p,'sysnote')||note||'')) ? T('pd.review.mismatch') : T('pd.review.amount')}</span></div>` : '';
   // v1.4: อนุมัติอัตโนมัติแล้ว แต่ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียน → เตือนบนการ์ด (แอดมินได้รับแจ้งทาง Telegram)
-  const warnHTML = (!isReview && /\[auto:sender_mismatch\]/.test(String(note||''))) ? `<div class="status-bar" style="border:1px solid rgba(240,185,11,.45);background:rgba(240,185,11,.08);margin-bottom:10px;"><span class="status-text" style="color:var(--gold);font-size:.78rem;line-height:1.5;">⚠️ ผู้โอนไม่ตรงกับกระเป๋าที่ลงทะเบียนไว้ — ระบบอนุมัติให้แล้ว และแจ้งแอดมินตรวจสอบเพิ่มเติม</span></div>` : '';
+  const warnHTML = (!isReview && /\[auto:sender_mismatch\]/.test(note)) ? `<div class="status-bar" style="border:1px solid rgba(240,185,11,.45);background:rgba(240,185,11,.08);margin-bottom:10px;"><span class="status-text" style="color:var(--gold);font-size:.78rem;line-height:1.5;">${T('pd.senderMismatch')}</span></div>` : '';
   const txHTML = (!isPending && TXH.test(txhash)) ? `
       <div style="margin-top:10px;padding:10px 14px;background:rgba(0,180,255,0.06);border:1px solid rgba(0,180,255,0.2);border-radius:10px;">
-        <div style="font-size:0.63rem;color:var(--muted);margin-bottom:4px;letter-spacing:0.5px;">🔗 VERIFIED ON BLOCKCHAIN</div>
-        <a href="https://bscscan.com/tx/${esc(txhash)}" target="_blank" rel="noopener noreferrer" style="font-family:monospace;font-size:0.68rem;color:#00b4ff;word-break:break-all;text-decoration:none;">${esc(txhash)}</a>
+        <div style="font-size:0.63rem;color:var(--muted);margin-bottom:4px;letter-spacing:0.5px;">${T('pd.verified')}</div>
+        <a href="https://bscscan.com/tx/${esc(txhash)}" target="_blank" rel="noopener noreferrer" title="${T('pd.openBsc')}" style="font-family:monospace;font-size:0.68rem;color:#00b4ff;word-break:break-all;text-decoration:none;">${esc(txhash)}</a>
+        <div style="font-size:0.6rem;color:var(--muted);margin-top:4px;">${T('pd.clickBsc')}</div>
       </div>` : '';
+  const expHTML = exp ? `<div style="text-align:center;font-size:.62rem;color:var(--muted);margin-top:10px;">${T('ps.expires', { d: fmtExp(exp) })}</div>` : '';
 
   document.getElementById('payment-container').innerHTML = `
   <div class="card">
@@ -583,15 +783,15 @@ function renderPayment(p, wallet, exp, payer) {
       <div class="card-header-left">
         <img src="https://i.ibb.co/NbQpSTX/TCC-Logo.png" onerror="this.style.display='none'" alt="TCC">
         <div>
-          <div class="report-label">PAYMENT REPORT</div>
+          <div class="report-label">${T('pd.report')}</div>
           <div class="live-row">
             <div class="pulse-dot"></div>
-            <span class="live-text">LIVE REPORT</span>
+            <span class="live-text">${T('pd.live')}</span>
             <span class="live-date">${dateStr}</span>
           </div>
         </div>
       </div>
-      <div class="report-no">✦ OFFICIAL REPORT No.${esc(p.Id)}</div>
+      <div class="report-no">${T('pd.official', { id: p.Id })}</div>
     </div>
 
     <!-- Body -->
@@ -605,10 +805,10 @@ function renderPayment(p, wallet, exp, payer) {
             <span>🪙 UID: <b>${esc(bnbId)}</b></span>
             <span>🏆 ${esc(team)}</span>
           </div>
-          <div class="member-comm">📈 TEAM COMMISSION: <b>${fmtUSD(comm)}</b></div>
+          <div class="member-comm">📈 ${T('pd.teamComm')}: <b>${fmtUSD(comm)}</b></div>
         </div>
         <span class="badge ${isPending ? 'badge-pending' : 'badge-approve'}">
-          ${isPending ? '⏳ รอชำระ' : '✅ จ่ายแล้ว'}
+          ${T(isPending ? 'pay.status.unpaid' : 'pay.status.paid')}
         </span>
       </div>
 
@@ -617,27 +817,27 @@ function renderPayment(p, wallet, exp, payer) {
         <div class="level-box lva">
           <div class="level-lbl">LEVEL 🅰️: ${esc(lva)||'—'}</div>
           <div class="level-val">${fmtUSD(lvaComm)}</div>
-          <div class="level-sub">(15% ของค่าคอม)</div>
+          <div class="level-sub">(${T('pd.ofComm', { p: 15 })})</div>
         </div>
         <div class="level-box lvb">
           <div class="level-lbl">LEVEL 🅱️: ${esc(lvb)||'—'}</div>
           <div class="level-val">${fmtUSD(lvbComm)}</div>
-          <div class="level-sub">(10% ของค่าคอม)</div>
+          <div class="level-sub">(${T('pd.ofComm', { p: 10 })})</div>
         </div>
       </div>
 
       <!-- Summary 3 boxes -->
       <div class="summary-grid">
         <div class="summary-box">
-          <div class="summary-lbl">ส่วนแบ่งสมาชิก (50%)</div>
+          <div class="summary-lbl">${T('pd.memShare')}</div>
           <div class="summary-val" style="color:${mem<0?'var(--red)':'var(--green)'};">${fmtUSD(mem)}</div>
         </div>
         <div class="summary-box">
-          <div class="summary-lbl">ส่วนประกันกำไร (10%)</div>
+          <div class="summary-lbl">${T('pd.guarShare')}</div>
           <div class="summary-val col-gold">${fmtUSD(guar)}</div>
         </div>
         <div class="summary-box highlight">
-          <div class="summary-lbl">⭐ ส่วนรายได้รวม</div>
+          <div class="summary-lbl">${T('pd.totalIncome')}</div>
           <div class="summary-val col-gold">${fmtUSD(mem + guar)}</div>
         </div>
       </div>
@@ -645,15 +845,15 @@ function renderPayment(p, wallet, exp, payer) {
       <!-- Detail + System -->
       <div class="detail-grid">
         <div>
-          <div class="detail-section-title">📊 รายละเอียดส่วนแบ่ง</div>
+          <div class="detail-section-title">${T('pd.shareDetail')}</div>
           <div class="detail-inner">
             ${[
-              ['กำไรรวม (100%)',     (profit<0?'':'+')+fmtUSD(profit), profit<0?'var(--red)':'var(--green)'],
-              ['ประกันกำไร (10%)',   '-'+fmtUSD(guar),   'var(--red)'],
-              ['ค่าคอมมิชั่น (10%)','-'+fmtUSD(comm),   'var(--red)'],
-              ['คงเหลือสุทธิ (80%)', fmtUSD(bal),       'var(--gold)'],
-              ['ส่วนผู้เทรด (50%)',  fmtUSD(mem),       mem<0?'var(--red)':'var(--green)'],
-              ['ส่วนระบบ (50%)',     fmtUSD(cen),       'var(--gold)'],
+              [T('pd.r.profit'),  (profit<0?'':'+')+fmtUSD(profit), profit<0?'var(--red)':'var(--green)'],
+              [T('pd.r.guar'),    '-'+fmtUSD(guar),   'var(--red)'],
+              [T('pd.r.comm'),    '-'+fmtUSD(comm),   'var(--red)'],
+              [T('pd.r.net'),     fmtUSD(bal),        'var(--gold)'],
+              [T('pd.r.trader'),  fmtUSD(mem),        mem<0?'var(--red)':'var(--green)'],
+              [T('pd.r.system'),  fmtUSD(cen),        'var(--gold)'],
             ].map(([l,v,c]) => `
               <div class="detail-row">
                 <span>${l}</span>
@@ -662,23 +862,23 @@ function renderPayment(p, wallet, exp, payer) {
           </div>
         </div>
         <div>
-          <div class="detail-section-title">💳 รายละเอียดการส่งเข้าระบบ</div>
+          <div class="detail-section-title">${T('pd.intoSystem')}</div>
           <div class="detail-inner" style="margin-bottom:8px;">
             <div class="detail-row">
-              <span>ค่าคอมมิชั่น</span>
+              <span>${T('pd.commission')}</span>
               <span class="col-gold">${fmtUSD(comm)}</span>
             </div>
             <div class="detail-row">
-              <span>ส่วนระบบ</span>
+              <span>${T('pd.systemShare')}</span>
               <span class="col-gold">${fmtUSD(cen)}</span>
             </div>
             <div class="detail-total">
-              <span>🔖 ยอดส่งรวม</span>
+              <span>${T('pd.sum')}</span>
               <span>${fmtUSD(trans)}</span>
             </div>
           </div>
           <div class="amount-box">
-            <div class="amount-lbl">TOTAL TRANSFER AMOUNT</div>
+            <div class="amount-lbl">${T('pd.totalTransfer')}</div>
             <div class="amount-val">${fmtUSD(trans)}</div>
           </div>
         </div>
@@ -693,34 +893,43 @@ function renderPayment(p, wallet, exp, payer) {
       <!-- Status bar -->
       <div class="status-bar" style="border:1px solid ${isPending?'rgba(240,185,11,0.25)':'rgba(3,192,117,0.25)'};">
         <span class="status-text" style="color:${isPending?'var(--gold)':'var(--green)'};">
-          ${isPending ? '⏳ รอการชำระเงิน' : '✅ จ่ายเงินแล้ว'}
+          ${T(isPending ? 'pd.waiting' : 'pd.paidDone')}
         </span>
         <span class="status-date">📅 ${esc(date)}</span>
       </div>
 
       ${txHTML}
-      ${exp ? `<div style="text-align:center;font-size:.62rem;color:var(--muted);margin-top:10px;">ลิงก์นี้หมดอายุ ${esc(new Date(exp).toLocaleString('th-TH'))}</div>` : ''}
+      ${expHTML}
       <!-- Footer -->
       <div class="card-footer">
         <div class="footer-brand">TRADERCAFECLUB</div>
-        <div class="footer-secure">🔒 Secured &amp; Encrypted ✦ Verified</div>
+        <div class="footer-secure">${T('pd.secured')}</div>
       </div>
     </div>
   </div>`;
 }
 
 // ── Main ──
-const showError = (msg) => {
+// สถานะ error เก็บเป็น key + ตัวแปร เพื่อแปลซ้ำได้เมื่อเปลี่ยนภาษา
+let _errState = null, _lastData = null;
+function renderErr() {
+  if (!_errState) return;
+  const el = document.getElementById('error-msg');
+  el.removeAttribute('data-i18n');          // กันไม่ให้ tccApplyI18n เขียนข้อความเริ่มต้นทับ
+  el.textContent = tccT(_errState.k, _errState.v);
+}
+const showError = (key, vars) => {
+  _errState = { k: key, v: vars };
   if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
   document.getElementById('loading-screen').style.display = 'none';
   document.getElementById('payment-container').style.display = 'none';
   document.getElementById('error-screen').style.display   = 'flex';
-  document.getElementById('error-msg').textContent        = msg;
+  renderErr();
 };
 const REASONS = {
-  expired:   'ลิงก์นี้หมดอายุแล้ว (มีอายุ 7 วัน) กรุณาติดต่อแอดมินเพื่อขอลิงก์ใหม่',
-  not_found: 'ไม่พบรายการการชำระเงิน (อาจถูกลบแล้ว) กรุณาติดต่อแอดมิน',
-  invalid:   'ลิงก์ไม่ถูกต้องหรือถูกแก้ไข กรุณาติดต่อแอดมินเพื่อขอลิงก์ใหม่',
+  expired:   'ps.r.expired',
+  not_found: 'ps.r.not_found',
+  invalid:   'ps.r.invalid',
 };
 
 async function load(first) {
@@ -729,6 +938,7 @@ async function load(first) {
   const sig = JSON.stringify([payVal(d.payment,'position'), payVal(d.payment,'txhash'), d.wallet && d.wallet.addr]);
   if (first || sig !== _lastSig) {
     _lastSig = sig;
+    _lastData = d;
     document.getElementById('loading-screen').style.display    = 'none';
     document.getElementById('payment-container').style.display = 'block';
     renderPayment(d.payment, d.wallet, d.exp, d.payer);
@@ -739,11 +949,17 @@ async function load(first) {
   return true;
 }
 
+// เปลี่ยนภาษา → วาดหน้าใหม่ด้วยข้อมูลเดิม (ไม่ต้องดึงจาก Worker ซ้ำ)
+document.addEventListener('tcc-lang', () => {
+  if (_errState) renderErr();
+  else if (_lastData) renderPayment(_lastData.payment, _lastData.wallet, _lastData.exp, _lastData.payer);
+});
+
 async function main() {
   const params = new URLSearchParams(window.location.search);
   _token = params.get('pv') || params.get('t') || '';
   if (!_token) {
-    showError(params.get('id') ? 'ลิงก์รูปแบบเก่าถูกปิดใช้งานเพื่อความปลอดภัย กรุณาติดต่อแอดมินเพื่อขอลิงก์ใหม่' : 'ไม่พบ token ในลิงก์ กรุณาขอลิงก์ใหม่จากแอดมิน');
+    showError(params.get('id') ? 'ps.err.legacy' : 'ps.err.notoken');
     return;
   }
   try {
@@ -752,7 +968,7 @@ async function main() {
       _pollTimer = setInterval(() => { if (!document.hidden) load(false).catch(() => {}); }, POLL_MS);
     }
   } catch (err) {
-    showError(`เกิดข้อผิดพลาด: ${err.message} — กรุณาลองใหม่อีกครั้ง`);
+    showError('ps.err.generic', { m: err.message });
   }
 }
 

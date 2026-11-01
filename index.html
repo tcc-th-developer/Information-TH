@@ -5199,26 +5199,35 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
     "cf.dash.rate": ["อัตราอนุมัติ {n}%", "Approval rate {n}%", "Tỷ lệ duyệt {n}%", "អត្រាអនុម័ត {n}%", "အတည်ပြုနှုန်း {n}%", "ອັດຕາອະນຸມັດ {n}%", "Kadar kelulusan {n}%", "Tingkat persetujuan {n}%", "通过率 {n}%"],
     "cf.reg.btn": ["➕ ลงทะเบียนคาเฟ่", "➕ Register a café", "➕ Đăng ký quán cà phê", "➕ ចុះឈ្មោះហាងកាហ្វេ", "➕ ကော်ဖီဆိုင် စာရင်းသွင်းရန်", "➕ ລົງທະບຽນຮ້ານກາເຟ", "➕ Daftar kafe", "➕ Daftarkan kafe", "➕ 登记咖啡店"],
     "cf.reg.title": ["☕ ลงทะเบียนคาเฟ่", "☕ Register a café", "☕ Đăng ký quán cà phê", "☕ ចុះឈ្មោះហាងកាហ្វេ", "☕ ကော်ဖီဆိုင် စာရင်းသွင်းရန်", "☕ ລົງທະບຽນຮ້ານກາເຟ", "☕ Daftar kafe", "☕ Daftarkan kafe", "☕ 登记咖啡店"],
-    "cf.reg.s1": ["ข้อมูลของคุณ (ยืนยันตัวตน)", "Your details (verification)"],
-    "cf.reg.bnb": ["BNB ID ของคุณ", "Your BNB ID"],
-    "cf.reg.phone": ["เบอร์โทรที่ลงทะเบียนไว้", "Registered phone number"],
-    "cf.reg.role": ["คุณเป็น...", "You are the..."],
-    "cf.reg.roleOwner": ["🏪 เจ้าของร้าน", "🏪 Shop owner"],
-    "cf.reg.roleRef": ["🤝 ผู้แนะนำ", "🤝 Referrer"],
-    "cf.reg.otherOwner": ["BNB ID ของผู้แนะนำ", "Referrer's BNB ID"],
-    "cf.reg.otherRef": ["BNB ID ของเจ้าของร้าน", "Shop owner's BNB ID"],
-    "cf.reg.same": ["↳ เป็นคนเดียวกับฉัน", "↳ Same as me"],
-    "cf.reg.s3": ["ข้อมูลร้าน", "Café details"],
-    "cf.reg.name": ["ชื่อร้านกาแฟ *", "Café name *"],
-    "cf.reg.prov": ["จังหวัด", "Province"],
-    "cf.reg.note": ["หมายเหตุ (ถ้ามี)", "Note (optional)"],
-    "cf.reg.submit": ["📨 ส่งลงทะเบียน", "📨 Submit"],
-    "cf.reg.cancel": ["ยกเลิก", "Cancel"],
-    "cf.reg.hint": ["ร้านที่ส่งเข้ามาจะอยู่ในสถานะ “ระหว่างรอการตรวจสอบ” จนกว่าแอดมินจะอนุมัติ", "Submitted cafés stay “pending” until an admin approves them"],
-    "cf.reg.ok": ["✅ ส่งลงทะเบียนเรียบร้อย — รอแอดมินตรวจสอบ", "✅ Submitted — waiting for admin review"],
-    "cf.reg.need": ["กรุณากรอกข้อมูลที่มี * ให้ครบ", "Please fill in all required fields"],
-    "cf.reg.sending": ["⏳ กำลังส่ง...", "⏳ Sending..."],
-    "cf.reg.nf": ["ไม่พบ BNB ID นี้ในระบบ", "BNB ID not found"],
+    "cf.reg.s1": ["ข้อมูลของคุณ (ยืนยันตัวตน)", "Your details (verification)", "Thông tin của bạn (xác minh)", "ព័ត៌មានរបស់អ្នក (ផ្ទៀងផ្ទាត់)", "သင့်အချက်အလက် (အတည်ပြုရန်)", "ຂໍ້ມູນຂອງທ່ານ (ຢືນຢັນຕົວຕົນ)", "Maklumat anda (pengesahan)", "Data Anda (verifikasi)", "您的信息(身份验证)"],
+    "cf.reg.bnb": ["BNB ID ของคุณ", "Your BNB ID", "BNB ID của bạn", "BNB ID របស់អ្នក", "သင့် BNB ID", "BNB ID ຂອງທ່ານ", "BNB ID anda", "BNB ID Anda", "您的 BNB ID"],
+    "cf.reg.phone": ["เบอร์โทรที่ลงทะเบียนไว้", "Registered phone number", "Số điện thoại đã đăng ký", "លេខទូរស័ព្ទដែលបានចុះឈ្មោះ", "မှတ်ပုံတင်ထားသော ဖုန်းနံပါတ်", "ເບີໂທທີ່ລົງທະບຽນໄວ້", "Nombor telefon berdaftar", "Nomor telepon terdaftar", "注册的手机号码"],
+    "cf.reg.role": ["คุณเป็น...", "You are the...", "Bạn là...", "អ្នកគឺជា...", "သင်သည်...", "ທ່ານແມ່ນ...", "Anda ialah...", "Anda adalah...", "您是..."],
+    "cf.reg.roleOwner": ["🏪 เจ้าของร้าน", "🏪 Shop owner", "🏪 Chủ quán", "🏪 ម្ចាស់ហាង", "🏪 ဆိုင်ပိုင်ရှင်", "🏪 ເຈົ້າຂອງຮ້ານ", "🏪 Pemilik kedai", "🏪 Pemilik toko", "🏪 店主"],
+    "cf.reg.roleRef": ["🤝 ผู้แนะนำ", "🤝 Referrer", "🤝 Người giới thiệu", "🤝 អ្នកណែនាំ", "🤝 မိတ်ဆက်သူ", "🤝 ຜູ້ແນະນຳ", "🤝 Perujuk", "🤝 Perekomendasi", "🤝 推荐人"],
+    "cf.reg.otherOwner": ["BNB ID ของผู้แนะนำ", "Referrer's BNB ID", "BNB ID người giới thiệu", "BNB ID អ្នកណែនាំ", "မိတ်ဆက်သူ၏ BNB ID", "BNB ID ຜູ້ແນະນຳ", "BNB ID perujuk", "BNB ID perekomendasi", "推荐人 BNB ID"],
+    "cf.reg.otherRef": ["BNB ID ของเจ้าของร้าน", "Shop owner's BNB ID", "BNB ID chủ quán", "BNB ID ម្ចាស់ហាង", "ဆိုင်ပိုင်ရှင်၏ BNB ID", "BNB ID ເຈົ້າຂອງຮ້ານ", "BNB ID pemilik kedai", "BNB ID pemilik toko", "店主 BNB ID"],
+    "cf.reg.same": ["↳ เป็นคนเดียวกับฉัน", "↳ Same as me", "↳ Chính là tôi", "↳ ខ្ញុំផ្ទាល់", "↳ ကျွန်ုပ်ကိုယ်တိုင်", "↳ ແມ່ນຂ້ອຍເອງ", "↳ Sama dengan saya", "↳ Sama dengan saya", "↳ 与我相同"],
+    "cf.reg.s3": ["ข้อมูลร้าน", "Café details", "Thông tin quán", "ព័ត៌មានហាង", "ဆိုင်အချက်အလက်", "ຂໍ້ມູນຮ້ານ", "Maklumat kafe", "Data kafe", "店铺信息"],
+    "cf.reg.name": ["ชื่อร้านกาแฟ *", "Café name *", "Tên quán *", "ឈ្មោះហាងកាហ្វេ *", "ကော်ဖီဆိုင်အမည် *", "ຊື່ຮ້ານກາເຟ *", "Nama kafe *", "Nama kafe *", "咖啡店名称 *"],
+    "cf.reg.prov": ["จังหวัด", "Province", "Tỉnh/Thành", "ខេត្ត", "ပြည်နယ်", "ແຂວງ", "Wilayah", "Provinsi", "省/府"],
+    "cf.reg.note": ["หมายเหตุ (ถ้ามี)", "Note (optional)", "Ghi chú (nếu có)", "កំណត់ចំណាំ (បើមាន)", "မှတ်ချက် (ရှိလျှင်)", "ໝາຍເຫດ (ຖ້າມີ)", "Nota (pilihan)", "Catatan (opsional)", "备注(可选)"],
+    "cf.reg.submit": ["📨 ส่งลงทะเบียน", "📨 Submit", "📨 Gửi đăng ký", "📨 បញ្ជូន", "📨 တင်သွင်းမည်", "📨 ສົ່ງລົງທະບຽນ", "📨 Hantar", "📨 Kirim", "📨 提交"],
+    "cf.reg.cancel": ["ยกเลิก", "Cancel", "Hủy", "បោះបង់", "ပယ်ဖျက်", "ຍົກເລີກ", "Batal", "Batal", "取消"],
+    "cf.reg.hint": ["ร้านที่ส่งเข้ามาจะอยู่ในสถานะ “ระหว่างรอการตรวจสอบ” จนกว่าแอดมินจะอนุมัติ", "Submitted cafés stay “pending” until an admin approves them", "Quán gửi lên sẽ ở trạng thái “chờ duyệt” cho đến khi quản trị viên phê duyệt", "ហាងដែលបានបញ្ជូននឹងស្ថិតក្នុងស្ថានភាព “កំពុងរង់ចាំ” រហូតដល់អ្នកគ្រប់គ្រងអនុម័ត", "တင်သွင်းထားသောဆိုင်များသည် အက်ဒမင်အတည်ပြုသည်အထိ “စောင့်ဆိုင်းဆဲ” ဖြစ်မည်", "ຮ້ານທີ່ສົ່ງເຂົ້າມາຈະຢູ່ໃນສະຖານະ “ລໍຖ້າກວດສອບ” ຈົນກວ່າແອດມິນຈະອະນຸມັດ", "Kafe yang dihantar kekal “menunggu” sehingga admin meluluskan", "Kafe yang dikirim berstatus “menunggu” hingga admin menyetujui", "提交的店铺在管理员批准前为“审核中”状态"],
+    "cf.reg.ok": ["✅ ส่งลงทะเบียนเรียบร้อย — รอแอดมินตรวจสอบ", "✅ Submitted — waiting for admin review", "✅ Đã gửi — chờ quản trị viên xem xét", "✅ បានបញ្ជូន — រង់ចាំអ្នកគ្រប់គ្រងពិនិត្យ", "✅ တင်သွင်းပြီး — အက်ဒမင်စစ်ဆေးရန် စောင့်ပါ", "✅ ສົ່ງລົງທະບຽນແລ້ວ — ລໍແອດມິນກວດສອບ", "✅ Dihantar — menunggu semakan admin", "✅ Terkirim — menunggu tinjauan admin", "✅ 已提交 — 等待管理员审核"],
+    "cf.reg.need": ["กรุณากรอกข้อมูลที่มี * ให้ครบ", "Please fill in all required fields", "Vui lòng điền đủ các mục có *", "សូមបំពេញព័ត៌មានដែលមាន * ឱ្យគ្រប់", "ကျေးဇူးပြု၍ * ပါသော အချက်များကို ဖြည့်ပါ", "ກະລຸນາຕື່ມຂໍ້ມູນທີ່ມີ * ໃຫ້ຄົບ", "Sila isi semua medan wajib", "Harap isi semua kolom wajib", "请填写所有带 * 的必填项"],
+    "cf.reg.sending": ["⏳ กำลังส่ง...", "⏳ Sending...", "⏳ Đang gửi...", "⏳ កំពុងបញ្ជូន...", "⏳ ပို့နေသည်...", "⏳ ກຳລັງສົ່ງ...", "⏳ Menghantar...", "⏳ Mengirim...", "⏳ 发送中..."],
+    "cf.reg.nf": ["ไม่พบ BNB ID นี้ในระบบ", "BNB ID not found", "Không tìm thấy BNB ID", "រកមិនឃើញ BNB ID នេះ", "ဤ BNB ID ကို မတွေ့ပါ", "ບໍ່ພົບ BNB ID ນີ້", "BNB ID tidak ditemui", "BNB ID tidak ditemukan", "未找到该 BNB ID"],
+    "cf.reg.media": ["ภาพถ่ายและวิดีโอร้าน", "Café photos & video", "Ảnh & video quán", "រូបថត និងវីដេអូហាង", "ဆိုင်ဓာတ်ပုံနှင့် ဗီဒီယို", "ຮູບພາບ ແລະ ວິດີໂອຮ້ານ", "Foto & video kafe", "Foto & video kafe", "店铺照片与视频"],
+    "cf.reg.addImg": ["📷 เพิ่มรูปภาพ", "📷 Add photos", "📷 Thêm ảnh", "📷 បន្ថែមរូបភាព", "📷 ဓာတ်ပုံထည့်ရန်", "📷 ເພີ່ມຮູບພາບ", "📷 Tambah foto", "📷 Tambah foto", "📷 添加照片"],
+    "cf.reg.addVid": ["🎬 เพิ่มวิดีโอ", "🎬 Add video", "🎬 Thêm video", "🎬 បន្ថែមវីដេអូ", "🎬 ဗီဒီယိုထည့်ရန်", "🎬 ເພີ່ມວິດີໂອ", "🎬 Tambah video", "🎬 Tambah video", "🎬 添加视频"],
+    "cf.reg.mediaHint": ["รูปสูงสุด {n} รูป (JPG/PNG/WebP) · วิดีโอไม่เกิน {v}MB", "Up to {n} photos (JPG/PNG/WebP) · video up to {v}MB", "Tối đa {n} ảnh (JPG/PNG/WebP) · video tối đa {v}MB", "រូបភាពអតិបរមា {n} (JPG/PNG/WebP) · វីដេអូមិនលើស {v}MB", "ဓာတ်ပုံ {n} ပုံအထိ (JPG/PNG/WebP) · ဗီဒီယို {v}MB အထိ", "ຮູບສູງສຸດ {n} ຮູບ (JPG/PNG/WebP) · ວິດີໂອບໍ່ເກີນ {v}MB", "Maks {n} foto (JPG/PNG/WebP) · video maks {v}MB", "Maks {n} foto (JPG/PNG/WebP) · video maks {v}MB", "最多 {n} 张照片 (JPG/PNG/WebP) · 视频不超过 {v}MB"],
+    "cf.reg.upl": ["⏳ กำลังอัปโหลด {n}%", "⏳ Uploading {n}%", "⏳ Đang tải lên {n}%", "⏳ កំពុងផ្ទុកឡើង {n}%", "⏳ တင်နေသည် {n}%", "⏳ ກຳລັງອັບໂຫຼດ {n}%", "⏳ Memuat naik {n}%", "⏳ Mengunggah {n}%", "⏳ 上传中 {n}%"],
+    "cf.reg.uplFail": ["❌ อัปโหลดไม่สำเร็จ", "❌ Upload failed", "❌ Tải lên thất bại", "❌ ផ្ទុកឡើងមិនបានសម្រេច", "❌ တင်ခြင်း မအောင်မြင်ပါ", "❌ ອັບໂຫຼດບໍ່ສຳເລັດ", "❌ Muat naik gagal", "❌ Unggah gagal", "❌ 上传失败"],
+    "cf.reg.wait": ["กรุณารออัปโหลดให้เสร็จก่อนส่ง", "Please wait for uploads to finish", "Vui lòng đợi tải lên xong", "សូមរង់ចាំការផ្ទុកឡើងបញ្ចប់", "တင်ပြီးသည်အထိ စောင့်ပါ", "ກະລຸນາລໍຖ້າອັບໂຫຼດໃຫ້ແລ້ວກ່ອນ", "Sila tunggu muat naik selesai", "Harap tunggu unggahan selesai", "请等待上传完成"],
+    "cf.reg.fillId": ["กรอก BNB ID และเบอร์โทรก่อนอัปโหลดวิดีโอ", "Enter your BNB ID and phone before uploading a video", "Nhập BNB ID và SĐT trước khi tải video", "បញ្ចូល BNB ID និងលេខទូរស័ព្ទមុនផ្ទុកវីដេអូ", "ဗီဒီယိုမတင်မီ BNB ID နှင့် ဖုန်းနံပါတ်ထည့်ပါ", "ໃສ່ BNB ID ແລະ ເບີໂທກ່ອນອັບໂຫຼດວິດີໂອ", "Masukkan BNB ID dan telefon sebelum muat naik video", "Isi BNB ID dan telepon sebelum unggah video", "上传视频前请先填写 BNB ID 和手机号"],
+    "cf.media.t": ["รูปภาพ / วิดีโอ", "Photos / Video", "Ảnh / Video", "រូបភាព / វីដេអូ", "ဓာတ်ပုံ / ဗီဒီယို", "ຮູບພາບ / ວິດີໂອ", "Foto / Video", "Foto / Video", "照片 / 视频"],
     "cf.dash.ok": ["ร้านที่อนุมัติแล้ว", "Approved cafés", "Quán đã duyệt", "ហាងដែលបានអនុម័ត", "အတည်ပြုပြီး ဆိုင်များ", "ຮ້ານທີ່ອະນຸມັດແລ້ວ","Kafe diluluskan","Kafe disetujui","已批准店铺"],
     "cf.dash.pending": ["ร้านที่อยู่ระหว่างการอนุมัติ", "Cafés pending approval", "Quán đang chờ duyệt", "ហាងកំពុងរង់ចាំអនុម័ត", "အတည်ပြုရန် စောင့်ဆိုင်းဆဲ ဆိုင်များ", "ຮ້ານທີ່ກຳລັງລໍຖ້າອະນຸມັດ","Kafe menunggu kelulusan","Kafe menunggu persetujuan","审核中店铺"],
     "cf.count": ["แสดง {n} ร้านกาแฟ", "Showing {n} cafés", "Hiển thị {n} quán cà phê", "បង្ហាញ {n} ហាងកាហ្វេ", "ကော်ဖီဆိုင် {n} ဆိုင် ပြသနေသည်", "ສະແດງ {n} ຮ້ານກາເຟ","Memaparkan {n} kafe","Menampilkan {n} kafe","显示 {n} 家咖啡店"],
@@ -11125,6 +11134,7 @@ function openEditCafeShopModal(rowId){
 function _openCafeShopModal(row){
   const isEdit = !!row;
   const v = k => row ? (row[k]||'') : '';
+  crmReset('admin', crmParseImages(v('Images')), /^https:\/\//.test(v('Video'))?v('Video'):'');
   const refId = v('ReferrerId'), refM = refId ? (MEMBERS||[]).find(m=>memVal(m,'id')===String(refId).trim()) : null;
   const sect = (t,c)=>`<div style="grid-column:1/-1;margin-top:6px;padding:6px 10px;border-left:3px solid ${c};background:rgba(255,255,255,.03);font-size:.8rem;font-weight:700;color:${c};">${t}</div>`;
   const ov = document.createElement('div');
@@ -11165,6 +11175,8 @@ function _openCafeShopModal(row){
         </select>
       </div>
       <div class="fg" style="grid-column:1/-1;"><label class="flbl">หมายเหตุ</label><textarea class="ftextarea" id="csm-note" rows="2">${esc(v('Note'))}</textarea></div>
+      ${sect('🖼 ภาพถ่ายและวิดีโอร้าน','#a78bfa')}
+      <div style="grid-column:1/-1;">${crmHtml()}</div>
     </div>
     <div id="csm-msg" style="display:none;margin-top:10px;padding:8px 12px;border-radius:8px;font-size:.8rem;"></div>
     <div style="display:flex;gap:8px;margin-top:14px;">
@@ -11173,6 +11185,7 @@ function _openCafeShopModal(row){
     </div>
   </div>`;
   document.body.appendChild(ov);
+  crmRender();
 }
 
 // ค้นหาสมาชิกสำหรับฟอร์มลงทะเบียนคาเฟ่ (which = 'ref' ผู้แนะนำ | 'own' เจ้าของร้าน)
@@ -11207,6 +11220,7 @@ async function saveCafeShop(rowId){
   if(!get('csm-ref')) return err('กรุณาเลือกผู้แนะนำจากรายชื่อสมาชิก');
   if(!get('csm-mid')) return err('กรุณาเลือกเจ้าของร้านจากรายชื่อสมาชิก');
   if(!cafeName) return err('กรุณากรอกชื่อร้านกาแฟ');
+  if(CRM.busy>0) return err('กรุณารออัปโหลดรูป/วิดีโอให้เสร็จก่อนบันทึก');
   const isEdit = rowId && rowId !== 'null';
   const dup=_cafeShopsRows.some(r=>String(r.Id||r.id)!==String(rowId)&&String(r.MemberId||'').trim()===get('csm-mid')&&String(r.CafeName||'').trim().toLowerCase()===cafeName.toLowerCase());
   if(dup) return err('มีร้านชื่อนี้ของเจ้าของร้านคนนี้ในระบบแล้ว');
@@ -11216,7 +11230,8 @@ async function saveCafeShop(rowId){
     MemberName: get('csm-mname'), MemberId: get('csm-mid'),
     Team: get('csm-team'), CafeName: cafeName,
     Province: get('csm-prov'), ReferrerId: get('csm-ref'),
-    ShopStatus: get('csm-status')||'ระหว่างรอการตรวจสอบ', Note: get('csm-note')
+    ShopStatus: get('csm-status')||'ระหว่างรอการตรวจสอบ', Note: get('csm-note'),
+    Images: CRM.images.length?JSON.stringify(CRM.images):'', Video: CRM.video||''
   };
 
   try{
@@ -11363,6 +11378,7 @@ function renderPublicCafeShops(){
           + 'transition:box-shadow .2s,transform .2s;"'
           + ' onmouseover="this.style.boxShadow=\'0 8px 24px rgba(0,0,0,.5)\';this.style.transform=\'translateY(-2px)\'"'
           + ' onmouseout="this.style.boxShadow=\'\';this.style.transform=\'\'">'
+          + _cafeCover(r)
           + '<div style="margin-bottom:8px;">'
           + '<div style="font-family:\'Rajdhani\',sans-serif;font-size:.95rem;font-weight:700;color:var(--gold);'
           + 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🏪 '+(r.CafeName||tccT('cf.noname'))+'</div>'
@@ -11435,6 +11451,7 @@ function openCafeShopDetail(idx){
     + infoRow('🌆',tccT('cf.prov'), r.Province, '')
     + infoRow('🆔',tccT('cf.dMid'), r.MemberId, 'color:var(--gold);')
     + infoRow('🔗',tccT('cf.dRef'), r.ReferrerId, '')
+    + _cafeMediaHtml(r)
     + (r.Note ? '<div style="margin-top:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 14px;">'
         + '<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:6px;">📝 '+tccT('cf.dNote')+'</div>'
         + '<div style="font-size:.82rem;color:var(--text);line-height:1.7;">'+r.Note+'</div></div>' : '')
@@ -11445,10 +11462,119 @@ function openCafeShopDetail(idx){
 }
 
 
+
+// ═══════════ อัปโหลดรูป/วิดีโอร้านคาเฟ่ (ใช้ร่วมกันทั้งฟอร์มผู้ใช้และแอดมิน) ═══════════
+//  รูป  → resize ในเครื่อง (≤1600px) → POST /api/imgbb-upload (Cloudinary ผ่าน Worker)
+//  วิดีโอ → ขอลายเซ็น (ผู้ใช้: /api/cafe/upload-sign ด้วย BNB ID+เบอร์ · แอดมิน: /api/upload/sign) → อัปโหลดตรงไป Cloudinary
+var CRM={images:[],video:'',busy:0,mode:'user'}, CRM_MAX_IMG=5, CRM_MAX_VID_MB=100;
+function crmReset(mode,images,video){ CRM.images=(images||[]).slice(0,CRM_MAX_IMG); CRM.video=video||''; CRM.busy=0; CRM.mode=mode||'user'; }
+function crmParseImages(v){ try{ var a=Array.isArray(v)?v:JSON.parse(v||'[]'); return a.filter(function(u){return typeof u==='string'&&/^https:\/\//.test(u);}); }catch(e){ return []; } }
+function crmHtml(){
+  var b='padding:10px 8px;border-radius:10px;cursor:pointer;font-size:.8rem;font-weight:700;text-align:center;font-family:\'Prompt\',sans-serif;background:rgba(255,255,255,.05);border:1px dashed rgba(240,185,11,.45);color:var(--gold);';
+  return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+    +'<label style="'+b+'">'+tccT('cf.reg.addImg')+'<input type="file" accept="image/*" multiple style="display:none;" onchange="crmPickImages(this)"></label>'
+    +'<label style="'+b+'">'+tccT('cf.reg.addVid')+'<input type="file" accept="video/*" style="display:none;" onchange="crmPickVideo(this)"></label></div>'
+    +'<div id="crm-prog" style="font-size:.74rem;color:var(--gold);margin-top:6px;min-height:1em;"></div>'
+    +'<div id="crm-thumbs" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>'
+    +'<div style="font-size:.68rem;color:var(--text-dim);margin-top:4px;">'+tccT('cf.reg.mediaHint',{n:CRM_MAX_IMG,v:CRM_MAX_VID_MB})+'</div>';
+}
+function crmRender(){
+  var box=document.getElementById('crm-thumbs'); if(!box) return;
+  var x='position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#ef4444;color:#fff;border:none;font-size:.7rem;cursor:pointer;line-height:20px;padding:0;';
+  box.innerHTML=CRM.images.map(function(u,i){
+    return '<div style="position:relative;"><img src="'+esc(_cldThumb(u,160,160))+'" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.15);">'
+      +'<button type="button" style="'+x+'" onclick="crmRemoveImg('+i+')">✕</button></div>';
+  }).join('')+(CRM.video?'<div style="position:relative;width:72px;height:72px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:#111;display:flex;align-items:center;justify-content:center;font-size:1.6rem;">🎬<button type="button" style="'+x+'" onclick="crmRemoveVid()">✕</button></div>':'');
+}
+function crmRemoveImg(i){ CRM.images.splice(i,1); crmRender(); }
+function crmRemoveVid(){ CRM.video=''; crmRender(); }
+function _cldThumb(u,w,h){ return String(u).replace('/upload/','/upload/c_fill,w_'+w+',h_'+h+',q_auto,f_auto/'); }
+function _crmProg(t){ var e=document.getElementById('crm-prog'); if(e) e.textContent=t||''; }
+function _crmResize(file,max){
+  return new Promise(function(res,rej){
+    var fr=new FileReader();
+    fr.onerror=function(){ rej(new Error('read')); };
+    fr.onload=function(){
+      var im=new Image();
+      im.onerror=function(){ rej(new Error('decode')); };
+      im.onload=function(){
+        var sc=Math.min(1,max/Math.max(im.width,im.height)), w=Math.round(im.width*sc), h=Math.round(im.height*sc);
+        var c=document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(im,0,0,w,h);
+        res(c.toDataURL('image/jpeg',0.85).replace(/^data:image\/\w+;base64,/,''));
+      };
+      im.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+async function crmPickImages(input){
+  var files=[].slice.call(input.files||[]); input.value='';
+  var room=CRM_MAX_IMG-CRM.images.length; files=files.slice(0,Math.max(0,room));
+  for(var i=0;i<files.length;i++){
+    var f=files[i]; if(!/^image\//.test(f.type)) continue;
+    CRM.busy++; _crmProg(tccT('cf.reg.upl',{n:Math.round(i*100/files.length)}));
+    try{
+      var b64=await _crmResize(f,1600);
+      var r=await fetch(WORKER_URL+'/api/imgbb-upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:b64})});
+      var d=await r.json().catch(function(){return {};});
+      if(!r.ok||!d.url) throw tccApiErr(d,'HTTP '+r.status);
+      CRM.images.push(d.url); crmRender();
+    }catch(e){ _crmProg(tccT('cf.reg.uplFail')+(e&&e.message?': '+e.message:'')); CRM.busy--; return; }
+    CRM.busy--;
+  }
+  _crmProg('');
+}
+async function crmPickVideo(input){
+  var f=input.files&&input.files[0]; input.value=''; if(!f) return;
+  if(!/^video\//.test(f.type)){ _crmProg(tccT('cf.reg.uplFail')); return; }
+  if(f.size>CRM_MAX_VID_MB*1024*1024){ _crmProg(tccT('cf.reg.uplFail')+' (>'+CRM_MAX_VID_MB+'MB)'); return; }
+  var signUrl='/api/upload/sign', signBody='{}';
+  if(CRM.mode==='user'){
+    var bnb=(document.getElementById('cr-bnb')?.value||'').trim(), ph=(document.getElementById('cr-phone')?.value||'').trim();
+    if(!bnb||!ph){ _crmProg(tccT('cf.reg.fillId')); return; }
+    signUrl='/api/cafe/upload-sign'; signBody=JSON.stringify({BnbId:bnb,Phone:ph});
+  }
+  CRM.busy++; _crmProg(tccT('cf.reg.upl',{n:0}));
+  try{
+    var r=await fetch(WORKER_URL+signUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:signBody});
+    var sg=await r.json().catch(function(){return {};});
+    if(!r.ok) throw tccApiErr(sg,'HTTP '+r.status);
+    var url=await new Promise(function(res,rej){
+      var fd=new FormData(); fd.append('file',f); fd.append('api_key',sg.apiKey); fd.append('timestamp',sg.timestamp); fd.append('folder',sg.folder); fd.append('signature',sg.signature);
+      var x=new XMLHttpRequest(); x.open('POST','https://api.cloudinary.com/v1_1/'+encodeURIComponent(sg.cloudName)+'/video/upload');
+      x.upload.onprogress=function(e){ if(e.lengthComputable) _crmProg(tccT('cf.reg.upl',{n:Math.round(e.loaded/e.total*100)})); };
+      x.onload=function(){ var j={}; try{ j=JSON.parse(x.responseText); }catch(e){} (x.status>=200&&x.status<300&&j.secure_url)?res(j.secure_url):rej(new Error((j.error&&j.error.message)||x.status)); };
+      x.onerror=function(){ rej(new Error('network')); }; x.send(fd);
+    });
+    CRM.video=url; crmRender(); _crmProg('');
+  }catch(e){ _crmProg(tccT('cf.reg.uplFail')+(e&&e.message?': '+e.message:'')); }
+  CRM.busy--;
+}
+// แสดงสื่อของร้าน
+function _cafeMedia(r){ return {images:crmParseImages(r&&r.Images), video:(r&&/^https:\/\//.test(r.Video||''))?r.Video:''}; }
+function _cafeCover(r){
+  var m=_cafeMedia(r); if(!m.images.length&&!m.video) return '';
+  return '<div style="position:relative;margin:-12px -14px 10px;height:120px;border-radius:12px 12px 0 0;overflow:hidden;background:#111;">'
+    +(m.images.length?'<img loading="lazy" src="'+esc(_cldThumb(m.images[0],460,240))+'" style="width:100%;height:100%;object-fit:cover;">':'<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;">🎬</div>')
+    +'<div style="position:absolute;right:6px;bottom:6px;display:flex;gap:4px;">'
+    +(m.images.length>1?'<span style="background:rgba(0,0,0,.65);color:#fff;font-size:.65rem;padding:2px 7px;border-radius:10px;">📷 '+m.images.length+'</span>':'')
+    +(m.video?'<span style="background:rgba(0,0,0,.65);color:#fff;font-size:.65rem;padding:2px 7px;border-radius:10px;">🎬</span>':'')
+    +'</div></div>';
+}
+function _cafeMediaHtml(r){
+  var m=_cafeMedia(r); if(!m.images.length&&!m.video) return '';
+  return '<div style="margin-top:12px;"><div style="font-size:.72rem;color:var(--text-dim);margin-bottom:6px;">🖼 '+tccT('cf.media.t')+'</div>'
+    +(m.video?'<video controls playsinline preload="metadata" src="'+esc(m.video)+'" style="width:100%;max-height:260px;border-radius:10px;background:#000;margin-bottom:8px;"></video>':'')
+    +(m.images.length?'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;">'+m.images.map(function(u){
+        return '<a href="'+esc(u)+'" target="_blank" rel="noopener"><img loading="lazy" src="'+esc(_cldThumb(u,300,300))+'" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.1);"></a>';
+      }).join('')+'</div>':'')+'</div>';
+}
+
 // ═══════════ ลงทะเบียนคาเฟ่ (ฝั่งผู้ใช้) — ยืนยันตัวตนด้วย BNB ID + เบอร์โทร แล้วรอแอดมินอนุมัติ ═══════════
 var _crRole='owner', _crTimer=null;
 function openCafeRegisterModal(){
-  _crRole='owner';
+  _crRole='owner'; crmReset('user');
   document.getElementById('cafe-reg-modal')?.remove();
   const inp='width:100%;box-sizing:border-box;padding:10px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:var(--text);font-size:.88rem;outline:none;font-family:\'Prompt\',sans-serif;';
   const lbl='display:block;font-size:.72rem;color:var(--text-dim);margin:10px 0 4px;';
@@ -11471,6 +11597,7 @@ function openCafeRegisterModal(){
    +'<label style="'+lbl+'">'+tccT('cf.reg.name')+'</label><input id="cr-cafe" style="'+inp+'" maxlength="100">'
    +'<label style="'+lbl+'">'+tccT('cf.reg.prov')+'</label><input id="cr-prov" style="'+inp+'" maxlength="60">'
    +'<label style="'+lbl+'">'+tccT('cf.reg.note')+'</label><textarea id="cr-note" rows="2" maxlength="500" style="'+inp+'resize:vertical;"></textarea>'
+   +sec('🖼 '+tccT('cf.reg.media'),'#a78bfa')+'<div style="margin-top:8px;">'+crmHtml()+'</div>'
    +'<div style="margin-top:10px;font-size:.7rem;color:var(--text-dim);line-height:1.5;">ℹ️ '+tccT('cf.reg.hint')+'</div>'
    +'<div id="cr-msg" style="display:none;margin-top:10px;padding:9px 12px;border-radius:8px;font-size:.8rem;"></div>'
    +'<div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-top:14px;">'
@@ -11512,9 +11639,10 @@ async function crSubmit(){
   const msg=document.getElementById('cr-msg'), btn=document.getElementById('cr-submit');
   const show=(t,ok)=>{ msg.style.cssText='display:block;margin-top:10px;padding:9px 12px;border-radius:8px;font-size:.8rem;'+(ok===true?'background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#22c55e;':ok===false?'background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#f87171;':'background:rgba(240,185,11,.08);border:1px solid rgba(240,185,11,.2);color:var(--gold);'); msg.textContent=t; };
   if(!g('cr-bnb')||!g('cr-phone')||!g('cr-other')||!g('cr-cafe')) return show(tccT('cf.reg.need'),false);
+  if(CRM.busy>0) return show(tccT('cf.reg.wait'),false);
   btn.disabled=true; show(tccT('cf.reg.sending'));
   try{
-    await tcApi('/api/cafe/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({BnbId:g('cr-bnb'),Phone:g('cr-phone'),role:_crRole,OtherId:g('cr-other'),CafeName:g('cr-cafe'),Province:g('cr-prov'),Note:g('cr-note')})});
+    await tcApi('/api/cafe/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({BnbId:g('cr-bnb'),Phone:g('cr-phone'),role:_crRole,OtherId:g('cr-other'),CafeName:g('cr-cafe'),Province:g('cr-prov'),Note:g('cr-note'),Images:CRM.images,Video:CRM.video})});
     show(tccT('cf.reg.ok'),true);
     _cafeShopsLoaded=false; if(NOCO.tbl.cafeshops) delete _cache[NOCO.tbl.cafeshops+''];
     setTimeout(()=>{ document.getElementById('cafe-reg-modal')?.remove(); setCafeView('pending'); loadPublicCafeShops(); },1400);

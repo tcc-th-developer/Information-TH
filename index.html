@@ -5193,6 +5193,8 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
     "cf.loading": ["⏳ กำลังโหลด...", "⏳ Loading...", "⏳ Đang tải...", "⏳ កំពុងផ្ទុក...", "⏳ ရယူနေသည်...", "⏳ ກຳລັງໂຫຼດ...","⏳ Memuatkan...","⏳ Memuat...","⏳ 加载中..."],
     "cf.empty": ["📭 ยังไม่มีร้านกาแฟในระบบ", "📭 No cafés in the system yet", "📭 Chưa có quán cà phê nào trong hệ thống", "📭 មិនទាន់មានហាងកាហ្វេក្នុងប្រព័ន្ធ", "📭 စနစ်တွင် ကော်ဖီဆိုင် မရှိသေးပါ", "📭 ຍັງບໍ່ມີຮ້ານກາເຟໃນລະບົບ","📭 Belum ada kafe dalam sistem","📭 Belum ada kafe di sistem","📭 系统中暂无咖啡店"],
     "cf.none": ["📭 ไม่พบร้านที่ค้นหา", "📭 No matching café found", "📭 Không tìm thấy quán phù hợp", "📭 រកមិនឃើញហាងដែលស្វែងរក", "📭 ရှာဖွေသည့် ဆိုင် မတွေ့ပါ", "📭 ບໍ່ພົບຮ້ານທີ່ຄົ້ນຫາ","📭 Tiada kafe yang sepadan ditemui","📭 Tidak ada kafe yang cocok","📭 未找到匹配的咖啡店"],
+    "cf.dash.ok": ["ร้านที่อนุมัติแล้ว", "Approved cafés", "Quán đã duyệt", "ហាងដែលបានអនុម័ត", "အတည်ပြုပြီး ဆိုင်များ", "ຮ້ານທີ່ອະນຸມັດແລ້ວ","Kafe diluluskan","Kafe disetujui","已批准店铺"],
+    "cf.dash.pending": ["ร้านที่อยู่ระหว่างการอนุมัติ", "Cafés pending approval", "Quán đang chờ duyệt", "ហាងកំពុងរង់ចាំអនុម័ត", "အတည်ပြုရန် စောင့်ဆိုင်းဆဲ ဆိုင်များ", "ຮ້ານທີ່ກຳລັງລໍຖ້າອະນຸມັດ","Kafe menunggu kelulusan","Kafe menunggu persetujuan","审核中店铺"],
     "cf.count": ["แสดง {n} ร้านกาแฟ", "Showing {n} cafés", "Hiển thị {n} quán cà phê", "បង្ហាញ {n} ហាងកាហ្វេ", "ကော်ဖီဆိုင် {n} ဆိုင် ပြသနေသည်", "ສະແດງ {n} ຮ້ານກາເຟ","Memaparkan {n} kafe","Menampilkan {n} kafe","显示 {n} 家咖啡店"],
     "cf.team": ["ทีม", "Team", "Đội", "ក្រុម", "အသင်း", "ທີມ","Pasukan","Tim","团队"],
     "cf.prov": ["จังหวัด", "Province", "Tỉnh", "ខេត្ត", "ပြည်နယ်", "ແຂວງ","Wilayah / Negeri","Provinsi","省份"],
@@ -9757,9 +9759,11 @@ function buildCafeHTML(){
     <div class="info-card" style="padding:0;overflow:hidden;">
       <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid rgba(240,185,11,.12);">
         <div style="font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;color:var(--gold);letter-spacing:1px;">🏪 ${tccT('cf.shops')}</div>
+        <div id="cafe-admin-actions"></div>
         <input id="pub-cafe-q" placeholder="${tccT('cf.ph')}" oninput="renderPublicCafeShops()"
           style="padding:6px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(240,185,11,.2);border-radius:20px;color:var(--text);font-size:.76rem;outline:none;font-family:'Prompt',sans-serif;min-width:180px;">
       </div>
+      <div id="pub-cafe-dash" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 4px;"></div>
       <div id="pub-cafe-shops-wrap" style="min-height:60px;">
         <div style="text-align:center;padding:24px;color:var(--text-dim);font-size:.82rem;">${tccT('cf.loading')}</div>
       </div>
@@ -11093,25 +11097,40 @@ function openEditCafeShopModal(rowId){
 function _openCafeShopModal(row){
   const isEdit = !!row;
   const v = k => row ? (row[k]||'') : '';
+  const refId = v('ReferrerId'), refM = refId ? (MEMBERS||[]).find(m=>memVal(m,'id')===String(refId).trim()) : null;
+  const sect = (t,c)=>`<div style="grid-column:1/-1;margin-top:6px;padding:6px 10px;border-left:3px solid ${c};background:rgba(255,255,255,.03);font-size:.8rem;font-weight:700;color:${c};">${t}</div>`;
   const ov = document.createElement('div');
   ov.id = 'cafe-shop-modal';
   ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px;';
   ov.innerHTML = `
-  <div style="background:#0b0e11;border:1px solid rgba(240,185,11,.3);border-radius:16px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;">
+  <div style="background:#0b0e11;border:1px solid rgba(240,185,11,.3);border-radius:16px;padding:24px;max-width:600px;width:100%;max-height:92vh;overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <span style="color:var(--gold);font-size:1rem;font-weight:700;">${isEdit?'✏️ แก้ไขข้อมูลร้าน':'➕ เพิ่มร้านกาแฟ'}</span>
+      <span style="color:var(--gold);font-size:1rem;font-weight:700;">${isEdit?'✏️ แก้ไขข้อมูลร้าน':'☕ ลงทะเบียนคาเฟ่ (แอดมิน)'}</span>
       <button onclick="document.getElementById('cafe-shop-modal').remove()" style="background:none;border:none;color:var(--text-dim);font-size:1.3rem;cursor:pointer;">✕</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div class="fg"><label class="flbl">ชื่อสมาชิก</label><input class="finput" id="csm-mname" value="${esc(v('MemberName'))}"></div>
-      <div class="fg"><label class="flbl">เลขที่สมาชิก</label><input class="finput" id="csm-mid" value="${esc(v('MemberId'))}"></div>
-      <div class="fg"><label class="flbl">สังกัดทีม</label><input class="finput" id="csm-team" value="${esc(v('Team'))}"></div>
-      <div class="fg"><label class="flbl">ชื่อร้านกาแฟ</label><input class="finput" id="csm-cafe" value="${esc(v('CafeName'))}"></div>
+      ${sect('👤 ส่วนที่ 1 — ผู้แนะนำ (Referrer)','#60a5fa')}
+      <div class="fg" style="grid-column:1/-1;position:relative;"><label class="flbl">ค้นหาผู้แนะนำ (ชื่อ / BNB ID) *</label>
+        <input class="finput" id="csm-ref-q" autocomplete="off" placeholder="พิมพ์อย่างน้อย 2 ตัวอักษร" value="${esc(refM?memVal(refM,'name')+' ('+refId+')':refId)}" oninput="csmSearch('ref')">
+        <div id="csm-ref-res"></div>
+        <input type="hidden" id="csm-ref" value="${esc(refId)}">
+        <div id="csm-ref-info" style="font-size:.74rem;color:var(--text-dim);margin-top:4px;">${refM?('👥 '+esc(teamLabel(memVal(refM,'team')))):''}</div>
+      </div>
+      ${sect('🏪 ส่วนที่ 2 — เจ้าของร้าน (Shop Owner)','#22c55e')}
+      <div class="fg" style="grid-column:1/-1;"><label class="flbl">ค้นหาเจ้าของร้าน (ชื่อ / BNB ID) *</label>
+        <input class="finput" id="csm-own-q" autocomplete="off" placeholder="พิมพ์อย่างน้อย 2 ตัวอักษร" value="${esc(v('MemberName')?v('MemberName')+' ('+v('MemberId')+')':'')}" oninput="csmSearch('own')">
+        <div id="csm-own-res"></div>
+        <div style="margin-top:4px;"><a href="javascript:void(0)" onclick="csmRefIsOwner()" style="font-size:.72rem;color:#60a5fa;">↳ ผู้แนะนำคือเจ้าของร้านคนเดียวกัน</a></div>
+      </div>
+      <div class="fg"><label class="flbl">ชื่อสมาชิก</label><input class="finput" id="csm-mname" value="${esc(v('MemberName'))}" readonly></div>
+      <div class="fg"><label class="flbl">เลขที่สมาชิก</label><input class="finput" id="csm-mid" value="${esc(v('MemberId'))}" readonly></div>
+      <div class="fg" style="grid-column:1/-1;"><label class="flbl">สังกัดทีม</label><input type="hidden" id="csm-team" value="${esc(v('Team'))}"><input class="finput" id="csm-team-disp" value="${esc(teamLabel(v('Team')))}" readonly></div>
+      ${sect('☕ ส่วนที่ 3 — ข้อมูลร้าน','var(--gold)')}
+      <div class="fg"><label class="flbl">ชื่อร้านกาแฟ *</label><input class="finput" id="csm-cafe" value="${esc(v('CafeName'))}"></div>
       <div class="fg"><label class="flbl">จังหวัด</label><input class="finput" id="csm-prov" value="${esc(v('Province'))}"></div>
-      <div class="fg"><label class="flbl">เลขที่ผู้แนะนำ</label><input class="finput" id="csm-ref" value="${esc(v('ReferrerId'))}"></div>
       <div class="fg" style="grid-column:1/-1;"><label class="flbl">สถานะของร้าน</label>
         <select class="fsel" id="csm-status">
-          <option value="ระหว่างรอการตรวจสอบ" ${v('ShopStatus')==='ระหว่างรอการตรวจสอบ'?'selected':''}>⏳ ระหว่างรอการตรวจสอบ</option>
+          <option value="ระหว่างรอการตรวจสอบ" ${(!v('ShopStatus')||v('ShopStatus')==='ระหว่างรอการตรวจสอบ')?'selected':''}>⏳ ระหว่างรอการตรวจสอบ</option>
           <option value="ดำเนินการโดยคณะกรรมการ" ${v('ShopStatus')==='ดำเนินการโดยคณะกรรมการ'?'selected':''}>📋 ดำเนินการโดยคณะกรรมการ</option>
           <option value="อนุมัติแล้ว" ${v('ShopStatus')==='อนุมัติแล้ว'?'selected':''}>✅ อนุมัติแล้ว</option>
           <option value="ไม่ผ่าน" ${v('ShopStatus')==='ไม่ผ่าน'?'selected':''}>❌ ไม่ผ่าน</option>
@@ -11122,48 +11141,79 @@ function _openCafeShopModal(row){
     <div id="csm-msg" style="display:none;margin-top:10px;padding:8px 12px;border-radius:8px;font-size:.8rem;"></div>
     <div style="display:flex;gap:8px;margin-top:14px;">
       <button onclick="document.getElementById('cafe-shop-modal').remove()" style="flex:1;padding:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#94a3b8;cursor:pointer;font-family:'Prompt',sans-serif;">ยกเลิก</button>
-      <button onclick="saveCafeShop(${isEdit?(row.Id||row.id||'null'):'null'})" style="flex:2;padding:9px;background:linear-gradient(135deg,rgba(240,185,11,.25),rgba(240,185,11,.1));border:1px solid rgba(240,185,11,.4);border-radius:8px;color:var(--gold);font-weight:700;font-family:'Rajdhani',sans-serif;cursor:pointer;">${isEdit?'💾 บันทึกการแก้ไข':'➕ เพิ่มร้านกาแฟ'}</button>
+      <button onclick="saveCafeShop('${isEdit?jsq(String(row.Id||row.id||'null')):'null'}')" style="flex:2;padding:9px;background:linear-gradient(135deg,rgba(240,185,11,.25),rgba(240,185,11,.1));border:1px solid rgba(240,185,11,.4);border-radius:8px;color:var(--gold);cursor:pointer;font-weight:700;font-family:'Prompt',sans-serif;">💾 บันทึก</button>
     </div>
   </div>`;
   document.body.appendChild(ov);
 }
 
+// ค้นหาสมาชิกสำหรับฟอร์มลงทะเบียนคาเฟ่ (which = 'ref' ผู้แนะนำ | 'own' เจ้าของร้าน)
+function csmSearch(which){
+  const q=(document.getElementById('csm-'+which+'-q')?.value||'').toLowerCase().trim();
+  const box=document.getElementById('csm-'+which+'-res'); if(!box) return;
+  if(which==='ref') document.getElementById('csm-ref').value='';          // พิมพ์ใหม่ = ต้องเลือกใหม่
+  if(q.length<2){ box.innerHTML=''; return; }
+  const hit=(MEMBERS||[]).filter(m=>memVal(m,'name').toLowerCase().includes(q)||String(memVal(m,'id')).toLowerCase().includes(q)).slice(0,5);
+  box.innerHTML = hit.length ? hit.map(m=>`<div onclick="csmPick('${which}','${jsq(memVal(m,'id'))}')" style="padding:8px;background:var(--dark3);border-radius:6px;cursor:pointer;margin-top:3px;font-size:.83rem;"><b>${esc(memVal(m,'name'))}</b> <span style="color:var(--muted);">ID: ${esc(memVal(m,'id'))} | ${esc(teamLabel(memVal(m,'team')))}</span></div>`).join('')
+    : '<div style="padding:8px;font-size:.78rem;color:var(--text-dim);">ไม่พบสมาชิก (ต้องเป็นสมาชิกในระบบเท่านั้น)</div>';
+}
+function csmPick(which,id){
+  const m=(MEMBERS||[]).find(x=>memVal(x,'id')===id); if(!m) return;
+  const $=i=>document.getElementById(i);
+  $('csm-'+which+'-res').innerHTML='';
+  $('csm-'+which+'-q').value=`${memVal(m,'name')} (${id})`;
+  if(which==='ref'){ $('csm-ref').value=id; $('csm-ref-info').textContent='👥 '+teamLabel(memVal(m,'team')); }
+  else { $('csm-mname').value=memVal(m,'name'); $('csm-mid').value=id; $('csm-team').value=memVal(m,'team')||''; $('csm-team-disp').value=teamLabel(memVal(m,'team')); }
+}
+function csmRefIsOwner(){
+  const id=document.getElementById('csm-mid')?.value; if(!id){ alert('กรุณาเลือกเจ้าของร้านก่อน'); return; }
+  csmPick('ref',id);
+}
+
 // ── saveCafeShop ──────────────────────────────────────────────────
 async function saveCafeShop(rowId){
   const get = id => (document.getElementById(id)?.value||'').trim();
-  const cafeName = get('csm-cafe');
   const msg = document.getElementById('csm-msg');
-  if(!cafeName){
-    if(msg){msg.style.cssText='display:block;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#f87171;';msg.textContent='กรุณากรอกชื่อร้านกาแฟ';}
-    return;
-  }
+  const err = t => { if(msg){msg.style.cssText='display:block;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#f87171;';msg.textContent=t;} };
+  const cafeName = get('csm-cafe');
+  if(!get('csm-ref')) return err('กรุณาเลือกผู้แนะนำจากรายชื่อสมาชิก');
+  if(!get('csm-mid')) return err('กรุณาเลือกเจ้าของร้านจากรายชื่อสมาชิก');
+  if(!cafeName) return err('กรุณากรอกชื่อร้านกาแฟ');
+  const isEdit = rowId && rowId !== 'null';
+  const dup=_cafeShopsRows.some(r=>String(r.Id||r.id)!==String(rowId)&&String(r.MemberId||'').trim()===get('csm-mid')&&String(r.CafeName||'').trim().toLowerCase()===cafeName.toLowerCase());
+  if(dup) return err('มีร้านชื่อนี้ของเจ้าของร้านคนนี้ในระบบแล้ว');
   if(msg){msg.style.cssText='display:block;background:rgba(240,185,11,.08);border:1px solid rgba(240,185,11,.2);color:var(--gold);';msg.textContent='⏳ กำลังบันทึก...';}
 
   const body = {
     MemberName: get('csm-mname'), MemberId: get('csm-mid'),
     Team: get('csm-team'), CafeName: cafeName,
     Province: get('csm-prov'), ReferrerId: get('csm-ref'),
-    ShopStatus: get('csm-status'), Note: get('csm-note')
+    ShopStatus: get('csm-status')||'ระหว่างรอการตรวจสอบ', Note: get('csm-note')
   };
 
   try{
     if(!NOCO.tbl.cafeshops) await ensureCafeShopsTable();
     if(NOCO.tbl.cafeshops){
-      const isEdit = rowId && rowId !== 'null';
       if(isEdit){
-        await fetch(`${WORKER_URL}/api/noco/${NOCO.tbl.cafeshops}/${rowId}`,{
+        const r=await fetch(`${WORKER_URL}/api/noco/${NOCO.tbl.cafeshops}/${rowId}`,{
           method:'PATCH', headers:{'Content-Type':'application/json'},
           body: JSON.stringify(body)
         });
+        if(!r.ok) throw new Error('HTTP '+r.status);
       } else {
         await nocoPost(NOCO.tbl.cafeshops, body);
       }
       delete _cache[NOCO.tbl.cafeshops+''];
     }
-    if(msg){msg.textContent='✅ บันทึกสำเร็จ';}
-    setTimeout(()=>{ document.getElementById('cafe-shop-modal')?.remove(); loadAdminCafeShops(); }, 700);
+    if(msg){msg.style.cssText='display:block;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#22c55e;';msg.textContent='✅ บันทึกสำเร็จ';}
+    setTimeout(async ()=>{
+      document.getElementById('cafe-shop-modal')?.remove();
+      _cafeShopsLoaded=false;
+      await loadPublicCafeShops();                // รีโหลดข้อมูลล่าสุด → อัปเดตแดชบอร์ด/รายการหน้า Cafe
+      if(document.getElementById('acs-table-wrap')) loadAdminCafeShops();   // และตารางหน้าแอดมิน (ถ้าเปิดอยู่)
+    }, 700);
   }catch(e){
-    if(msg){msg.style.cssText='display:block;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#f87171;';msg.textContent='เกิดข้อผิดพลาด: '+e.message;}
+    err('เกิดข้อผิดพลาด: '+e.message);
   }
 }
 
@@ -11199,7 +11249,26 @@ function exportCafeShopsCSV(){
 }
 
 // ── renderPublicCafeShops (ฝั่ง user — ต่อท้าย cafe panel) ────────
+// กลุ่มสถานะร้าน: approved = อนุมัติแล้ว · rejected = ไม่ผ่าน · pending = รอตรวจสอบ/ดำเนินการโดยคณะกรรมการ/ว่าง
+function _cafeGroup(s){ s=String(s||''); if(s.includes('ไม่ผ่าน')) return 'rejected'; if(s.includes('อนุมัติ')) return 'approved'; return 'pending'; }
+var _cafeView = 'approved';
+function setCafeView(v){ _cafeView=v; renderPublicCafeShops(); }
+function renderCafeDash(){
+  const box=document.getElementById('pub-cafe-dash'); if(!box) return;
+  const ok=_cafeShopsRows.filter(r=>_cafeGroup(r.ShopStatus)==='approved').length;
+  const pd=_cafeShopsRows.filter(r=>_cafeGroup(r.ShopStatus)==='pending').length;
+  const card=(k,icon,color,n,label)=>'<div onclick="setCafeView(\''+k+'\')" style="cursor:pointer;text-align:center;padding:12px 8px;border-radius:12px;background:'+(_cafeView===k?'rgba(255,255,255,.07)':'rgba(255,255,255,.02)')+';border:1px solid '+color+(_cafeView===k?'':'55')+';border-top:3px solid '+color+';">'
+    +'<div style="font-family:Rajdhani,sans-serif;font-size:1.7rem;font-weight:800;color:'+color+';line-height:1.1;">'+icon+' '+n+'</div>'
+    +'<div style="font-size:.7rem;color:var(--text-dim);margin-top:2px;">'+label+'</div></div>';
+  box.innerHTML=card('approved','✅','#22c55e',ok,tccT('cf.dash.ok'))+card('pending','⏳','var(--gold)',pd,tccT('cf.dash.pending'));
+}
+function renderCafeAdminActions(){
+  const el=document.getElementById('cafe-admin-actions'); if(!el) return;
+  el.innerHTML = (typeof can==='function'&&can('cafe','create'))
+    ? '<button class="btn btn-outline btn-sm" onclick="openAddCafeShopModal()" style="white-space:nowrap;">➕ ลงทะเบียนคาเฟ่ (แอดมิน)</button>' : '';
+}
 function renderPublicCafeShops(){
+  renderCafeDash(); renderCafeAdminActions();
   const wrap = document.getElementById('pub-cafe-shops-wrap');
   if(!wrap) return;
   const rows = _cafeShopsRows;
@@ -11210,6 +11279,7 @@ function renderPublicCafeShops(){
 
   const q = (document.getElementById('pub-cafe-q')?.value||'').toLowerCase().trim();
   const filtered = rows.filter(r=>{
+    if(_cafeGroup(r.ShopStatus)!==_cafeView) return false;      // แสดงทีละกลุ่ม: อนุมัติแล้ว / อยู่ระหว่างอนุมัติ (ร้านที่ไม่ผ่านดูได้เฉพาะแอดมิน)
     if(!q) return true;
     return (r.CafeName||'').toLowerCase().includes(q)
         || (r.Province||'').toLowerCase().includes(q)
@@ -11253,7 +11323,7 @@ function renderPublicCafeShops(){
           + '<div style="border-top:1px solid rgba(255,255,255,.06);padding-top:7px;">'
           + '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);">'
           + '<span style="font-size:.7rem;color:var(--text-dim);">👥 '+tccT('cf.team')+'</span>'
-          + '<span style="font-size:.74rem;font-weight:700;color:var(--text);">'+(r.Team||'-')+'</span></div>'
+          + '<span style="font-size:.74rem;font-weight:700;color:var(--text);">'+(teamLabel(r.Team)||'-')+'</span></div>'
           + '<div style="display:flex;justify-content:space-between;padding:4px 0;">'
           + '<span style="font-size:.7rem;color:var(--text-dim);">🌆 '+tccT('cf.prov')+'</span>'
           + '<span style="font-size:.72rem;color:var(--text-dim);">'+(r.Province||'-')+'</span></div>'
@@ -11329,6 +11399,7 @@ function openCafeShopDetail(idx){
 // ── loadPublicCafeShops (เรียกตอน panel cafe ถูกเปิด) ─────────────
 async function loadPublicCafeShops(){
   if(_cafeShopsLoaded){ renderPublicCafeShops(); return; }
+  if(typeof MEMBERS!=='undefined'&&!MEMBERS.length&&typeof can==='function'&&can('cafe','create')&&typeof loadMembers==='function'){ try{ loadMembers(); }catch(e){} }
   const wrap = document.getElementById('pub-cafe-shops-wrap');
   if(wrap) wrap.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-dim);">'+tccT('cf.loading')+'</div>';
   try{

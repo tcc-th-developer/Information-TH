@@ -5193,6 +5193,32 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
     "cf.loading": ["⏳ กำลังโหลด...", "⏳ Loading...", "⏳ Đang tải...", "⏳ កំពុងផ្ទុក...", "⏳ ရယူနေသည်...", "⏳ ກຳລັງໂຫຼດ...","⏳ Memuatkan...","⏳ Memuat...","⏳ 加载中..."],
     "cf.empty": ["📭 ยังไม่มีร้านกาแฟในระบบ", "📭 No cafés in the system yet", "📭 Chưa có quán cà phê nào trong hệ thống", "📭 មិនទាន់មានហាងកាហ្វេក្នុងប្រព័ន្ធ", "📭 စနစ်တွင် ကော်ဖီဆိုင် မရှိသေးပါ", "📭 ຍັງບໍ່ມີຮ້ານກາເຟໃນລະບົບ","📭 Belum ada kafe dalam sistem","📭 Belum ada kafe di sistem","📭 系统中暂无咖啡店"],
     "cf.none": ["📭 ไม่พบร้านที่ค้นหา", "📭 No matching café found", "📭 Không tìm thấy quán phù hợp", "📭 រកមិនឃើញហាងដែលស្វែងរក", "📭 ရှာဖွေသည့် ဆိုင် မတွေ့ပါ", "📭 ບໍ່ພົບຮ້ານທີ່ຄົ້ນຫາ","📭 Tiada kafe yang sepadan ditemui","📭 Tidak ada kafe yang cocok","📭 未找到匹配的咖啡店"],
+    "cf.dash.all": ["ทั้งหมด", "All", "Tất cả", "ទាំងអស់", "အားလုံး", "ທັງໝົດ", "Semua", "Semua", "全部"],
+    "cf.dash.ok2": ["อนุมัติแล้ว", "Approved", "Đã duyệt", "បានអនុម័ត", "အတည်ပြုပြီး", "ອະນຸມັດແລ້ວ", "Diluluskan", "Disetujui", "已批准"],
+    "cf.dash.pd2": ["รออนุมัติ", "Pending", "Đang chờ", "កំពុងរង់ចាំ", "စောင့်ဆိုင်းဆဲ", "ລໍຖ້າອະນຸມັດ", "Menunggu", "Menunggu", "审核中"],
+    "cf.dash.rate": ["อัตราอนุมัติ {n}%", "Approval rate {n}%", "Tỷ lệ duyệt {n}%", "អត្រាអនុម័ត {n}%", "အတည်ပြုနှုန်း {n}%", "ອັດຕາອະນຸມັດ {n}%", "Kadar kelulusan {n}%", "Tingkat persetujuan {n}%", "通过率 {n}%"],
+    "cf.reg.btn": ["➕ ลงทะเบียนคาเฟ่", "➕ Register a café", "➕ Đăng ký quán cà phê", "➕ ចុះឈ្មោះហាងកាហ្វេ", "➕ ကော်ဖီဆိုင် စာရင်းသွင်းရန်", "➕ ລົງທະບຽນຮ້ານກາເຟ", "➕ Daftar kafe", "➕ Daftarkan kafe", "➕ 登记咖啡店"],
+    "cf.reg.title": ["☕ ลงทะเบียนคาเฟ่", "☕ Register a café", "☕ Đăng ký quán cà phê", "☕ ចុះឈ្មោះហាងកាហ្វេ", "☕ ကော်ဖီဆိုင် စာရင်းသွင်းရန်", "☕ ລົງທະບຽນຮ້ານກາເຟ", "☕ Daftar kafe", "☕ Daftarkan kafe", "☕ 登记咖啡店"],
+    "cf.reg.s1": ["ข้อมูลของคุณ (ยืนยันตัวตน)", "Your details (verification)"],
+    "cf.reg.bnb": ["BNB ID ของคุณ", "Your BNB ID"],
+    "cf.reg.phone": ["เบอร์โทรที่ลงทะเบียนไว้", "Registered phone number"],
+    "cf.reg.role": ["คุณเป็น...", "You are the..."],
+    "cf.reg.roleOwner": ["🏪 เจ้าของร้าน", "🏪 Shop owner"],
+    "cf.reg.roleRef": ["🤝 ผู้แนะนำ", "🤝 Referrer"],
+    "cf.reg.otherOwner": ["BNB ID ของผู้แนะนำ", "Referrer's BNB ID"],
+    "cf.reg.otherRef": ["BNB ID ของเจ้าของร้าน", "Shop owner's BNB ID"],
+    "cf.reg.same": ["↳ เป็นคนเดียวกับฉัน", "↳ Same as me"],
+    "cf.reg.s3": ["ข้อมูลร้าน", "Café details"],
+    "cf.reg.name": ["ชื่อร้านกาแฟ *", "Café name *"],
+    "cf.reg.prov": ["จังหวัด", "Province"],
+    "cf.reg.note": ["หมายเหตุ (ถ้ามี)", "Note (optional)"],
+    "cf.reg.submit": ["📨 ส่งลงทะเบียน", "📨 Submit"],
+    "cf.reg.cancel": ["ยกเลิก", "Cancel"],
+    "cf.reg.hint": ["ร้านที่ส่งเข้ามาจะอยู่ในสถานะ “ระหว่างรอการตรวจสอบ” จนกว่าแอดมินจะอนุมัติ", "Submitted cafés stay “pending” until an admin approves them"],
+    "cf.reg.ok": ["✅ ส่งลงทะเบียนเรียบร้อย — รอแอดมินตรวจสอบ", "✅ Submitted — waiting for admin review"],
+    "cf.reg.need": ["กรุณากรอกข้อมูลที่มี * ให้ครบ", "Please fill in all required fields"],
+    "cf.reg.sending": ["⏳ กำลังส่ง...", "⏳ Sending..."],
+    "cf.reg.nf": ["ไม่พบ BNB ID นี้ในระบบ", "BNB ID not found"],
     "cf.dash.ok": ["ร้านที่อนุมัติแล้ว", "Approved cafés", "Quán đã duyệt", "ហាងដែលបានអនុម័ត", "အတည်ပြုပြီး ဆိုင်များ", "ຮ້ານທີ່ອະນຸມັດແລ້ວ","Kafe diluluskan","Kafe disetujui","已批准店铺"],
     "cf.dash.pending": ["ร้านที่อยู่ระหว่างการอนุมัติ", "Cafés pending approval", "Quán đang chờ duyệt", "ហាងកំពុងរង់ចាំអនុម័ត", "အတည်ပြုရန် စောင့်ဆိုင်းဆဲ ဆိုင်များ", "ຮ້ານທີ່ກຳລັງລໍຖ້າອະນຸມັດ","Kafe menunggu kelulusan","Kafe menunggu persetujuan","审核中店铺"],
     "cf.count": ["แสดง {n} ร้านกาแฟ", "Showing {n} cafés", "Hiển thị {n} quán cà phê", "បង្ហាញ {n} ហាងកាហ្វេ", "ကော်ဖီဆိုင် {n} ဆိုင် ပြသနေသည်", "ສະແດງ {n} ຮ້ານກາເຟ","Memaparkan {n} kafe","Menampilkan {n} kafe","显示 {n} 家咖啡店"],
@@ -9757,13 +9783,15 @@ function buildCafeHTML(){
     ${cards.map(_renderCafeCard).join('')}
     <!-- ── ร้านกาแฟที่เข้าร่วม (Public) ── -->
     <div class="info-card" style="padding:0;overflow:hidden;">
-      <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid rgba(240,185,11,.12);">
-        <div style="font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;color:var(--gold);letter-spacing:1px;">🏪 ${tccT('cf.shops')}</div>
-        <div id="cafe-admin-actions"></div>
+      <div style="padding:14px 14px 12px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid rgba(240,185,11,.12);">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;color:var(--gold);letter-spacing:1px;">🏪 ${tccT('cf.shops')}</div>
+          <div id="cafe-admin-actions" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        </div>
         <input id="pub-cafe-q" placeholder="${tccT('cf.ph')}" oninput="renderPublicCafeShops()"
-          style="padding:6px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(240,185,11,.2);border-radius:20px;color:var(--text);font-size:.76rem;outline:none;font-family:'Prompt',sans-serif;min-width:180px;">
+          style="width:100%;box-sizing:border-box;padding:9px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(240,185,11,.2);border-radius:20px;color:var(--text);font-size:.8rem;outline:none;font-family:'Prompt',sans-serif;">
       </div>
-      <div id="pub-cafe-dash" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 4px;"></div>
+      <div id="pub-cafe-dash" style="padding:12px 14px 4px;"></div>
       <div id="pub-cafe-shops-wrap" style="min-height:60px;">
         <div style="text-align:center;padding:24px;color:var(--text-dim);font-size:.82rem;">${tccT('cf.loading')}</div>
       </div>
@@ -11251,21 +11279,38 @@ function exportCafeShopsCSV(){
 // ── renderPublicCafeShops (ฝั่ง user — ต่อท้าย cafe panel) ────────
 // กลุ่มสถานะร้าน: approved = อนุมัติแล้ว · rejected = ไม่ผ่าน · pending = รอตรวจสอบ/ดำเนินการโดยคณะกรรมการ/ว่าง
 function _cafeGroup(s){ s=String(s||''); if(s.includes('ไม่ผ่าน')) return 'rejected'; if(s.includes('อนุมัติ')) return 'approved'; return 'pending'; }
-var _cafeView = 'approved';
+var _cafeView = 'all';   // all = อนุมัติแล้ว + อยู่ระหว่างอนุมัติ (ร้านที่ไม่ผ่านดูได้เฉพาะแอดมิน)
 function setCafeView(v){ _cafeView=v; renderPublicCafeShops(); }
 function renderCafeDash(){
   const box=document.getElementById('pub-cafe-dash'); if(!box) return;
   const ok=_cafeShopsRows.filter(r=>_cafeGroup(r.ShopStatus)==='approved').length;
   const pd=_cafeShopsRows.filter(r=>_cafeGroup(r.ShopStatus)==='pending').length;
-  const card=(k,icon,color,n,label)=>'<div onclick="setCafeView(\''+k+'\')" style="cursor:pointer;text-align:center;padding:12px 8px;border-radius:12px;background:'+(_cafeView===k?'rgba(255,255,255,.07)':'rgba(255,255,255,.02)')+';border:1px solid '+color+(_cafeView===k?'':'55')+';border-top:3px solid '+color+';">'
-    +'<div style="font-family:Rajdhani,sans-serif;font-size:1.7rem;font-weight:800;color:'+color+';line-height:1.1;">'+icon+' '+n+'</div>'
-    +'<div style="font-size:.7rem;color:var(--text-dim);margin-top:2px;">'+label+'</div></div>';
-  box.innerHTML=card('approved','✅','#22c55e',ok,tccT('cf.dash.ok'))+card('pending','⏳','var(--gold)',pd,tccT('cf.dash.pending'));
+  const all=ok+pd, rate=all?Math.round(ok*100/all):0;
+  const card=(k,icon,color,n,label)=>{
+    const on=_cafeView===k;
+    return '<button type="button" onclick="setCafeView(\''+k+'\')" style="all:unset;box-sizing:border-box;cursor:pointer;text-align:center;padding:10px 4px 9px;border-radius:14px;'
+      +'background:'+(on?'linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.03))':'rgba(255,255,255,.025)')+';'
+      +'border:1px solid '+(on?color:'rgba(255,255,255,.08)')+';'+(on?'box-shadow:0 0 0 1px '+color+'33,0 6px 18px rgba(0,0,0,.35);':'')+'transition:all .18s;">'
+      +'<div style="font-size:1.05rem;line-height:1;">'+icon+'</div>'
+      +'<div style="font-family:Rajdhani,sans-serif;font-size:clamp(1.35rem,6.5vw,1.9rem);font-weight:800;color:'+color+';line-height:1.15;margin-top:3px;">'+n+'</div>'
+      +'<div style="font-size:clamp(.6rem,2.8vw,.72rem);color:'+(on?'var(--text)':'var(--text-dim)')+';margin-top:1px;font-weight:'+(on?'700':'500')+';">'+label+'</div></button>';
+  };
+  box.innerHTML='<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">'
+    +card('all','🏪','var(--gold)',all,tccT('cf.dash.all'))
+    +card('approved','✅','#22c55e',ok,tccT('cf.dash.ok2'))
+    +card('pending','⏳','#f59e0b',pd,tccT('cf.dash.pd2'))
+    +'</div>'
+    +'<div style="margin-top:10px;">'
+    +'<div style="display:flex;justify-content:space-between;font-size:.66rem;color:var(--text-dim);margin-bottom:4px;"><span>'+tccT('cf.dash.rate',{n:rate})+'</span><span>'+ok+' / '+all+'</span></div>'
+    +'<div style="height:6px;border-radius:6px;background:rgba(255,255,255,.07);overflow:hidden;"><div style="height:100%;width:'+rate+'%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:6px;transition:width .4s;"></div></div></div>';
 }
 function renderCafeAdminActions(){
   const el=document.getElementById('cafe-admin-actions'); if(!el) return;
-  el.innerHTML = (typeof can==='function'&&can('cafe','create'))
-    ? '<button class="btn btn-outline btn-sm" onclick="openAddCafeShopModal()" style="white-space:nowrap;">➕ ลงทะเบียนคาเฟ่ (แอดมิน)</button>' : '';
+  const btn='style="white-space:nowrap;padding:7px 12px;border-radius:18px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:\'Prompt\',sans-serif;'
+  let h='<button type="button" onclick="openCafeRegisterModal()" '+btn+'background:linear-gradient(135deg,rgba(240,185,11,.28),rgba(240,185,11,.1));border:1px solid rgba(240,185,11,.5);color:var(--gold);">'+tccT('cf.reg.btn')+'</button>';
+  if(typeof can==='function'&&can('cafe','create'))
+    h+='<button type="button" onclick="openAddCafeShopModal()" '+btn+'background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.4);color:#60a5fa;">🛠 แอดมิน</button>';
+  el.innerHTML=h;
 }
 function renderPublicCafeShops(){
   renderCafeDash(); renderCafeAdminActions();
@@ -11279,7 +11324,9 @@ function renderPublicCafeShops(){
 
   const q = (document.getElementById('pub-cafe-q')?.value||'').toLowerCase().trim();
   const filtered = rows.filter(r=>{
-    if(_cafeGroup(r.ShopStatus)!==_cafeView) return false;      // แสดงทีละกลุ่ม: อนุมัติแล้ว / อยู่ระหว่างอนุมัติ (ร้านที่ไม่ผ่านดูได้เฉพาะแอดมิน)
+    const g=_cafeGroup(r.ShopStatus);
+    if(g==='rejected') return false;                            // ร้านที่ไม่ผ่านดูได้เฉพาะแอดมิน
+    if(_cafeView!=='all'&&g!==_cafeView) return false;
     if(!q) return true;
     return (r.CafeName||'').toLowerCase().includes(q)
         || (r.Province||'').toLowerCase().includes(q)
@@ -11287,6 +11334,7 @@ function renderPublicCafeShops(){
         || (r.MemberName||'').toLowerCase().includes(q);
   });
 
+  if(_cafeView==='all') filtered.sort((a,b)=>(_cafeGroup(a.ShopStatus)==='approved'?0:1)-(_cafeGroup(b.ShopStatus)==='approved'?0:1));
   if(!filtered.length){
     wrap.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-dim);font-size:.82rem;">'+tccT('cf.none')+'</div>';
     return;
@@ -11303,8 +11351,8 @@ function renderPublicCafeShops(){
   };
 
   wrap.innerHTML =
-    '<div style="padding:4px 0;font-size:.72rem;color:var(--text-dim);margin-bottom:8px;">' + tccT('cf.count',{n:filtered.length}) + '</div>'
-    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;">'
+    '<div style="padding:10px 14px 8px;font-size:.72rem;color:var(--text-dim);">' + tccT('cf.count',{n:filtered.length}) + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr));gap:10px;padding:0 14px 14px;">'
     + filtered.map(function(r){
         var si = statusInfo(r.ShopStatus);
         var dataIdx = rows.indexOf(r);
@@ -11394,6 +11442,85 @@ function openCafeShopDetail(idx){
     + '</div>';
   ov.addEventListener('click', function(e){ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
+}
+
+
+// ═══════════ ลงทะเบียนคาเฟ่ (ฝั่งผู้ใช้) — ยืนยันตัวตนด้วย BNB ID + เบอร์โทร แล้วรอแอดมินอนุมัติ ═══════════
+var _crRole='owner', _crTimer=null;
+function openCafeRegisterModal(){
+  _crRole='owner';
+  document.getElementById('cafe-reg-modal')?.remove();
+  const inp='width:100%;box-sizing:border-box;padding:10px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:var(--text);font-size:.88rem;outline:none;font-family:\'Prompt\',sans-serif;';
+  const lbl='display:block;font-size:.72rem;color:var(--text-dim);margin:10px 0 4px;';
+  const sec=(t,c)=>'<div style="margin-top:14px;padding:6px 10px;border-left:3px solid '+c+';background:rgba(255,255,255,.03);font-size:.78rem;font-weight:700;color:'+c+';">'+t+'</div>';
+  const ov=document.createElement('div');
+  ov.id='cafe-reg-modal';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:2000;display:flex;align-items:flex-end;justify-content:center;';
+  ov.innerHTML='<div style="background:#0b0e11;border:1px solid rgba(240,185,11,.3);border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));max-width:560px;width:100%;max-height:92vh;overflow-y:auto;box-sizing:border-box;">'
+   +'<div style="display:flex;justify-content:space-between;align-items:center;"><span style="color:var(--gold);font-size:1rem;font-weight:700;">'+tccT('cf.reg.title')+'</span>'
+   +'<button type="button" onclick="document.getElementById(\'cafe-reg-modal\').remove()" style="background:none;border:none;color:var(--text-dim);font-size:1.4rem;cursor:pointer;">✕</button></div>'
+   +sec('👤 '+tccT('cf.reg.s1'),'#60a5fa')
+   +'<label style="'+lbl+'">'+tccT('cf.reg.bnb')+' *</label><input id="cr-bnb" style="'+inp+'" inputmode="numeric" autocomplete="off">'
+   +'<label style="'+lbl+'">'+tccT('cf.reg.phone')+' *</label><input id="cr-phone" style="'+inp+'" type="tel" inputmode="tel" autocomplete="off">'
+   +'<label style="'+lbl+'">'+tccT('cf.reg.role')+'</label>'
+   +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><button type="button" id="cr-role-owner" onclick="crSetRole(\'owner\')"></button><button type="button" id="cr-role-referrer" onclick="crSetRole(\'referrer\')"></button></div>'
+   +'<label id="cr-other-lbl" style="'+lbl+'"></label><input id="cr-other" style="'+inp+'" inputmode="numeric" autocomplete="off" oninput="crLookup()">'
+   +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px;"><div id="cr-other-info" style="font-size:.74rem;color:var(--text-dim);min-height:1em;"></div>'
+   +'<a href="javascript:void(0)" onclick="crSame()" style="font-size:.72rem;color:#60a5fa;white-space:nowrap;">'+tccT('cf.reg.same')+'</a></div>'
+   +sec('☕ '+tccT('cf.reg.s3'),'var(--gold)')
+   +'<label style="'+lbl+'">'+tccT('cf.reg.name')+'</label><input id="cr-cafe" style="'+inp+'" maxlength="100">'
+   +'<label style="'+lbl+'">'+tccT('cf.reg.prov')+'</label><input id="cr-prov" style="'+inp+'" maxlength="60">'
+   +'<label style="'+lbl+'">'+tccT('cf.reg.note')+'</label><textarea id="cr-note" rows="2" maxlength="500" style="'+inp+'resize:vertical;"></textarea>'
+   +'<div style="margin-top:10px;font-size:.7rem;color:var(--text-dim);line-height:1.5;">ℹ️ '+tccT('cf.reg.hint')+'</div>'
+   +'<div id="cr-msg" style="display:none;margin-top:10px;padding:9px 12px;border-radius:8px;font-size:.8rem;"></div>'
+   +'<div style="display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-top:14px;">'
+   +'<button type="button" onclick="document.getElementById(\'cafe-reg-modal\').remove()" style="padding:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#94a3b8;cursor:pointer;font-family:\'Prompt\',sans-serif;">'+tccT('cf.reg.cancel')+'</button>'
+   +'<button type="button" id="cr-submit" onclick="crSubmit()" style="padding:12px;background:linear-gradient(135deg,rgba(240,185,11,.3),rgba(240,185,11,.12));border:1px solid rgba(240,185,11,.5);border-radius:10px;color:var(--gold);cursor:pointer;font-weight:700;font-family:\'Prompt\',sans-serif;">'+tccT('cf.reg.submit')+'</button></div>'
+   +'</div>';
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
+  crSetRole('owner');
+}
+function crSetRole(r){
+  _crRole=r;
+  const on='background:rgba(240,185,11,.18);border:1px solid var(--gold);color:var(--gold);', off='background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:var(--text-dim);';
+  const base='padding:10px 6px;border-radius:10px;cursor:pointer;font-size:.82rem;font-weight:700;font-family:\'Prompt\',sans-serif;';
+  const o=document.getElementById('cr-role-owner'), f=document.getElementById('cr-role-referrer');
+  if(o){ o.style.cssText=base+(r==='owner'?on:off); o.textContent=tccT('cf.reg.roleOwner'); }
+  if(f){ f.style.cssText=base+(r==='referrer'?on:off); f.textContent=tccT('cf.reg.roleRef'); }
+  const l=document.getElementById('cr-other-lbl'); if(l) l.textContent=tccT(r==='owner'?'cf.reg.otherOwner':'cf.reg.otherRef')+' *';
+  crLookup();
+}
+function crSame(){ const b=document.getElementById('cr-bnb')?.value||''; const o=document.getElementById('cr-other'); if(o){ o.value=b.trim(); crLookup(); } }
+function crLookup(){
+  clearTimeout(_crTimer);
+  const id=(document.getElementById('cr-other')?.value||'').trim(), box=document.getElementById('cr-other-info');
+  if(!box) return;
+  if(id.length<3){ box.textContent=''; return; }
+  box.textContent='…';
+  _crTimer=setTimeout(async()=>{
+    try{
+      const r=await fetch(WORKER_URL+'/api/member/lookup?bnbId='+encodeURIComponent(id)); const d=await r.json();
+      if(document.getElementById('cr-other')?.value.trim()!==id) return;
+      box.style.color=d.found?'#22c55e':'#f87171';
+      box.textContent=d.found?('✅ '+d.name+(d.team?' · '+teamLabel(d.team):'')):('❌ '+tccT('cf.reg.nf'));
+    }catch(e){ box.textContent=''; }
+  },450);
+}
+async function crSubmit(){
+  const g=i=>(document.getElementById(i)?.value||'').trim();
+  const msg=document.getElementById('cr-msg'), btn=document.getElementById('cr-submit');
+  const show=(t,ok)=>{ msg.style.cssText='display:block;margin-top:10px;padding:9px 12px;border-radius:8px;font-size:.8rem;'+(ok===true?'background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#22c55e;':ok===false?'background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#f87171;':'background:rgba(240,185,11,.08);border:1px solid rgba(240,185,11,.2);color:var(--gold);'); msg.textContent=t; };
+  if(!g('cr-bnb')||!g('cr-phone')||!g('cr-other')||!g('cr-cafe')) return show(tccT('cf.reg.need'),false);
+  btn.disabled=true; show(tccT('cf.reg.sending'));
+  try{
+    await tcApi('/api/cafe/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({BnbId:g('cr-bnb'),Phone:g('cr-phone'),role:_crRole,OtherId:g('cr-other'),CafeName:g('cr-cafe'),Province:g('cr-prov'),Note:g('cr-note')})});
+    show(tccT('cf.reg.ok'),true);
+    _cafeShopsLoaded=false; if(NOCO.tbl.cafeshops) delete _cache[NOCO.tbl.cafeshops+''];
+    setTimeout(()=>{ document.getElementById('cafe-reg-modal')?.remove(); setCafeView('pending'); loadPublicCafeShops(); },1400);
+  }catch(e){
+    show('⚠️ '+(typeof tccErrMsg==='function'?tccErrMsg(e):e.message),false); btn.disabled=false;
+  }
 }
 
 // ── loadPublicCafeShops (เรียกตอน panel cafe ถูกเปิด) ─────────────

@@ -2554,6 +2554,14 @@ svg{display:block}
 .aitag{font-size:10px;color:var(--green);margin:0 2px 3px;display:flex;align-items:center;gap:3px;font-weight:600}
 .aitag::before{content:"AI";background:var(--green);color:#06130a;border-radius:4px;padding:0 4px;font-size:9px;font-weight:800}
 .row.me .aitag{justify-content:flex-end}
+/* [AI-THINK] ฟองรอคำตอบ AI: จุด 3 จุดกระพริบ + ข้อความ "กำลังคิด..." */
+.bubble.think{display:flex;align-items:center;gap:9px;white-space:nowrap;color:var(--tx2);font-size:13px;padding:10px 14px}
+.think .dots{display:inline-flex;align-items:center;gap:4px}
+.think .dots i{display:block;width:6px;height:6px;border-radius:50%;background:var(--green);opacity:.25;animation:aiDot 1.2s infinite ease-in-out}
+.think .dots i:nth-child(2){animation-delay:.2s}
+.think .dots i:nth-child(3){animation-delay:.4s}
+@keyframes aiDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){.think .dots i{animation:none;opacity:.7}}
 .aipill{display:none;border:1px solid var(--tx2);color:var(--tx2);border-radius:14px;padding:4px 11px;font-size:12px;font-weight:700;flex-shrink:0}
 .aipill.on{border-color:var(--green);color:var(--green)}
 .aipill.pause{border-color:#d9a400;color:#d9a400}
@@ -2882,6 +2890,7 @@ let LANG = "th";
 const I18N = {
   ph:       ["พิมพ์ข้อความ", "Type a message", "Nhập tin nhắn", "វាយសារ", "မက်ဆေ့ချ်ရိုက်ပါ", "ພິມຂໍ້ຄວາມ","Taip mesej","Ketik pesan","输入消息"],
   typing:   ["กำลังพิมพ์...", "Typing...", "Đang nhập...", "កំពុងវាយ...", "ရိုက်နေသည်...", "ກຳລັງພິມ...","Sedang menaip...","Sedang mengetik...","正在输入..."],
+  thinking: ["กำลังคิด...", "Thinking...", "Đang suy nghĩ...", "កំពុងគិត...", "စဉ်းစားနေသည်...", "ກຳລັງຄິດ...","Sedang berfikir...","Sedang berpikir...","正在思考..."],
   read:     ["อ่านแล้ว", "Read", "Đã xem", "បានអាន", "ဖတ်ပြီး", "ອ່ານແລ້ວ","Dibaca","Dibaca","已读"],
   today:    ["วันนี้", "Today", "Hôm nay", "ថ្ងៃនេះ", "ဒီနေ့", "ມື້ນີ້","Hari ini","Hari ini","今天"],
   yday:     ["เมื่อวาน", "Yesterday", "Hôm qua", "ម្សិលមិញ", "မနေ့က", "ມື້ວານ","Semalam","Kemarin","昨天"],
@@ -3069,6 +3078,54 @@ let pollChatTimer = null, pollListTimer = null, busyChat = false, lastTypingSent
 let usersCache = [];
 let onlyUnread = false;
 let aiSt = { avail: false, disabled: 0, paused: false };   // สถานะ AI ของห้องที่เปิดอยู่ (จาก GET /api/messages)
+let aiKnown = false;   // true = Worker ส่งสถานะ AI มาให้แล้ว (ใช้ตัดสินว่าข้อความที่พิมพ์เองจะมีคำตอบ AI ให้รอไหม)
+// [AI-THINK] ไอคอน "กำลังคิด..." ก่อนคำตอบ AI — เอฟเฟกต์ฝั่งแอปเท่านั้น ไม่แตะ Worker/ฐานข้อมูล (ข้อความ AI ยังถูกบันทึกทันทีเหมือนเดิม)
+const AI_THINK_MS = 2000;                              // กดคำถามจากเมนู → แสดงคำตอบเมื่อครบเวลานี้ (นับจากตอนกด ไม่ใช่หลังได้คำตอบ)
+const AI_THINK_MAX = { menu: 15000, typed: 25000 };    // ไม่มีคำตอบ AI ภายในเวลานี้ → เลิกแสดงไอคอน (กันค้าง)
+let AIQ = null, AIQ_TIMER = null;                      // สมาชิก: { base, qs:[{until,t0,max}] } · base = id ล่าสุดตอนกดส่ง · qs = คำถามที่รอคำตอบ (เรียงตามลำดับกด)
+let vThinking = false;                                 // Visitor: กำลังรอคำตอบจาก /api/public/ask
+const onSupportChat = () => !IS_ADMIN && !VISITOR && !!peer && peer.kind !== "room" && peer.id === SUPPORT_ID;
+function aiThinkReset() { AIQ = null; clearTimeout(AIQ_TIMER); }
+// เริ่มรอคำตอบ AI ของข้อความที่กำลังส่ง · menu (มี qid) = หน่วงครบ AI_THINK_MS · พิมพ์เอง = ไม่หน่วงเพิ่ม แสดงไอคอนระหว่าง AI คิดจริง
+function aiThinkBegin(type, extra) {
+  if (type !== "text" || !onSupportChat()) return null;
+  const menu = !!(extra && extra.qid);
+  if (!menu && (aiSt.disabled || aiSt.paused || (aiKnown && !aiSt.avail))) return null;   // AI ปิด/พัก/ไม่พร้อม → ไม่มีคำตอบ AI ให้รอ
+  if (AIQ && !aiThinkEval(sortedMsgs()).thinking) aiThinkReset();                        // เศษสถานะเก่าที่จบไปแล้ว
+  const now = Date.now();
+  const q = { until: menu ? now + AI_THINK_MS : now, t0: now, max: menu ? AI_THINK_MAX.menu : AI_THINK_MAX.typed };
+  if (!AIQ) AIQ = { base: lastId, qs: [] };
+  AIQ.qs.push(q);
+  return q;
+}
+function aiThinkCancel(q) {   // ส่งไม่สำเร็จ → เลิกรอ
+  if (!q || !AIQ) return;
+  AIQ.qs = AIQ.qs.filter(x => x !== q);
+  if (!AIQ.qs.length) aiThinkReset();
+}
+const sortedMsgs = () => [...msgs.values()].sort((a, b) => a.id - b.id);
+// คัดข้อความที่ "ยังไม่ถึงเวลาโชว์" ออกจากมุมมอง (msgs ยังเก็บครบ → poll รอบถัดไปไม่ทำให้ซ้ำ/หาย) แล้วบอกว่าต้องโชว์ไอคอนคิดไหม
+// จับคู่ข้อความ AI ลำดับที่ k กับคำถามลำดับที่ k · เมื่อมีข้อความถูกซ่อน ข้อความของอีกฝั่งที่ตามมาจะถูกซ่อนด้วย เพื่อรักษาลำดับ
+function aiThinkEval(arr) {
+  const now = Date.now(), qs = AIQ.qs, out = [];
+  let k = 0, held = 0, staff = false, wake = Infinity;
+  for (const m of arr) {
+    if (m.id > AIQ.base && m.id < 1e15 && !m.mine && !m.deleted) {
+      if (m.ai) {
+        const q = qs[k++];
+        if (q && q.until > now) wake = Math.min(wake, q.until);
+        if (held || (q && q.until > now)) { held++; continue; }
+      } else { staff = true; if (held) { held++; continue; } }   // เจ้าหน้าที่ตอบเอง → ไม่ต้องรอ AI ต่อ
+    }
+    out.push(m);
+  }
+  let waiting = false;
+  for (let i = k; i < qs.length; i++) {   // คำถามที่ยังไม่มีคำตอบ AI เข้ามา
+    const dl = qs[i].t0 + qs[i].max;
+    if (!staff && now < dl) { waiting = true; wake = Math.min(wake, dl); }
+  }
+  return { out, thinking: held > 0 || waiting, wake };
+}
 let PAUSED = false;   // host (แอป/แอดมิน) สั่งหยุดชั่วคราวตอนมุมมองนี้ถูกซ่อน: ไม่ poll ไม่ส่ง "อ่านแล้ว"
 
 // ================= Utils =================
@@ -3327,7 +3384,7 @@ function startMemberHome() {
 }
 function enterMemberList(first) {
   if (VISITOR && peer && peer.id === SUPPORT_ID) vSaved = msgs;   // Visitor กลับมาหน้ารายการ → เก็บบทสนทนา FAQ ไว้ใช้ต่อ
-  peer = null; clearInterval(pollChatTimer);
+  peer = null; clearInterval(pollChatTimer); aiThinkReset(); vThinking = false;
   document.body.classList.remove("room", "ro", "dmro");
   $(".lhead h1").textContent = T("listTitle"); $("#search").placeholder = T("search");
   show("list");
@@ -3355,7 +3412,7 @@ function openRoom(r) {
   msgs = new Map(); lastId = 0; lastUpd = 0; peerRead = 0; peerTyping = false; reportedRead = 0;
   roomSt = { status: r.status, locked: "", members: r.members, readable: r.readable, pending: r.pending || 0 };
   setReply(null); $("#stickers").classList.remove("on");
-  aiSt = { avail: false, disabled: 0, paused: false }; paintAi();
+  aiSt = { avail: false, disabled: 0, paused: false }; aiKnown = false; aiThinkReset(); paintAi();
   guideReady = false; paintGuide();
   paintHeadAv(); paintLangBits();
   $("#pname").textContent = peer.name; $("#pst").textContent = roomStatusLine();
@@ -3634,7 +3691,7 @@ function openChat(u) {
   peer = { id: String(u.id), name: u.name || String(u.id), color: u.color || "", avatar: avatarOf(u) };
   msgs = new Map(); lastId = 0; lastUpd = 0; peerRead = 0; peerTyping = false; reportedRead = 0;
   setReply(null); $("#stickers").classList.remove("on");
-  aiSt = { avail: false, disabled: 0, paused: false }; paintAi();
+  aiSt = { avail: false, disabled: 0, paused: false }; aiKnown = false; aiThinkReset(); paintAi();
   guideReady = false; paintGuide();
   paintHeadAv(); paintLangBits();
   $("#pname").textContent = peer.name; $("#pst").textContent = "";
@@ -3678,6 +3735,7 @@ async function pollChat(first) {
       const na = (IS_ADMIN && AV_MAP[peer.id]) || d.peer_avatar;
       if (na !== (peer.avatar || "")) { peer.avatar = na; if (peer.id === SUPPORT_ID) supAv = na; paintHeadAv(); changed = true; }
     }
+    if (d.ai) aiKnown = true;
     if (d.ai && (d.ai.avail !== aiSt.avail || d.ai.disabled !== aiSt.disabled || d.ai.paused !== aiSt.paused)) { aiSt = d.ai; paintAi(); }
     if (d.typing !== peerTyping) { peerTyping = d.typing; $("#pst").textContent = d.typing ? T("typing") : ""; }
     if (changed) renderMsgs(first);
@@ -3741,7 +3799,16 @@ function renderMsgs(forceBottom) {
   const box = $("#msgs");
   const near = box.scrollHeight - box.scrollTop - box.clientHeight < 140;
   box.innerHTML = "";
-  const arr = [...msgs.values()].sort((a, b) => a.id - b.id);
+  let arr = sortedMsgs();
+  let thinking = false;   // [AI-THINK] โชว์ฟอง "กำลังคิด..." ท้ายแชทไหม
+  if (AIQ && !onSupportChat()) aiThinkReset();
+  if (AIQ) {
+    const r = aiThinkEval(arr);
+    arr = r.out; thinking = r.thinking;
+    clearTimeout(AIQ_TIMER);
+    if (thinking) AIQ_TIMER = setTimeout(() => renderMsgs(false), isFinite(r.wake) ? Math.max(30, r.wake - Date.now() + 30) : 1000);   // ปลุกตอนครบเวลาหน่วง/หมดเวลารอ
+    else AIQ = null;
+  } else if (VISITOR && vThinking && peer && peer.kind !== "room" && peer.id === SUPPORT_ID) thinking = true;
   let prevDay = null, prevKey = null;
 
   arr.forEach(m => {
@@ -3817,6 +3884,24 @@ function renderMsgs(forceBottom) {
     if (isMe) bw.append(meta, bubble); else bw.append(bubble, meta);
     col.appendChild(bw); row.appendChild(col); box.appendChild(row);
   });
+
+  if (thinking) {   // [AI-THINK] ฟองชั่วคราว (ไม่อยู่ใน msgs) — หายเองเมื่อคำตอบจริงถูกแสดง
+    const first = prevKey !== "other:ai";
+    const row = document.createElement("div"); row.className = "row other think-row" + (first ? " first" : "");
+    if (first) { const av = document.createElement("div"); mkAvatar(av, peer.name, peer.color, peer.id, peer.avatar); row.appendChild(av); }
+    else { const ph = document.createElement("div"); ph.className = "ph"; row.appendChild(ph); }
+    const col = document.createElement("div"); col.className = "col";
+    if (first) {
+      const n = document.createElement("div"); n.className = "pname"; n.textContent = peer.name; col.appendChild(n);
+      const tg = document.createElement("div"); tg.className = "aitag"; tg.textContent = T("aiLabel"); col.appendChild(tg);
+    }
+    const bw = document.createElement("div"); bw.className = "bwrap";
+    const b = document.createElement("div"); b.className = "bubble think"; b.setAttribute("role", "status"); b.setAttribute("aria-live", "polite");
+    const dots = document.createElement("span"); dots.className = "dots";
+    for (let i = 0; i < 3; i++) dots.appendChild(document.createElement("i"));
+    const tx = document.createElement("span"); tx.textContent = T("thinking");
+    b.append(dots, tx); bw.appendChild(b); col.appendChild(bw); row.appendChild(col); box.appendChild(row);
+  }
 
   if (!arr.length && !IS_ADMIN) { const e = document.createElement("div"); e.className = "empty"; e.textContent = T("empty"); box.appendChild(e); }
   if (forceBottom || near) box.scrollTop = box.scrollHeight;
@@ -3933,14 +4018,18 @@ async function visitorAsk(c, it) {
   if (vBusy) return;
   setGuideOpen(false, false);
   addLocal({ mine: true, type: "text", content: it.q[LANG] || it.q.th });
-  vBusy = true;
+  vBusy = true; vThinking = true; renderMsgs(true);   // [AI-THINK] โชว์ "กำลังคิด..." ทันที
+  const hold = new Promise(res => setTimeout(res, AI_THINK_MS));   // เริ่มนับ 2 วิพร้อมการเรียก API (ไม่รอต่อกัน)
+  let text;
   try {
     const r = await fetch(API + "/api/public/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ qid: it.id, lang: LANG }) });
     const d = await r.json().catch(() => ({}));
     if (!r.ok || !d || !d.text) throw new Error((d && d.error) || "HTTP " + r.status);
-    addLocal({ mine: false, ai: 0, type: "text", content: d.text });
-  } catch (_) { addLocal({ mine: false, ai: 0, type: "text", content: T("vFail") }); }
-  finally { vBusy = false; }
+    text = d.text;
+    await hold;   // API ตอบเร็วกว่า 2 วิ → รอให้ครบ · ช้ากว่า → แสดงทันที
+  } catch (_) { text = T("vFail"); }   // ผิดพลาด → แจ้งทันที ไม่ต้องรอครบเวลา
+  vThinking = false; vBusy = false;
+  addLocal({ mine: false, ai: 0, type: "text", content: text });
 }
 // Visitor: ห้องที่เปิดให้อ่าน (readable=1) แสดงอ่านอย่างเดียว · ชื่อผู้ส่งถูกย่อโดย Worker เสมอ · ไม่มีห้องให้อ่าน/Worker ปิดไว้ (VISITOR_ROOMS=off) → เปิดแชท FAQ ตรง ๆ เหมือนเดิม
 async function pubGet(path) {
@@ -4051,6 +4140,7 @@ async function sendMessage(type, content, extra) {
   if (!peer) return;
   const tid = 1e15 + (++tmpN);
   const temp = { id: tid, mine: true, type, content, reply_to: replyTo ? replyTo.id : null, deleted: 0, created_at: Date.now(), updated_at: 0 };
+  const tq = aiThinkBegin(type, extra);   // [AI-THINK] สมาชิก: เริ่มรอคำตอบ AI (เมนู = หน่วง 2 วิจากตอนกด · พิมพ์เอง = ไม่หน่วงเพิ่ม)
   msgs.set(tid, temp); renderMsgs(true);
   const rid = temp.reply_to;
   setReply(null);
@@ -4062,7 +4152,7 @@ async function sendMessage(type, content, extra) {
     msgs.set(d.id, { ...temp, id: d.id, created_at: d.created_at, updated_at: d.created_at });
     if (d.id > lastId) lastId = d.id;
     renderMsgs(true);
-  } catch (e) { msgs.delete(tid); renderMsgs(true); toast(T("sendFail") + ": " + e.message); if (peer && peer.kind === "room") pollChat(false); }   // ห้อง: สิทธิ์อาจเปลี่ยน → ดึงสถานะใหม่
+  } catch (e) { msgs.delete(tid); aiThinkCancel(tq); renderMsgs(true); toast(T("sendFail") + ": " + e.message); if (peer && peer.kind === "room") pollChat(false); }   // ห้อง: สิทธิ์อาจเปลี่ยน → ดึงสถานะใหม่
 }
 function sendText() {
   const t = $("#input").value.trim(); if (!t) return;

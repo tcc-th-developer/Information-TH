@@ -16970,7 +16970,7 @@ async function loadMainData(){
 //  สถานะล็อกอินเปลี่ยน (เข้า/ออก/เปลี่ยนคน) แล้วเข้าหน้า Chat ใหม่ = โหลดห้องใหม่อัตโนมัติ · แลก token ไม่ได้ = ตกไปโหมดถัดไปและลองใหม่ครั้งหน้า
 // ═══════════════════════════════════════════════════
 // [TG] ลิงก์จาก Telegram (?uid=&name=) → จำไว้ใน sessionStorage ให้แชทแอดมินเปิดห้องนั้นตอนโหลด (ใช้ได้แม้ต้องล็อกอินแอดมินก่อน)
-try{ var _q=new URLSearchParams(location.search), _u=_q.get('uid'); if(_u) sessionStorage.setItem('tcc_open_chat', JSON.stringify({uid:_u, name:_q.get('name')||'', t:Date.now()})); }catch(e){}
+try{ var _q=new URLSearchParams(location.search), _u=_q.get('uid'); if(_u){ sessionStorage.setItem('tcc_open_chat', JSON.stringify({uid:_u, name:_q.get('name')||'', t:Date.now()})); if(!location.hash) history.replaceState(null,'',location.pathname+location.search+'#chat'); } }catch(e){}
 var SC_CHAT_API = 'https://information-line-chat.smpbonus9.workers.dev';
 var scHtml = '', scMode = '', scVisibleOn = false, scPrev = 'market', scSeq = 0, scIsAdmin = false, scAdminPre = null;
 function scSource(admin){

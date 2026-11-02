@@ -16971,6 +16971,22 @@ async function loadMainData(){
 // ═══════════════════════════════════════════════════
 // [TG] ลิงก์จาก Telegram (?uid=&name=) → จำไว้ใน sessionStorage ให้แชทแอดมินเปิดห้องนั้นตอนโหลด (ใช้ได้แม้ต้องล็อกอินแอดมินก่อน)
 try{ var _q=new URLSearchParams(location.search), _u=_q.get('uid'); if(_u){ sessionStorage.setItem('tcc_open_chat', JSON.stringify({uid:_u, name:_q.get('name')||'', t:Date.now()})); if(!location.hash) history.replaceState(null,'',location.pathname+location.search+'#chat'); } }catch(e){}
+// [TG] ส่งต่อการล็อกอินแอดมินระหว่างแท็บ (BroadcastChannel · อยู่ในหน่วยความจำเท่านั้น ไม่เขียนลง localStorage): แท็บแอดมินที่เปิดอยู่ตอบ "req" ด้วย session ของตัวเอง · แท็บใหม่จากลิงก์ Telegram (ไม่มี session) ขอครั้งเดียวแล้วรีโหลดให้แอปกู้ session ตามปกติ
+try{
+  if(window.BroadcastChannel){
+    var _hb=new BroadcastChannel('tcc_admin_handoff');
+    _hb.onmessage=function(e){
+      var d=e.data||{};
+      if(d.t==='req'){
+        var raw=sessionStorage.getItem('tcc_session'); if(!raw) return;
+        try{ var o=JSON.parse(raw); if(o&&o.sessionToken&&o.exp&&Date.now()<o.exp) _hb.postMessage({t:'res',s:raw}); }catch(x){}
+      }else if(d.t==='res' && d.s && !sessionStorage.getItem('tcc_session') && !sessionStorage.getItem('tcc_handoff')){
+        try{ var p=JSON.parse(d.s); if(p&&p.sessionToken&&p.exp&&Date.now()<p.exp){ sessionStorage.setItem('tcc_session',d.s); sessionStorage.setItem('tcc_handoff','1'); location.reload(); } }catch(x){}
+      }
+    };
+    if(new URLSearchParams(location.search).get('uid') && !sessionStorage.getItem('tcc_session') && !sessionStorage.getItem('tcc_handoff')) _hb.postMessage({t:'req'});
+  }
+}catch(e){}
 var SC_CHAT_API = 'https://information-line-chat.smpbonus9.workers.dev';
 var scHtml = '', scMode = '', scVisibleOn = false, scPrev = 'market', scSeq = 0, scIsAdmin = false, scAdminPre = null;
 function scSource(admin){

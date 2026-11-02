@@ -6618,6 +6618,14 @@ const SYSTEM_WALLET_DEFAULT = { label:'กระเป๋าหลัก', addr:
 const LS_ADMINS  = 'tcc_admins';
 const LS_WALLETS = 'tcc_wallets';
 const LS_SESSION = 'tcc_session';
+// [KEEP] "จำการเข้าสู่ระบบบนเครื่องนี้" (เลือกเองตอนล็อกอิน): สำเนา session แอดมินใน localStorage · แท็บใหม่ที่ยังไม่มี session จะกู้จากสำเนานี้ (ไม่เกินเวลา exp ของ token · ถูกตรวจกับ Worker ตามเดิม · ออกจากระบบ = ลบ)
+const LS_SESSION_KEEP = 'tcc_session_keep';
+try{
+  if(!sessionStorage.getItem(LS_SESSION)){
+    var _kr=localStorage.getItem(LS_SESSION_KEEP), _ko=_kr&&JSON.parse(_kr);
+    if(_ko&&_ko.sessionToken&&_ko.exp&&Date.now()<_ko.exp) sessionStorage.setItem(LS_SESSION,_kr); else if(_kr) localStorage.removeItem(LS_SESSION_KEEP);
+  }
+}catch(e){}
 
 // ══════════════════════════════════════════════════════
 //  🔐 PERMISSION SYSTEM
@@ -7747,6 +7755,7 @@ function buildSystemPanel(){
       <label class="form-label">รหัสผ่าน</label>
       <input type="password" class="form-control" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--muted,#94a3b8);margin-bottom:12px;cursor:pointer;"><input type="checkbox" id="login-keep"> จำการเข้าสู่ระบบบนเครื่องนี้ (ไม่ต้องล็อกอินใหม่เมื่อเปิดจาก Telegram · ใช้เฉพาะเครื่องส่วนตัว)</label>
     <div id="login-err" style="color:var(--red);font-size:0.82rem;margin-bottom:10px;display:none;"></div>
     <button class="btn btn-gold btn-full" onclick="doLogin()" style="font-size:0.95rem;padding:12px;">🔓 เข้าสู่ระบบ</button>
   </div>
@@ -13190,6 +13199,7 @@ async function loadLocalData(){
           } else {
             // [FIX-3] Server บอกว่า token ไม่ valid — ล้าง session ทันที
             sessionStorage.removeItem(LS_SESSION);
+            try{ localStorage.removeItem(LS_SESSION_KEEP); }catch(e){}
             currentAdmin = null;
           }
         } else {
@@ -13353,6 +13363,7 @@ async function doLogin(){
       exp:          data.exp,
     }));
     localStorage.removeItem(LS_SESSION);
+    try{ var _kp=document.getElementById('login-keep'); if(_kp&&_kp.checked) localStorage.setItem(LS_SESSION_KEEP, sessionStorage.getItem(LS_SESSION)); else localStorage.removeItem(LS_SESSION_KEEP); }catch(e){}
 
     if(err) err.style.display='none';
     ssClear(); showAdminDashboard();
@@ -13368,6 +13379,7 @@ function doLogout(){
   MEMBERS=[]; PAYMENTS=[]; commApprovals={};
   sessionStorage.removeItem(LS_SESSION);
   localStorage.removeItem(LS_SESSION);
+  try{ localStorage.removeItem(LS_SESSION_KEEP); }catch(e){}
   const aw=document.getElementById('admin-auth-wall');
   const ad=document.getElementById('admin-dashboard');
   const naa=document.getElementById('nav-auth-area');

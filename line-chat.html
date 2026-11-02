@@ -66,6 +66,7 @@ svg{display:block}
 .chead .avatar{width:38px;height:38px;font-size:16px}
 .chead .nm{font-size:16px;font-weight:600}
 .chead .st{font-size:12px;color:var(--tx2);margin-top:1px;min-height:14px}
+.chead #pprof{font-size:11px;min-height:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* [PROFILE] ทีม·ประเทศ·Level·สถานะ·เบอร์ (แอดมินเห็นเท่านั้น) */
 .msgs{flex:1;overflow-y:auto;padding:10px 10px 14px;-webkit-overflow-scrolling:touch}
 .divider{text-align:center;margin:12px 0 8px}
 .divider span{display:inline-block;background:rgba(255,255,255,.12);color:#c7c7cc;font-size:12px;padding:3px 12px;border-radius:12px}
@@ -187,7 +188,7 @@ body.visitor .ibar,body.visitor #replybar,body.visitor #stickers{display:none!im
 body.visitor .guide{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
 
 /* ===== Member หน้าแรก + ห้องสนทนา (เฟส 2) ===== */
-body.member .lhead .acts,body.member .nav{display:none!important}
+body.member .lhead .acts button:not(.myav),body.member .nav{display:none!important}   /* [MEMBER-AV] เหลือเฉพาะปุ่มรูปโปรไฟล์ของสมาชิก */
 .lhead .lang{display:none;flex-shrink:0;height:30px;padding:0 11px;border-radius:15px;background:var(--surface2);color:var(--tx);font-size:12px;font-weight:600;white-space:nowrap}
 body.member .lhead .lang{display:block}
 .sec{padding:10px 16px 4px;font-size:12px;font-weight:700;color:var(--tx2);letter-spacing:.2px}
@@ -252,6 +253,10 @@ body.admin.room .chead .mgb{display:block}
 .dlg label.chk{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--tx2);line-height:1.4}
 .dlg label.chk input{margin-top:3px;flex-shrink:0}
 .dlg-err{color:var(--red);font-size:13px}
+.rav{display:flex;align-items:center;gap:12px}   /* [ROOM-AV] ช่องรูปห้องในฟอร์มสร้าง/แก้ห้อง */
+.rav .avatar{width:56px;height:56px;font-size:22px;background-size:cover;background-position:center}
+.rav button{height:34px;padding:0 14px;border-radius:17px;background:var(--surface);color:var(--tx);font-size:13px;font-weight:600}
+.rav button.red{color:var(--red)}
 .dlg-btns{display:flex;gap:10px}
 .dlg-btns button{flex:1;height:42px;border-radius:21px;font-size:15px;font-weight:600;background:var(--surface);color:var(--tx)}
 .dlg-btns button.ok{background:var(--green);color:#fff}
@@ -324,6 +329,7 @@ body.admin.room .chead .mgb{display:block}
       <div style="flex:1;min-width:0">
         <div class="nm" id="pname"></div>
         <div class="st" id="pst"></div>
+        <div class="st" id="pprof" style="display:none"></div>
       </div>
       <button class="mgb" id="mgBtn" type="button">จัดการห้อง</button>
       <button class="lang" id="langBtn" type="button" aria-label="Language"></button>
@@ -753,10 +759,45 @@ $("#viewer").addEventListener("click", () => $("#viewer").classList.remove("on")
 
 // ================= List =================
 function paintMyAv() {
-  const b = $("#bProfile"); if (!IS_ADMIN || !canDo("dmReply")) { b.style.display = "none"; return; }
+  const b = $("#bProfile");
+  if (!IS_ADMIN) {   // [MEMBER-AV] สมาชิก (ไม่ใช่ Visitor) เปลี่ยนรูปตัวเองได้
+    if (VISITOR || !MEMBER_LIST) { b.style.display = "none"; return; }
+    b.style.display = "flex";
+    const el = $("#myav"); el.className = ""; el.style.background = ""; el.textContent = "";
+    mkAvatar(el, me.name || "?", "", me.id || me.name, myMemAv);
+    return;
+  }
+  if (!canDo("dmReply")) { b.style.display = "none"; return; }
   b.style.display = "flex";
   const el = $("#myav"); el.className = ""; el.style.background = ""; el.textContent = "";
   mkAvatar(el, T("support"), "#d9a400", SUPPORT_ID, supportAvatar);
+}
+let myMemAv = "";   // [MEMBER-AV] รูปโปรไฟล์ของสมาชิกเอง
+async function loadMyMemberAvatar() {
+  if (IS_ADMIN || VISITOR) return;
+  paintMyAv();
+  try { const d = await api("/api/me-avatar"); myMemAv = d.avatar || ""; paintMyAv(); } catch (_) { }
+}
+async function changeMemberAvatar(file) {
+  if (!file || !/^image\/(png|jpe?g|webp)$/i.test(file.type)) { toast(T("badType")); return; }
+  const blob = await cropSquare(file);
+  if (!blob) { toast(T("badImg")); return; }
+  toast(T("upl") + "...");
+  try {
+    const sg = await api("/api/me-avatar/sign", { method: "POST" });
+    const fd = new FormData();
+    Object.keys(sg.fields).forEach(k => fd.append(k, sg.fields[k]));
+    fd.append("file", blob);
+    const r = await fetch(sg.upload_url, { method: "POST", body: fd });
+    const cl = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error((cl.error && cl.error.message) || "HTTP " + r.status);
+    const d = await api("/api/me-avatar/done", { method: "POST", body: { public_id: sg.fields.public_id, version: cl.version, format: cl.format } });
+    myMemAv = d.avatar || ""; paintMyAv(); toast("เปลี่ยนรูปโปรไฟล์แล้ว");
+  } catch (e) { toast(T("sendFail") + ": " + e.message); }
+}
+async function clearMemberAvatar() {
+  try { await api("/api/me-avatar/clear", { method: "POST" }); myMemAv = ""; paintMyAv(); toast("ลบรูปโปรไฟล์แล้ว"); }
+  catch (e) { toast(e.message); }
 }
 async function loadSupportProfile() {
   if (!IS_ADMIN) return;
@@ -799,11 +840,14 @@ async function clearSupportAvatar() {
   try { await api("/api/support-avatar/clear", { method: "POST" }); supportAvatar = ""; paintMyAv(); toast("ลบรูปโปรไฟล์แล้ว"); }
   catch (e) { toast(e.message); }
 }
-$("#bProfile").onclick = () => showMenu([
+$("#bProfile").onclick = () => IS_ADMIN ? showMenu([
   ["เปลี่ยนรูปโปรไฟล์ซัพพอร์ต", () => $("#avFile").click()],
   ...(supportAvatar ? [["ลบรูปโปรไฟล์", clearSupportAvatar, true]] : []),
+]) : showMenu([
+  ["เปลี่ยนรูปโปรไฟล์", () => $("#avFile").click()],
+  ...(myMemAv ? [["ลบรูปโปรไฟล์", clearMemberAvatar, true]] : []),
 ]);
-$("#avFile").addEventListener("change", e => { const f = e.target.files[0]; e.target.value = ""; if (f) changeSupportAvatar(f); });
+$("#avFile").addEventListener("change", e => { const f = e.target.files[0]; e.target.value = ""; if (f) (IS_ADMIN ? changeSupportAvatar(f) : changeMemberAvatar(f)); });
 
 function enterList() {
   peer = null; clearInterval(pollChatTimer);
@@ -924,7 +968,7 @@ function renderMemberList() {
   }
   rs.forEach(r => {
     shown++;
-    box.appendChild(itemRow({ name: r.name, color: "", id: "room:" + r.id, chip: roomChip(r), preview: r.status === "blocked" ? T("barBlocked") : (r.last_at == null ? (r.descr || T("startChat")) : memberPreview(r)), at: r.last_at, unread: r.unread, onclick: () => openRoom(r) }));
+    box.appendChild(itemRow({ name: r.name, color: "", id: "room:" + r.id, avatar: r.avatar || "", chip: roomChip(r), preview: r.status === "blocked" ? T("barBlocked") : (r.last_at == null ? (r.descr || T("startChat")) : memberPreview(r)), at: r.last_at, unread: r.unread, onclick: () => openRoom(r) }));
   });
   if (!roomsCache.length && !q) { const e = document.createElement("div"); e.className = "empty"; e.textContent = T("noRooms"); box.appendChild(e); }
   else if (!shown) { const e = document.createElement("div"); e.className = "empty"; e.textContent = T("noMatch"); box.appendChild(e); }
@@ -941,6 +985,7 @@ function enterMemberList(first) {
   show("list");
   if (roomsCache.length || supportInfo) renderMemberList();
   loadMemberList(first);
+  if (first) loadMyMemberAvatar();   // [MEMBER-AV]
   clearInterval(pollListTimer);
   pollListTimer = setInterval(() => { if (!document.hidden && !PAUSED && $("#list").classList.contains("on")) loadMemberList(false); }, VISITOR ? 10000 : 4000);
 }
@@ -959,14 +1004,14 @@ async function loadMemberList(first) {
   } finally { listBusy = false; }
 }
 function openRoom(r) {
-  peer = { id: "room:" + r.id, kind: "room", roomId: r.id, name: r.name, color: "", avatar: "" };
+  peer = { id: "room:" + r.id, kind: "room", roomId: r.id, name: r.name, color: "", avatar: r.avatar || "" };
   msgs = new Map(); lastId = 0; lastUpd = 0; peerRead = 0; peerTyping = false; reportedRead = 0;
   roomSt = { status: r.status, locked: "", members: r.members, readable: r.readable, pending: r.pending || 0 };
   setReply(null); $("#stickers").classList.remove("on");
   aiSt = { avail: false, disabled: 0, paused: false }; aiKnown = false; aiThinkReset(); paintAi();
   guideReady = false; paintGuide();
   paintHeadAv(); paintLangBits();
-  $("#pname").textContent = peer.name; $("#pst").textContent = roomStatusLine();
+  $("#pname").textContent = peer.name; $("#pst").textContent = roomStatusLine(); paintProf(null);
   $("#msgs").innerHTML = ""; $("#input").value = ""; autoGrow();
   $("#back").classList.remove("hide");
   clearInterval(pollListTimer);
@@ -1017,6 +1062,7 @@ async function pollRoom(first) {
     if (m.id > lastId) lastId = m.id;
   });
   lastUpd = Math.max(0, d.now - 2500);
+  if ((d.room.avatar || "") !== (peer.avatar || "")) { peer.avatar = d.room.avatar || ""; paintHeadAv(); }   // [ROOM-AV]
   const nst = { status: d.room.status, locked: d.locked || "", members: d.room.members, readable: d.room.readable, pending: d.room.pending || 0 };
   if (nst.locked) { if (msgs.size) { msgs = new Map(); changed = true; } lastId = 0; lastUpd = 0; }   // ถูกล็อก (ส่วนตัว/บล็อก) → ล้างที่ค้างอยู่ · ปลดแล้วโหลดใหม่ตั้งแต่ต้น
   if (nst.status !== roomSt.status || nst.locked !== roomSt.locked || nst.members !== roomSt.members || nst.pending !== roomSt.pending) {
@@ -1077,7 +1123,7 @@ function renderAdminRooms() {
   const rs = adminRooms.filter(r => !q || r.name.toLowerCase().includes(q));
   box.appendChild(secHead("ห้องทั้งหมด (" + rs.length + ")"));
   rs.forEach(r => box.appendChild(itemRow({
-    name: r.name, color: "", id: "room:" + r.id, chip: r.pending > 0 ? ["warn", r.pending + " คำขอ"] : (r.readable ? null : ["", T("stPrivate")]),
+    name: r.name, color: "", id: "room:" + r.id, avatar: r.avatar || "", chip: r.pending > 0 ? ["warn", r.pending + " คำขอ"] : (r.readable ? null : ["", T("stPrivate")]),
     preview: r.last_at == null ? (r.descr || T("startChat")) : memberPreview(r), at: r.last_at, unread: r.unread, onclick: () => openRoom(r),
   })));
   if (!adminRooms.length) { const e = document.createElement("div"); e.className = "empty"; e.textContent = canDo("roomCreate") ? "ยังไม่มีห้องสนทนา\nกด “สร้างห้องใหม่” เพื่อเริ่มต้น" : "ยังไม่มีห้องสนทนา"; box.appendChild(e); }
@@ -1128,14 +1174,53 @@ function roomForm(room) {
   const lb = document.createElement("label"); lb.className = "chk";
   const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = room ? room.readable === 1 : true;
   const sp = document.createElement("span"); sp.textContent = "ให้สมาชิกที่ยังไม่ได้เข้าร่วมอ่านข้อความในห้องได้ (พิมพ์ไม่ได้จนกว่าจะอนุมัติ) · ปิดช่องนี้ = ห้องส่วนตัว เห็นเฉพาะคนที่อนุมัติแล้ว";
-  lb.append(cb, sp); wrap.append(name, descr, lb);
-  return { el: wrap, name, descr, cb };
+  lb.append(cb, sp);
+  // [ROOM-AV] รูปห้อง: เลือกรูป → ย่อ 256px เก็บไว้ก่อน · อัปโหลดตอนกดบันทึก (undefined = ไม่เปลี่ยน · "" = ลบ · object = รูปใหม่)
+  const rav = document.createElement("div"); rav.className = "rav";
+  const pv = document.createElement("div");
+  const pick = document.createElement("button"); pick.type = "button"; pick.textContent = "เลือกรูปห้อง";
+  const del = document.createElement("button"); del.type = "button"; del.className = "red"; del.textContent = "ลบรูป";
+  const fin = document.createElement("input"); fin.type = "file"; fin.accept = "image/png,image/jpeg,image/webp"; fin.style.display = "none";
+  let blob = null, cleared = false, localUrl = "";
+  const paint = () => {
+    pv.className = ""; pv.style.background = ""; pv.style.backgroundImage = ""; pv.textContent = "";
+    if (localUrl) { pv.classList.add("avatar"); pv.style.backgroundImage = "url(" + localUrl + ")"; }
+    else mkAvatar(pv, (name.value || (room && room.name) || "ห").trim() || "ห", "", "room:" + (room ? room.id : "new"), cleared ? "" : (room && room.avatar) || "");
+    del.style.display = (localUrl || (!cleared && room && room.avatar)) ? "" : "none";
+  };
+  pick.onclick = () => fin.click();
+  fin.onchange = async () => {
+    const f = fin.files[0]; fin.value = ""; if (!f) return;
+    if (!/^image\/(png|jpe?g|webp)$/i.test(f.type)) { toast(T("badType")); return; }
+    const b = await cropSquare(f); if (!b) { toast(T("badImg")); return; }
+    if (localUrl) URL.revokeObjectURL(localUrl);
+    blob = b; cleared = false; localUrl = URL.createObjectURL(b); paint();
+  };
+  del.onclick = () => { if (localUrl) URL.revokeObjectURL(localUrl); blob = null; localUrl = ""; cleared = true; paint(); };
+  name.addEventListener("input", () => { if (!localUrl && !(room && room.avatar && !cleared)) paint(); });
+  rav.append(pv, pick, del, fin); paint();
+  wrap.append(rav, name, descr, lb);
+  const avatarPayload = async () => {
+    if (blob) {
+      const sg = await api("/api/admin/room-avatar/sign", { method: "POST" });
+      const fd = new FormData();
+      Object.keys(sg.fields).forEach(k => fd.append(k, sg.fields[k]));
+      fd.append("file", blob);
+      const r = await fetch(sg.upload_url, { method: "POST", body: fd });
+      const cl = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error((cl.error && cl.error.message) || "HTTP " + r.status);
+      return { public_id: sg.fields.public_id, version: cl.version, format: cl.format };
+    }
+    return cleared ? "" : undefined;
+  };
+  return { el: wrap, name, descr, cb, avatarPayload };
 }
 function createRoomDialog() {
   const f = roomForm(null);
   openDialog({ title: "สร้างห้องใหม่", body: f.el, ok: "สร้างห้อง", focus: f.name, onOk: async () => {
     const nm = f.name.value.trim(); if (!nm) throw new Error("ต้องตั้งชื่อห้อง");
-    await api("/api/admin/rooms", { method: "POST", body: { name: nm, descr: f.descr.value.trim(), readable: f.cb.checked } });
+    const av = await f.avatarPayload();   // [ROOM-AV]
+    await api("/api/admin/rooms", { method: "POST", body: { name: nm, descr: f.descr.value.trim(), readable: f.cb.checked, ...(av ? { avatar: av } : {}) } });
     toast("สร้างห้องแล้ว"); await loadAdminRooms();
   } });
 }
@@ -1143,9 +1228,10 @@ function editRoomDialog(room) {
   const f = roomForm(room);
   openDialog({ title: "แก้ไขห้อง", body: f.el, ok: "บันทึก", focus: f.name, onOk: async () => {
     const nm = f.name.value.trim(); if (!nm) throw new Error("ต้องตั้งชื่อห้อง");
-    const d = await api(`/api/admin/rooms/${room.id}/update`, { method: "POST", body: { name: nm, descr: f.descr.value.trim(), readable: f.cb.checked } });
+    const av = await f.avatarPayload();   // [ROOM-AV]
+    const d = await api(`/api/admin/rooms/${room.id}/update`, { method: "POST", body: { name: nm, descr: f.descr.value.trim(), readable: f.cb.checked, ...(av !== undefined ? { avatar: av } : {}) } });
     toast("บันทึกแล้ว");
-    if (peer && peer.kind === "room" && peer.roomId === room.id) { peer.name = d.room.name; $("#pname").textContent = peer.name; roomSt.readable = d.room.readable; }
+    if (peer && peer.kind === "room" && peer.roomId === room.id) { peer.name = d.room.name; $("#pname").textContent = peer.name; roomSt.readable = d.room.readable; peer.avatar = d.room.avatar || ""; paintHeadAv(); }
     await loadAdminRooms(); if ($("#mgOv").classList.contains("on")) paintMg();
   } });
 }
@@ -1159,7 +1245,7 @@ function deleteRoomDialog(room) {
 }
 
 // ---- จัดการสมาชิกในห้อง ----
-const curRoom = () => adminRooms.find(r => r.id === mg.roomId) || (peer && peer.kind === "room" && peer.roomId === mg.roomId ? { id: peer.roomId, name: peer.name, descr: "", readable: roomSt.readable } : null);
+const curRoom = () => adminRooms.find(r => r.id === mg.roomId) || (peer && peer.kind === "room" && peer.roomId === mg.roomId ? { id: peer.roomId, name: peer.name, descr: "", avatar: peer.avatar || "", readable: roomSt.readable } : null);
 const mgTabsAllowed = () => MG_TABS.filter(([k]) => k === "pending" ? canDo("memberApprove") : k === "global" ? canDo("globalBlock") : (canDo("memberApprove") || canDo("memberBlock")));
 async function openMg(roomId) {
   const ts = mgTabsAllowed();
@@ -1245,7 +1331,7 @@ function openChat(u) {
   aiSt = { avail: false, disabled: 0, paused: false }; aiKnown = false; aiThinkReset(); paintAi();
   guideReady = false; paintGuide();
   paintHeadAv(); paintLangBits();
-  $("#pname").textContent = peer.name; $("#pst").textContent = "";
+  $("#pname").textContent = peer.name; $("#pst").textContent = ""; paintProf(null);
   document.body.classList.remove("room", "ro");
   const dmro = IS_ADMIN && !canDo("dmReply");   // [PERMS] ดูแชทได้แต่ตอบไม่ได้ → ซ่อนช่องพิมพ์
   document.body.classList.toggle("dmro", dmro);
@@ -1258,6 +1344,17 @@ function openChat(u) {
   pollChat(true);
   clearInterval(pollChatTimer);
   pollChatTimer = setInterval(() => { if (!document.hidden && !PAUSED) pollChat(false); }, 2000);
+}
+// [PROFILE] แอดมินดูโปรไฟล์สมาชิกใต้ชื่อในหัวห้องแชทส่วนตัว (เบอร์โทรแสดงเฉพาะตรงนี้)
+function paintProf(p) {
+  const el = $("#pprof");
+  const parts = !IS_ADMIN || !p ? [] : [
+    [p.t, p.c].filter(Boolean).join(" · "),
+    [p.a && ("A: " + p.a), p.b && ("B: " + p.b)].filter(Boolean).join(" / "),
+    p.s, p.p && ("☎ " + p.p),
+  ].filter(Boolean);
+  el.textContent = parts.join("  |  "); el.title = el.textContent;
+  el.style.display = parts.length ? "" : "none";
 }
 function paintHeadAv() {
   const pav = $("#pav"); pav.className = ""; pav.style.background = ""; pav.textContent = "";
@@ -1286,6 +1383,7 @@ async function pollChat(first) {
       const na = (IS_ADMIN && AV_MAP[peer.id]) || d.peer_avatar;
       if (na !== (peer.avatar || "")) { peer.avatar = na; if (peer.id === SUPPORT_ID) supAv = na; paintHeadAv(); changed = true; }
     }
+    if (IS_ADMIN && "peer_profile" in d) paintProf(d.peer_profile);   // [PROFILE]
     if (d.ai) aiKnown = true;
     if (d.ai && (d.ai.avail !== aiSt.avail || d.ai.disabled !== aiSt.disabled || d.ai.paused !== aiSt.paused)) { aiSt = d.ai; paintAi(); }
     if (d.typing !== peerTyping) { peerTyping = d.typing; $("#pst").textContent = d.typing ? T("typing") : ""; }
@@ -1609,7 +1707,7 @@ function openVisitorAi() {
   peerRead = 0; peerTyping = false; reportedRead = 0;
   setReply(null);
   paintHeadAv(); paintLangBits();
-  $("#pname").textContent = peer.name; $("#pst").textContent = "";
+  $("#pname").textContent = peer.name; $("#pst").textContent = ""; paintProf(null);
   document.body.classList.remove("room", "ro");
   clearInterval(pollListTimer); clearInterval(pollChatTimer);
   $("#msgs").innerHTML = "";

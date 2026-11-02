@@ -4287,8 +4287,17 @@ function startAdmin() {
   enterList();
   applyAdminPerms(); if (!canDo("dmView")) setAdmTab("rooms");
   try { parent.postMessage({ type: "sc-need-avatars" }, "*"); } catch (_) { }
-  const u = P.get("uid");
-  if (u) openChat({ id: u, name: P.get("name") || u });
+  // เปิดห้องตรงจากลิงก์ Telegram: standalone อ่านจาก URL หน้านี้ · ฝังในแอป อ่านค่าที่แอปแม่เก็บไว้ใน sessionStorage (tcc_open_chat · ใช้ครั้งเดียว · หมดอายุ 10 นาที)
+  let u = P.get("uid"), nm = P.get("name");
+  if (EMBED_ADMIN) {
+    u = ""; nm = "";
+    try {
+      const o = JSON.parse(window.parent.sessionStorage.getItem("tcc_open_chat") || "null");
+      if (o && o.uid && Date.now() - (o.t || 0) < 600000) { u = String(o.uid); nm = String(o.name || ""); }
+      window.parent.sessionStorage.removeItem("tcc_open_chat");
+    } catch (_) { }
+  }
+  if (u) openChat({ id: u, name: nm || u });
 }
 $("#lgBtn").onclick = async () => {
   const k = $("#lgKey").value.trim(); if (!k) return;
@@ -16960,6 +16969,8 @@ async function loadMainData(){
 //  [BADGE] ป้ายข้อความค้างอ่านที่เมนู Chat: ในหน้าแชท = iframe ส่ง sc-unread · นอกหน้าแชท = โพลล์ GET /api/unread ของ Worker แชททุก 60 วินาที (เฉพาะแท็บที่เห็นอยู่ · token ใช้ซ้ำจนใกล้หมดอายุ)
 //  สถานะล็อกอินเปลี่ยน (เข้า/ออก/เปลี่ยนคน) แล้วเข้าหน้า Chat ใหม่ = โหลดห้องใหม่อัตโนมัติ · แลก token ไม่ได้ = ตกไปโหมดถัดไปและลองใหม่ครั้งหน้า
 // ═══════════════════════════════════════════════════
+// [TG] ลิงก์จาก Telegram (?uid=&name=) → จำไว้ใน sessionStorage ให้แชทแอดมินเปิดห้องนั้นตอนโหลด (ใช้ได้แม้ต้องล็อกอินแอดมินก่อน)
+try{ var _q=new URLSearchParams(location.search), _u=_q.get('uid'); if(_u) sessionStorage.setItem('tcc_open_chat', JSON.stringify({uid:_u, name:_q.get('name')||'', t:Date.now()})); }catch(e){}
 var SC_CHAT_API = 'https://information-line-chat.smpbonus9.workers.dev';
 var scHtml = '', scMode = '', scVisibleOn = false, scPrev = 'market', scSeq = 0, scIsAdmin = false, scAdminPre = null;
 function scSource(admin){

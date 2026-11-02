@@ -10833,7 +10833,7 @@ function _pcParseHtmlToBlocks(html){
     if(imgEl){
       // อ่านจาก data-img-size ก่อน (format ใหม่), fallback ไป class เก่า
       const dataSz=imgEl.getAttribute('data-img-size');
-      if(dataSz&&['1x1','2x1','2x2','full'].includes(dataSz)){
+      if(dataSz&&['1x1','2x1','2x2','full','logo'].includes(dataSz)){
         size=dataSz;
       } else {
         const cls=imgEl.className||'';
@@ -10921,7 +10921,7 @@ function _pcRenderBlockList(key){
             style="background:#1a1d21;border:1px solid var(--border2);border-radius:8px;
                    color:var(--text);font-size:.82rem;padding:8px 10px;outline:none;cursor:pointer;"
             onchange="pcBlockChanged('${jsq(key)}',${i})">
-            ${['1x1','2x1','2x2','full'].map(s=>`<option value="${s}" ${(b.size||'1x1')===s?'selected':''}>${s}</option>`).join('')}
+            ${['1x1','2x1','2x2','full','logo'].map(s=>`<option value="${s}" ${(b.size||'1x1')===s?'selected':''}>${s==='logo'?'logo (โลโก้เต็มรูป ไม่ครอป)':s}</option>`).join('')}
           </select>
         </div>
       </div>
@@ -10996,6 +10996,13 @@ function _pcBlocksToHtml(key){
       bodyHtml=b.lines.map((l,i)=>
         `<div class="lvl"><div class="lvl-no">${i+1}</div><div class="lvl-txt">${l}</div></div>`
       ).join('');
+    }
+    // [LOGO] ขนาด logo: โลโก้อยู่บนสุด แสดงเต็มรูปไม่ครอป กึ่งกลาง → หัวข้อ → ข้อความใต้โลโก้ (ไม่ใส่เลขลำดับ)
+    if((b.size||'')==='logo'){
+      const logoImg=b.imageUrl?`<img src="${b.imageUrl}" alt="" data-img-size="logo" style="width:auto;max-width:100%;height:72px;object-fit:contain;margin:0 auto 10px;display:block;">`:'';
+      const logoSub=(b.lines||[]).map(l=>`<p style="margin:4px 0 0;color:var(--gold);font-weight:700;font-size:.9rem;">${l}</p>`).join('');
+      const logoStyle='text-align:center;padding:20px;'+(b.style?b.style.replace(/text-align:[^;]*;?|padding:[^;]*;?/g,''):'');
+      return `<div class="info-card" style="${logoStyle}">${logoImg}${headHtml}${logoSub}</div>`;
     }
     return `<div class="info-card"${b.style?' style="'+b.style+'"':''}>${headHtml}${imgHtml}${bodyHtml}</div>`;
   }).join('\n');

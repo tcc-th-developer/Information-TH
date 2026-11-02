@@ -5450,6 +5450,7 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
     "cai.title": ["ผู้ช่วย AI", "AI assistant", "Trợ lý AI", "ជំនួយការ AI", "AI လက်ထောက်", "ຜູ້ຊ່ວຍ AI", "Pembantu AI", "Asisten AI", "AI 助手"],
     "cai.hello": ["สวัสดีครับ 😊 มีข้อสงสัยเรื่องคาเฟ่หรือการลงทะเบียน เลือกคำถามด้านล่างได้เลยครับ", "Hello! 😊 Any questions about cafés or registration? Pick a question below.", "Xin chào! 😊 Bạn có thắc mắc về quán cà phê hoặc đăng ký? Hãy chọn câu hỏi bên dưới.", "សួស្តី! 😊 មានសំណួរអំពីហាងកាហ្វេ ឬការចុះឈ្មោះទេ? សូមជ្រើសរើសសំណួរខាងក្រោម។", "မင်္ဂလာပါ! 😊 ကော်ဖီဆိုင် သို့မဟုတ် စာရင်းသွင်းခြင်းအကြောင်း မေးစရာရှိပါသလား။ အောက်မှ မေးခွန်းကို ရွေးပါ။", "ສະບາຍດີ! 😊 ມີຄຳຖາມກ່ຽວກັບຮ້ານກາເຟ ຫຼື ການລົງທະບຽນບໍ? ເລືອກຄຳຖາມດ້ານລຸ່ມໄດ້ເລີຍ.", "Helo! 😊 Ada soalan tentang kafe atau pendaftaran? Pilih soalan di bawah.", "Halo! 😊 Ada pertanyaan soal kafe atau pendaftaran? Pilih pertanyaan di bawah.", "您好！😊 对咖啡店或登记有疑问吗？请从下方选择问题。"],
     "cai.hello2": ["สวัสดีครับ 😊 มีข้อสงสัยเกี่ยวกับหน้านี้ เลือกคำถามด้านล่างได้เลยครับ", "Hello! 😊 Any questions about this page? Pick a question below.", "Xin chào! 😊 Bạn có thắc mắc về trang này? Hãy chọn một câu hỏi bên dưới.", "សួស្តី! 😊 មានសំណួរអំពីទំព័រនេះទេ? សូមជ្រើសរើសសំណួរខាងក្រោម។", "မင်္ဂလာပါ! 😊 ဒီစာမျက်နှာနဲ့ပတ်သက်ပြီး မေးစရာရှိပါသလား။ အောက်က မေးခွန်းတစ်ခုကို ရွေးပါ။", "ສະບາຍດີ! 😊 ມີຄຳຖາມກ່ຽວກັບໜ້ານີ້ບໍ? ເລືອກຄຳຖາມດ້ານລຸ່ມໄດ້ເລີຍ.", "Helo! 😊 Ada soalan tentang halaman ini? Pilih soalan di bawah.", "Halo! 😊 Ada pertanyaan tentang halaman ini? Pilih pertanyaan di bawah.", "您好！😊 对本页面有疑问吗？请在下方选择一个问题。"],
+    "cai.guide": ["ปัญหาที่พบบ่อย", "Common problems", "Vấn đề thường gặp", "បញ្ហាដែលតែងតែជួប", "မကြာခဏ ကြုံရသော ပြဿနာများ", "ບັນຫາທີ່ພົບເລື້ອຍໆ", "Masalah lazim", "Masalah umum", "常见问题"],
     "cai.more": ["คำถามอื่น ๆ", "More questions", "Câu hỏi khác", "សំណួរផ្សេងទៀត", "အခြားမေးခွန်းများ", "ຄຳຖາມອື່ນໆ", "Soalan lain", "Pertanyaan lain", "更多问题"],
     "cai.staff": ["💬 คุยกับทีมงาน", "💬 Chat with the team", "💬 Trò chuyện với đội ngũ", "💬 ជជែកជាមួយក្រុមការងារ", "💬 အဖွဲ့နှင့် စကားပြောရန်", "💬 ສົນທະນາກັບທີມງານ", "💬 Sembang dengan pasukan", "💬 Chat dengan tim", "💬 联系团队"],
     "cai.err": ["ขออภัย ตอนนี้ตอบไม่ได้ ลองใหม่อีกครั้งครับ", "Sorry, I can't answer right now. Please try again.", "Xin lỗi, hiện chưa trả lời được. Vui lòng thử lại.", "សូមអភ័យទោស ពេលនេះមិនអាចឆ្លើយបានទេ។ សូមសាកល្បងម្តងទៀត។", "တောင်းပန်ပါသည်၊ ယခု မဖြေနိုင်ပါ။ ထပ်ကြိုးစားကြည့်ပါ။", "ຂໍໂທດ ຕອນນີ້ຕອບບໍ່ໄດ້ ກະລຸນາລອງໃໝ່ອີກຄັ້ງ.", "Maaf, tidak dapat menjawab sekarang. Sila cuba lagi.", "Maaf, saat ini belum bisa menjawab. Silakan coba lagi.", "抱歉，暂时无法回答，请再试一次。"],
@@ -12074,7 +12075,7 @@ var CAI_PAGES={   // หน้าที่มีไอคอนผู้ช่�
   termcondition:{cats:['tcc','general']},
   aboutus:{cats:['tcc','general']}
 };   // ไม่มีในตาราง = ไม่แสดง: chat (มี AI ของตัวเอง) · system (แอดมิน)
-var CAI={page:'',tree:null,tipPages:{},open:0,menu:null,menuAt:0,loading:0,loadErr:0,msgs:[],cache:{},busy:0,focus:'',more:0,tipDone:0,built:0,form:false};
+var CAI={guide:1,page:'',tree:null,tipPages:{},open:0,menu:null,menuAt:0,loading:0,loadErr:0,msgs:[],cache:{},busy:0,focus:'',more:0,tipDone:0,built:0,form:false};
 var CAI_ORDER={   // ลำดับคำถามแนะนำ (รหัสคำถามหมวด cafe ใน kb.js) · รหัสอื่นที่แอดมินเพิ่มใหม่ไปอยู่ใน "คำถามอื่น ๆ"
   view:['cafe_view','cafe_reg_how','cafe_reg_status','cafe_what','cafe_eligible','cafe_apply','cafe_money','cafe_agent','cafe_reg_edit'],
   form:{
@@ -12141,8 +12142,16 @@ function _caiPaintMsgs(){
   box.innerHTML=h; box.scrollTop=box.scrollHeight;
 }
 function _caiT(k){ return tccT(k); }
+function _caiGuideUI(){   // พับ/กางเมนูคำถาม เหมือนปุ่ม "ปัญหาที่พบบ่อย" ในแชท
+  var box=_caiEl('cai-chips'), g=_caiEl('cai-gtog'); if(!box||!g) return;
+  box.style.display=CAI.guide?'flex':'none';
+  g.setAttribute('aria-expanded',CAI.guide?'true':'false');
+  var tx=_caiEl('cai-gtx'); if(tx) tx.textContent=_caiT('cai.guide');
+  var car=_caiEl('cai-gcar'); if(car) car.style.transform=CAI.guide?'rotate(180deg)':'none';
+}
 function _caiPaintChips(){
   var box=_caiEl('cai-chips'); if(!box) return;
+  _caiGuideUI();
   if(!CAI.menu){
     box.innerHTML=CAI.loadErr
       ?'<span style="font-size:.74rem;color:#f87171;">'+esc(_caiT('cai.err'))+'</span><button type="button" class="cai-chip" data-retry="1">↻ '+esc(_caiT('common.retry'))+'</button>'
@@ -12168,6 +12177,7 @@ async function cafeAiAsk(qid){
   var lang=_caiLang(), key=qid+'|'+lang;
   CAI.msgs.push({r:'me',t:_caiQ(it)},{r:'ai',t:'…',typing:1});
   if(CAI.msgs.length>24) CAI.msgs=CAI.msgs.slice(-24);
+  CAI.guide=0;   // พับเมนูคำถามเพื่อให้อ่านคำตอบได้ชัด (เหมือนแชท)
   CAI.busy=1; _caiPaintMsgs(); _caiPaintChips();   // โชว์ "กำลังคิด..." ทันที
   var hold=new Promise(function(res){ setTimeout(res,CAI_THINK_MS); });   // นับ 2 วิพร้อมการเรียก API (ไม่รอต่อกัน)
   var out;
@@ -12213,11 +12223,13 @@ function _caiBuild(){
    +'<div id="cai-title" style="flex:1;font-weight:700;color:var(--gold);font-size:.9rem;"></div>'
    +'<button type="button" id="cai-x" aria-label="close" style="background:none;border:none;color:var(--text-dim);font-size:1.25rem;cursor:pointer;">✕</button></div>'
    +'<div id="cai-msgs" style="flex:1 1 auto;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:110px;"></div>'
+   +'<button type="button" id="cai-gtog" aria-expanded="true" style="display:flex;align-items:center;gap:7px;width:100%;padding:8px 12px;border:none;border-top:1px solid rgba(255,255,255,.06);background:none;color:var(--gold);font:600 .76rem \'Prompt\',sans-serif;text-align:left;cursor:pointer;"><span>☰</span><span id="cai-gtx"></span><span id="cai-gcar" style="margin-left:auto;color:var(--text-dim);transition:transform .2s;">▾</span></button>'
    +'<div id="cai-chips" style="padding:8px 12px 4px;display:flex;flex-wrap:wrap;gap:6px;max-height:34vh;overflow-y:auto;border-top:1px solid rgba(255,255,255,.06);"></div>'
    +'<div style="padding:6px 12px 10px;display:flex;justify-content:space-between;align-items:center;gap:8px;"><span id="cai-note" style="font-size:.62rem;color:var(--text-dim);line-height:1.3;"></span>'
    +'<button type="button" id="cai-staff" style="flex:0 0 auto;padding:6px 10px;border-radius:10px;border:1px solid rgba(96,165,250,.45);background:rgba(96,165,250,.1);color:#60a5fa;font:600 .7rem \'Prompt\',sans-serif;cursor:pointer;"></button></div>';
   document.body.appendChild(p);
   _caiEl('cai-x').onclick=cafeAiClose;
+  _caiEl('cai-gtog').onclick=function(){ CAI.guide=CAI.guide?0:1; _caiGuideUI(); var m=_caiEl('cai-msgs'); if(m) m.scrollTop=m.scrollHeight; };
   _caiEl('cai-staff').onclick=function(){ cafeAiClose(); if(typeof go==='function') go('chat'); };
   _caiEl('cai-chips').addEventListener('click',function(e){
     var b=e.target.closest&&e.target.closest('button'); if(!b||b.disabled) return;
@@ -12250,7 +12262,7 @@ function _caiBuild(){
   document.addEventListener('tcc-lang',function(){ if(CAI.open) _caiPaint(); });
 }
 function cafeAiOpen(){
-  _caiBuild(); CAI.open=1;
+  _caiBuild(); CAI.open=1; if(!CAI.msgs.length) CAI.guide=1;
   _caiEl('cai-panel').style.display='flex'; _caiEl('cai-tip').style.display='none';
   _caiPaint();
   if(!CAI.menu) _caiLoadMenu().then(function(){ CAI.loadErr=0; _caiPaintChips(); }).catch(function(){ CAI.loadErr=1; _caiPaintChips(); });
@@ -12263,7 +12275,7 @@ function cafeAiSync(id){
   if(cfg){
     _caiBuild();
     if(CAI.page!==id){   // เปลี่ยนหน้า → เริ่มบทสนทนาใหม่ตามหมวดของหน้านั้น
-      CAI.page=id; CAI.msgs=[]; CAI.more=0; CAI.focus='';
+      CAI.page=id; CAI.msgs=[]; CAI.more=0; CAI.focus=''; CAI.guide=1;
       cafeAiClose(); _caiEl('cai-tip').style.display='none';
       _caiSetItems();
       if(!CAI.tree) CAI.loadErr=0;

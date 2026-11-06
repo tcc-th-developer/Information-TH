@@ -22109,7 +22109,11 @@ function tcS5Referral(myId){
 
   // ── ลิงค์แนะนำ ──────────────────────────────────────────────────
   const baseUrl = window.location.href.split('?')[0].split('#')[0];
-  const refLink = `${baseUrl}?ref=${encodeURIComponent(myId)}#register`;
+  // [REF-LANG] ลิงก์แนะนำตามภาษาที่สมาชิกใช้อยู่ตอนนี้ (th en vi kh mm la ms id zh) — หน้าสมัครอ่าน ?lang=xx อยู่แล้ว (ชนะค่าที่จำไว้ในเครื่องผู้รับ)
+  //   ส่ง lang เสมอ (รวม th) เพื่อให้ผู้รับเห็นภาษาเดียวกับที่ผู้แนะนำเลือก · เปลี่ยนภาษา → tcRender() วาดแท็บนี้ใหม่ ลิงก์จึงอัปเดตตาม
+  let _refLg = 'th';
+  try{ const _l = (typeof window.tccLang==='function' ? window.tccLang() : '') || ''; if((window.TCC_LANGS||[]).indexOf(_l)>-1) _refLg = _l; }catch(e){}
+  const refLink = `${baseUrl}?ref=${encodeURIComponent(myId)}&lang=${_refLg}#register`;
 
   // ── คัดลอกลิงค์ ─────────────────────────────────────────────────
   const copyRefLink=()=>{

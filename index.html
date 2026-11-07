@@ -45,6 +45,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- ใช้ stylesheet เดียว ไม่ preload ซ้ำ (ป้องกัน double fetch) -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&family=Rajdhani:wght@500;700&family=Orbitron:wght@400;700;900&family=Sarabun:wght@300;400;600;700&family=Noto+Sans+Khmer:wght@400;600&family=Noto+Sans+Myanmar:wght@400;600&family=Noto+Sans+Lao:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
   <style>
 
     /* [FIX-MOBILE-5] Text rendering — แยก scope ป้องกันกระทบ SVG/canvas */
@@ -5937,6 +5938,31 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
     "d4.n3": ["หากสมาชิกที่แนะนำถูก Rejected ภายหลัง โบนัสจะถูกยกเลิกและหักออกจากยอดคงเหลือ", "If a referred member is rejected later, the bonus is cancelled and deducted from the balance", "Nếu thành viên được giới thiệu bị từ chối sau đó, thưởng sẽ bị hủy và trừ khỏi số dư", "ប្រសិនបើសមាជិកដែលបានណែនាំត្រូវបាន Rejected ក្រោយមក រង្វាន់នឹងត្រូវលុបចោល ហើយកាត់ចេញពីសមតុល្យ", "ရည်ညွှန်းထားသော အဖွဲ့ဝင်ကို နောက်ပိုင်း Rejected လုပ်ပါက ဆုကြေးငွေကို ပယ်ဖျက်ပြီး လက်ကျန်မှ နုတ်ယူမည်", "ຖ້າສະມາຊິກທີ່ແນະນຳຖືກ Rejected ພາຍຫຼັງ ໂບນັດຈະຖືກຍົກເລີກ ແລະ ຫັກອອກຈາກຍອດຄົງເຫຼືອ", "Jika ahli yang dirujuk ditolak kemudian, bonus dibatalkan dan ditolak daripada baki", "Jika anggota yang direferensikan ditolak kemudian, bonus dibatalkan dan dipotong dari saldo", "若被推荐会员之后被拒绝，奖金将被取消并从余额中扣除"],
     "d4.l.title": ["🔗 ลิงค์แนะนำของคุณ", "🔗 Your referral link", "🔗 Liên kết giới thiệu của bạn", "🔗 តំណណែនាំរបស់អ្នក", "🔗 သင်၏ ရည်ညွှန်းလင့်ခ်", "🔗 ລິ້ງແນະນຳຂອງເຈົ້າ", "🔗 Pautan rujukan anda", "🔗 Tautan referral Anda", "🔗 您的推荐链接"],
     "d4.l.copy": ["📋 คัดลอก", "📋 Copy", "📋 Sao chép", "📋 ចម្លង", "📋 ကူးယူရန်", "📋 ສຳເນົາ", "📋 Salin", "📋 Salin", "📋 复制"],
+    "d4.sh.btn": ["🖼️ แชร์ภาพแนะนำ", "🖼️ Share referral image", "🖼️ Chia sẻ ảnh giới thiệu", "🖼️ ចែករំលែករូបភាពណែនាំ", "🖼️ ရည်ညွှန်းပုံ မျှဝေရန်", "🖼️ ແບ່ງປັນຮູບແນະນຳ", "🖼️ Kongsi imej rujukan", "🖼️ Bagikan gambar referral", "🖼️ 分享推荐图片"],
+    "d4.sh.title": ["แชร์ลิงก์แนะนำ", "Share referral link", "Chia sẻ liên kết giới thiệu", "ចែករំលែកតំណណែនាំ", "ရည်ညွှန်းလင့်ခ် မျှဝေရန်", "ແບ່ງປັນລິ້ງແນະນຳ", "Kongsi pautan rujukan", "Bagikan tautan referral", "分享推荐链接"],
+    "d4.sh.native": ["แชร์ภาพ + ลิงก์", "Share image + link", "Chia sẻ ảnh + liên kết", "ចែករំលែករូប + តំណ", "ပုံ + လင့်ခ် မျှဝေရန်", "ແບ່ງປັນຮູບ + ລິ້ງ", "Kongsi imej + pautan", "Bagikan gambar + tautan", "分享图片 + 链接"],
+    "d4.sh.save": ["บันทึกรูป", "Save image", "Lưu ảnh", "រក្សាទុករូបភាព", "ပုံသိမ်းရန်", "ບັນທຶກຮູບ", "Simpan imej", "Simpan gambar", "保存图片"],
+    "d4.sh.copyTxt": ["คัดลอกข้อความ + ลิงก์", "Copy text + link", "Sao chép nội dung + liên kết", "ចម្លងអត្ថបទ + តំណ", "စာသား + လင့်ခ် ကူးယူရန်", "ສຳເນົາຂໍ້ຄວາມ + ລິ້ງ", "Salin teks + pautan", "Salin teks + tautan", "复制文案 + 链接"],
+    "d4.sh.busy": ["กำลังสร้างภาพ…", "Creating image…", "Đang tạo ảnh…", "កំពុងបង្កើតរូបភាព…", "ပုံ ဖန်တီးနေသည်…", "ກຳລັງສ້າງຮູບ…", "Sedang mencipta imej…", "Sedang membuat gambar…", "正在生成图片…"],
+    "d4.sh.fail": ["สร้างภาพไม่สำเร็จ ลองใหม่อีกครั้ง", "Could not create the image. Please try again.", "Không tạo được ảnh. Vui lòng thử lại.", "មិនអាចបង្កើតរូបភាពបានទេ សូមព្យាយាមម្តងទៀត", "ပုံ မဖန်တီးနိုင်ပါ။ ထပ်မံကြိုးစားပါ။", "ສ້າງຮູບບໍ່ສຳເລັດ ກະລຸນາລອງໃໝ່", "Gagal mencipta imej. Sila cuba lagi.", "Gagal membuat gambar. Silakan coba lagi.", "生成图片失败，请重试"],
+    "d4.sh.msg": ["🎉 ชวนคุณมาเป็นสมาชิก Trader Cafe Club — สมัครผ่านลิงก์นี้ได้เลย 👇", "🎉 Join me at Trader Cafe Club — register with this link 👇", "🎉 Tham gia Trader Cafe Club cùng mình — đăng ký qua liên kết này 👇", "🎉 មកចូលជាសមាជិក Trader Cafe Club ជាមួយខ្ញុំ — ចុះឈ្មោះតាមតំណនេះ 👇", "🎉 Trader Cafe Club အဖွဲ့ဝင်ဖြစ်ရန် ဤလင့်ခ်မှ စာရင်းသွင်းပါ 👇", "🎉 ມາເປັນສະມາຊິກ Trader Cafe Club ນຳກັນ — ສະໝັກຜ່ານລິ້ງນີ້ໄດ້ເລີຍ 👇", "🎉 Sertai Trader Cafe Club — daftar melalui pautan ini 👇", "🎉 Gabung Trader Cafe Club — daftar lewat tautan ini 👇", "🎉 邀请你加入 Trader Cafe Club — 通过此链接注册 👇"],
+    "d4.sh.hdr": ["ชวนเพื่อน รับรางวัล", "Invite friends, get rewards", "Mời bạn bè, nhận thưởng", "ណែនាំមិត្ត ទទួលរង្វាន់", "သူငယ်ချင်းကို ဖိတ်ပြီး ဆုရယူပါ", "ຊວນໝູ່ ຮັບລາງວັນ", "Jemput rakan, dapat ganjaran", "Ajak teman, dapat hadiah", "邀请好友 赢取奖励"],
+    "d4.sh.big": ["แชร์ลิงก์ของคุณ", "SHARE YOUR LINK", "CHIA SẺ LIÊN KẾT", "ចែករំលែកតំណរបស់អ្នក", "သင့်လင့်ခ်ကို မျှဝေပါ", "ແບ່ງປັນລິ້ງຂອງເຈົ້າ", "KONGSI PAUTAN ANDA", "BAGIKAN TAUTAN ANDA", "分享你的链接"],
+    "d4.sh.sub": ["ชวนสมาชิกใหม่ แล้วเติบโตไปด้วยกัน", "Invite new members & grow together", "Mời thành viên mới & cùng phát triển", "ណែនាំសមាជិកថ្មី ហើយរីកចម្រើនជាមួយគ្នា", "အဖွဲ့ဝင်အသစ်များကို ဖိတ်ပြီး အတူတကွ ကြီးထွားပါ", "ຊວນສະມາຊິກໃໝ່ ແລ້ວເຕີບໂຕໄປນຳກັນ", "Jemput ahli baharu & berkembang bersama", "Ajak anggota baru & tumbuh bersama", "邀请新成员，一起成长"],
+    "d4.sh.desc": ["แชร์ลิงก์แนะนำให้เพื่อนและครอบครัว เมื่อสมัครสำเร็จและได้รับการ Approve คุณจะได้รับโบนัสอัตโนมัติ", "Share your referral link with friends and family. Once they register and are approved, you receive the bonus automatically.", "Chia sẻ liên kết giới thiệu cho bạn bè và gia đình. Khi họ đăng ký thành công và được duyệt, bạn sẽ tự động nhận thưởng.", "ចែករំលែកតំណណែនាំជាមួយមិត្តភក្តិ និងគ្រួសារ។ នៅពេលពួកគេចុះឈ្មោះជោគជ័យ និងត្រូវបាន Approve អ្នកនឹងទទួលបានរង្វាន់ដោយស្វ័យប្រវត្តិ។", "သင့်ရည်ညွှန်းလင့်ခ်ကို မိတ်ဆွေများနှင့် မိသားစုထံ မျှဝေပါ။ သူတို့ စာရင်းသွင်းပြီး Approve ဖြစ်သောအခါ ဆုကြေးငွေကို အလိုအလျောက် ရရှိမည်။", "ແບ່ງປັນລິ້ງແນະນຳໃຫ້ໝູ່ ແລະ ຄອບຄົວ. ເມື່ອສະໝັກສຳເລັດ ແລະ ໄດ້ຮັບການ Approve ເຈົ້າຈະໄດ້ຮັບໂບນັດອັດຕະໂນມັດ.", "Kongsi pautan rujukan anda dengan rakan dan keluarga. Apabila mereka berdaftar dan diluluskan, anda menerima bonus secara automatik.", "Bagikan tautan referral Anda ke teman dan keluarga. Setelah mereka mendaftar dan disetujui, Anda otomatis menerima bonus.", "将推荐链接分享给亲朋好友。他们注册并通过审核后，您将自动获得奖金。"],
+    "d4.sh.tag": ["ระบบแนะนำสมาชิก", "MEMBER REFERRAL", "GIỚI THIỆU THÀNH VIÊN", "ការណែនាំសមាជិក", "အဖွဲ့ဝင် ရည်ညွှန်းစနစ်", "ລະບົບແນະນຳສະມາຊິກ", "RUJUKAN AHLI", "REFERRAL ANGGOTA", "会员推荐"],
+    "d4.sh.lnk": ["ลิงก์แนะนำสมาชิก", "MEMBER REFERRAL LINK", "LIÊN KẾT GIỚI THIỆU", "តំណណែនាំសមាជិក", "အဖွဲ့ဝင် ရည်ညွှန်းလင့်ခ်", "ລິ້ງແນະນຳສະມາຊິກ", "PAUTAN RUJUKAN AHLI", "TAUTAN REFERRAL ANGGOTA", "会员推荐链接"],
+    "d4.sh.name": ["ชื่อสมาชิก", "MEMBER NAME", "TÊN THÀNH VIÊN", "ឈ្មោះសមាជិក", "အဖွဲ့ဝင်အမည်", "ຊື່ສະມາຊິກ", "NAMA AHLI", "NAMA ANGGOTA", "会员姓名"],
+    "d4.sh.status": ["สถานะ", "MEMBER STATUS", "TRẠNG THÁI", "ស្ថានភាព", "အခြေအနေ", "ສະຖານະ", "STATUS AHLI", "STATUS ANGGOTA", "会员状态"],
+    "d4.sh.join": ["วันที่เข้าร่วม", "JOIN DATE", "NGÀY THAM GIA", "ថ្ងៃចូលរួម", "ဝင်ရောက်သည့်ရက်", "ວັນທີເຂົ້າຮ່ວມ", "TARIKH SERTAI", "TANGGAL BERGABUNG", "加入日期"],
+    "d4.sh.down": ["สมาชิกที่แนะนำทั้งหมด", "TOTAL REFERRED", "TỔNG ĐÃ GIỚI THIỆU", "សរុបដែលបានណែនាំ", "ရည်ညွှန်းပြီးစုစုပေါင်း", "ທັງໝົດທີ່ແນະນຳ", "JUMLAH DIRUJUK", "TOTAL DIREFERENSIKAN", "推荐总数"],
+    "d4.sh.unit": ["คน", "MEMBERS", "THÀNH VIÊN", "នាក់", "ဦး", "ຄົນ", "AHLI", "ANGGOTA", "人"],
+    "d4.sh.active": ["ใช้งานอยู่", "ACTIVE", "ĐANG HOẠT ĐỘNG", "សកម្ម", "အသုံးပြုနေသည်", "ໃຊ້ງານຢູ່", "AKTIF", "AKTIF", "正常"],
+    "d4.sh.scan": ["สแกนเพื่อสมัคร", "SCAN TO JOIN", "QUÉT ĐỂ THAM GIA", "ស្កេនដើម្បីចូលរួម", "စကင်ဖတ်၍ ဝင်ရောက်ပါ", "ສະແກນເພື່ອສະໝັກ", "IMBAS UNTUK SERTAI", "PINDAI UNTUK BERGABUNG", "扫码加入"],
+    "d4.sh.now": ["แชร์เลย", "SHARE NOW", "CHIA SẺ NGAY", "ចែករំលែកឥឡូវ", "ယခု မျှဝေပါ", "ແບ່ງປັນເລີຍ", "KONGSI SEKARANG", "BAGIKAN SEKARANG", "立即分享"],
+    "d4.sh.more": ["สมาชิกมากขึ้น • โอกาสมากขึ้น", "MORE MEMBERS • MORE OPPORTUNITIES", "NHIỀU THÀNH VIÊN • NHIỀU CƠ HỘI", "សមាជិកច្រើន • ឱកាសច្រើន", "အဖွဲ့ဝင်များလေ • အခွင့်အလမ်းများလေ", "ສະມາຊິກຫຼາຍຂຶ້ນ • ໂອກາດຫຼາຍຂຶ້ນ", "LEBIH RAMAI AHLI • LEBIH BANYAK PELUANG", "LEBIH BANYAK ANGGOTA • LEBIH BANYAK PELUANG", "更多成员 • 更多机会"],
+    "d4.sh.on": ["แชร์ผ่าน", "SHARE ON", "CHIA SẺ QUA", "ចែករំលែកតាម", "မျှဝေရန်", "ແບ່ງປັນຜ່ານ", "KONGSI MELALUI", "BAGIKAN VIA", "分享到"],
+    "d4.sh.foot": ["ปลอดภัย • น่าเชื่อถือ • เติบโตไปด้วยกัน", "SECURE • TRUSTED • TOGETHER WE GROW", "AN TOÀN • ĐÁNG TIN • CÙNG PHÁT TRIỂN", "សុវត្ថិភាព • ទុកចិត្តបាន • រីកចម្រើនជាមួយគ្នា", "လုံခြုံ • ယုံကြည်စိတ်ချရ • အတူတကွ ကြီးထွား", "ປອດໄພ • ໜ້າເຊື່ອຖື • ເຕີບໂຕໄປນຳກັນ", "SELAMAT • DIPERCAYAI • BERKEMBANG BERSAMA", "AMAN • TERPERCAYA • TUMBUH BERSAMA", "安全 • 可信 • 共同成长"],
     "d4.l.hint": ["แชร์ลิงค์นี้ให้เพื่อน — เมื่อสมัครสำเร็จและได้รับการ Approve คุณจะได้รับโบนัสอัตโนมัติ", "Share this link with friends — once they register and are approved, you receive the bonus automatically", "Chia sẻ liên kết này cho bạn bè — khi họ đăng ký thành công và được duyệt, bạn sẽ tự động nhận thưởng", "ចែករំលែកតំណនេះជាមួយមិត្តភក្តិ — នៅពេលពួកគេចុះឈ្មោះជោគជ័យ ហើយត្រូវបាន Approve អ្នកនឹងទទួលបានរង្វាន់ដោយស្វ័យប្រវត្តិ", "ဤလင့်ခ်ကို သူငယ်ချင်းများနှင့် မျှဝေပါ — စာရင်းသွင်းပြီး Approve ဖြစ်သောအခါ ဆုကြေးငွေကို အလိုအလျောက် ရရှိမည်", "ແບ່ງປັນລິ້ງນີ້ໃຫ້ໝູ່ — ເມື່ອສະໝັກສຳເລັດ ແລະ ໄດ້ຮັບການ Approve ເຈົ້າຈະໄດ້ຮັບໂບນັດອັດຕະໂນມັດ", "Kongsi pautan ini dengan rakan — apabila mereka berdaftar dan diluluskan, anda menerima bonus secara automatik", "Bagikan tautan ini ke teman — setelah mereka mendaftar dan disetujui, Anda otomatis menerima bonus", "将此链接分享给朋友——他们注册并通过审核后，您将自动获得奖金"],
     "d4.m.title": ["👥 รายชื่อสมาชิกที่แนะนำ", "👥 Referred members", "👥 Danh sách thành viên đã giới thiệu", "👥 បញ្ជីសមាជិកដែលបានណែនាំ", "👥 ရည်ညွှန်းထားသော အဖွဲ့ဝင်စာရင်း", "👥 ລາຍຊື່ສະມາຊິກທີ່ແນະນຳ", "👥 Senarai ahli yang dirujuk", "👥 Daftar anggota yang direferensikan", "👥 已推荐会员名单"],
     "d4.m.empty1": ["📭 ยังไม่มีสมาชิกที่คุณแนะนำ", "📭 You haven't referred anyone yet", "📭 Bạn chưa giới thiệu thành viên nào", "📭 អ្នកមិនទាន់បានណែនាំសមាជិកណាទេ", "📭 သင် ရည်ညွှန်းထားသော အဖွဲ့ဝင် မရှိသေးပါ", "📭 ເຈົ້າຍັງບໍ່ໄດ້ແນະນຳສະມາຊິກ", "📭 Anda belum merujuk sesiapa", "📭 Anda belum mereferensikan siapa pun", "📭 您还没有推荐任何会员"],
@@ -22065,6 +22091,284 @@ const REF_COMM_TIERS = [
   { min:0,  pct:0,  lk:'d4.tier.0' },
 ];
 
+// ══════════════════════════════════════════════════════════════════
+// [REF-SHARE] ภาพแชร์ลิงก์แนะนำ (วาดด้วย canvas ฝั่ง browser) + ปุ่มแชร์ภาพ / LINE / Telegram
+//  • ข้อความทุกจุดในภาพและข้อความที่แชร์ มาจาก tccT('d4.sh.*') ตามภาษาที่สมาชิกเลือกอยู่ (th en vi kh mm la ms id zh)
+//  • ลิงก์ที่แชร์ผ่าน Worker /r?ref=&lang= → การ์ดพรีวิว (Telegram/LINE) เป็นภาษาเดียวกัน แล้วพาผู้รับไปหน้าสมัครพร้อม ?ref=&lang=
+//  • QR ใช้ไลบรารี qrcode-generator (โหลดจาก cdnjs ใน <head>) — ถ้าโหลดไม่ได้ ภาพยังสร้างได้ แต่ช่อง QR จะแสดงข้อความแทน
+// ══════════════════════════════════════════════════════════════════
+var RC_FONT = '"Prompt","Sarabun","Noto Sans Khmer","Noto Sans Myanmar","Noto Sans Lao","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif';
+var _refShareBlobUrl = '';
+
+function tccRefShareLink(ctx){
+  return WORKER_URL + '/r?ref=' + encodeURIComponent(ctx.id) + '&lang=' + encodeURIComponent(ctx.lg);
+}
+function _rcRR(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function _rcFit(g,txt,weight,maxW,start,min,style){
+  var px=start, st=style?style+' ':'';
+  while(px>min){ g.font=st+weight+' '+px+'px '+RC_FONT; if(g.measureText(txt).width<=maxW) break; px-=2; }
+  g.font=st+weight+' '+px+'px '+RC_FONT; return px;
+}
+function _rcWrap(g,txt,maxW){
+  var segs;
+  try{ segs=Array.from(new Intl.Segmenter(undefined,{granularity:'word'}).segment(txt),function(s){return s.segment;}); }catch(e){ segs=Array.from(txt); }
+  var lines=[], cur='';
+  segs.forEach(function(s){
+    var t=cur+s;
+    if(cur && g.measureText(t).width>maxW){ lines.push(cur.trim()); cur=s.replace(/^\s+/,''); } else cur=t;
+  });
+  if(cur.trim()) lines.push(cur.trim());
+  return lines;
+}
+function _rcLinkIcon(g,cx,cy,s,col,lw){
+  g.save(); g.translate(cx,cy); g.rotate(-Math.PI/4); g.strokeStyle=col; g.lineWidth=lw; g.lineCap='round';
+  _rcRR(g,-s*1.05,-s*0.38,s*1.25,s*0.76,s*0.38); g.stroke();
+  _rcRR(g,-s*0.2,-s*0.38,s*1.25,s*0.76,s*0.38); g.stroke();
+  g.restore();
+}
+function _rcQR(g,text,x,y,size){
+  if(typeof qrcode!=='function') return false;
+  try{
+    var q=qrcode(0,'L'); q.addData(text); q.make();
+    var n=q.getModuleCount(), cell=size/n;
+    g.fillStyle='#000';
+    for(var r=0;r<n;r++) for(var c=0;c<n;c++) if(q.isDark(r,c)) g.fillRect(Math.round(x+c*cell),Math.round(y+r*cell),Math.ceil(cell),Math.ceil(cell));
+    return true;
+  }catch(e){ return false; }
+}
+
+async function tccRefCardCanvas(ctx){
+  var W=1280, H=1121, cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  var g=cv.getContext('2d');
+  var T=function(k){ return String(tccT(k)||''); };
+  var plain=function(s){ return String(s).replace(/^[^\p{L}\p{N}]+/u,''); };
+  var keys=['hdr','big','sub','desc','tag','lnk','name','status','join','down','unit','active','scan','now','more','on','foot'];
+  var sample=keys.map(function(k){return T('d4.sh.'+k);}).join(' ')+' '+T('d4.l.copy')+' '+ctx.name+' '+ctx.status;
+  try{
+    var loads=['400','700'].map(function(w){ return document.fonts.load(w+' 28px "Prompt"',sample); });
+    ['Noto Sans Khmer','Noto Sans Myanmar','Noto Sans Lao'].forEach(function(f){ loads.push(document.fonts.load('700 28px "'+f+'"',sample)); });
+    await Promise.all(loads);
+  }catch(e){}
+  var logo=await new Promise(function(res){
+    var im=new Image(), done=false; im.crossOrigin='anonymous';
+    var f=function(v){ if(!done){ done=true; res(v); } };
+    im.onload=function(){ f(im); }; im.onerror=function(){ f(null); }; setTimeout(function(){ f(null); },4000);
+    im.src='https://i.ibb.co/NbQpSTX/TCC-Logo.png';
+  });
+  var GOLD='#f0b90b';
+  var goldG=function(y1,y2){ var gr=g.createLinearGradient(0,y1,0,y2); gr.addColorStop(0,'#ffe27a'); gr.addColorStop(1,GOLD); return gr; };
+  var drawLogo=function(cx,cy,r,ring){
+    g.save(); g.beginPath(); g.arc(cx,cy,r,0,Math.PI*2); g.closePath(); g.clip();
+    if(logo){ g.drawImage(logo,cx-r,cy-r,r*2,r*2); }
+    else { g.fillStyle='#10141f'; g.fillRect(cx-r,cy-r,r*2,r*2); g.fillStyle=GOLD; g.textAlign='center'; g.font='700 '+Math.round(r*0.7)+'px '+RC_FONT; g.fillText('TCC',cx,cy+r*0.25); }
+    g.restore();
+    g.strokeStyle=goldG(cy-r,cy+r); g.lineWidth=ring; g.beginPath(); g.arc(cx,cy,r,0,Math.PI*2); g.stroke();
+  };
+  var sideLines=function(cx,y,w,gap,len){
+    [[cx-w/2-gap-len,cx-w/2-gap],[cx+w/2+gap,cx+w/2+gap+len]].forEach(function(p,i){
+      var gr=g.createLinearGradient(p[0],0,p[1],0);
+      gr.addColorStop(i?0:1,GOLD); gr.addColorStop(i?1:0,'rgba(240,185,11,0)');
+      g.strokeStyle=gr; g.lineWidth=2; g.beginPath(); g.moveTo(p[0],y); g.lineTo(p[1],y); g.stroke();
+    });
+  };
+
+  // ── พื้นหลัง ──
+  var bg=g.createLinearGradient(0,0,W,H); bg.addColorStop(0,'#050a14'); bg.addColorStop(.55,'#0a111f'); bg.addColorStop(1,'#04070d');
+  g.fillStyle=bg; g.fillRect(0,0,W,H);
+  var rg=g.createRadialGradient(780,600,40,780,600,640); rg.addColorStop(0,'rgba(240,185,11,.10)'); rg.addColorStop(1,'rgba(240,185,11,0)');
+  g.fillStyle=rg; g.fillRect(0,0,W,H);
+  var streak=function(x1,y1,x2,y2,a,w){ var gr=g.createLinearGradient(x1,y1,x2,y2); gr.addColorStop(0,'rgba(240,185,11,0)'); gr.addColorStop(.5,'rgba(255,216,74,'+a+')'); gr.addColorStop(1,'rgba(240,185,11,0)'); g.strokeStyle=gr; g.lineWidth=w; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); };
+  streak(-40,330,330,-20,.8,5); streak(1280,520,1010,1121,.35,4); streak(1200,140,840,560,.18,3);
+
+  g.textBaseline='alphabetic'; g.textAlign='left';
+
+  // ── ส่วนหัว ──
+  drawLogo(125,92,62,5);
+  _rcFit(g,'TRADER CAFE CLUB','700',640,74,40); g.fillStyle=goldG(20,90); g.fillText('TRADER CAFE CLUB',208,86);
+  _rcFit(g,T('d4.sh.tag'),'400',520,30,18); g.fillStyle='#cdbb86'; g.fillText(T('d4.sh.tag'),210,124);
+  g.fillStyle='#22c55e'; g.beginPath(); g.arc(216,152,7,0,Math.PI*2); g.fill();
+  g.font='700 26px '+RC_FONT; g.fillStyle='#4ade80'; g.fillText('LIVE  \u2022  VERIFIED',234,161);
+  // ไอคอนเชิญเพื่อน + ข้อความ (ขวาบน)
+  g.fillStyle=GOLD; g.beginPath(); g.arc(1136,44,14,0,Math.PI*2); g.fill();
+  g.beginPath(); g.arc(1136,88,26,Math.PI*1.15,Math.PI*1.85); g.lineTo(1136,72); g.closePath(); g.fill();
+  g.fillRect(1166,36,26,6); g.fillRect(1176,26,6,26);
+  g.textAlign='center'; g.font='700 24px '+RC_FONT; g.fillStyle=GOLD;
+  var hdrLines=_rcWrap(g,T('d4.sh.hdr'),230).slice(0,2);
+  hdrLines.forEach(function(l,i){ g.fillText(l,1150,122+i*30); });
+
+  // ── ชื่อเรื่องใหญ่ ──
+  g.strokeStyle=GOLD; g.lineWidth=5; g.beginPath(); g.arc(186,262,56,0,Math.PI*2); g.stroke();
+  _rcLinkIcon(g,186,262,24,GOLD,9);
+  g.textAlign='left';
+  var big=T('d4.sh.big'); _rcFit(g,big,'700',880,112,52,'italic');
+  g.shadowColor='rgba(240,185,11,.45)'; g.shadowBlur=24; g.fillStyle=goldG(190,300); g.fillText(big,266,292); g.shadowBlur=0;
+  g.textAlign='center';
+  var sub=T('d4.sh.sub'); _rcFit(g,sub,'700',640,34,20); var subW=g.measureText(sub).width;
+  g.fillStyle='#ffffff'; g.fillText(sub,640,352); sideLines(640,342,subW,18,70);
+  g.font='400 25px '+RC_FONT; g.fillStyle='#e8ecf4';
+  var descLines=_rcWrap(g,T('d4.sh.desc'),840).slice(0,2);
+  descLines.forEach(function(l,i){ g.fillText(l,640,394+i*34); });
+
+  // ── โทรศัพท์ + QR ──
+  var qrLink=tccRefShareLink(ctx);
+  g.save(); g.shadowColor='rgba(240,185,11,.35)'; g.shadowBlur=30;
+  _rcRR(g,48,450,300,440,46); g.fillStyle='#0b0f18'; g.fill(); g.restore();
+  var pg=g.createLinearGradient(48,450,348,890); pg.addColorStop(0,'#e9d9a6'); pg.addColorStop(.5,'#6b6552'); pg.addColorStop(1,'#d9c27a');
+  _rcRR(g,48,450,300,440,46); g.strokeStyle=pg; g.lineWidth=8; g.stroke();
+  _rcRR(g,62,464,272,412,34); g.fillStyle='#05080f'; g.fill();
+  _rcRR(g,153,474,90,22,11); g.fillStyle='#000'; g.fill();
+  drawLogo(198,540,28,3);
+  g.textAlign='center'; _rcFit(g,'TRADER CAFE CLUB','700',230,22,14); g.fillStyle=GOLD; g.fillText('TRADER CAFE CLUB',198,594);
+  g.strokeStyle='rgba(240,185,11,.5)'; g.lineWidth=2; g.beginPath(); g.moveTo(92,608); g.lineTo(304,608); g.stroke();
+  _rcRR(g,98,620,200,200,14); g.fillStyle='#ffffff'; g.fill();
+  if(!_rcQR(g,qrLink,110,632,176)){ g.fillStyle='#111'; g.font='700 18px '+RC_FONT; g.fillText('QR',198,728); }
+  _rcFit(g,T('d4.sh.scan'),'700',190,22,14); var scW=g.measureText(T('d4.sh.scan')).width;
+  g.fillStyle='#ffffff'; g.fillText(T('d4.sh.scan'),210,858); _rcLinkIcon(g,198-scW/2-8,853,7,GOLD,3);
+
+  // ── กล่องลิงก์สมาชิก ──
+  g.save(); g.shadowColor='rgba(240,185,11,.6)'; g.shadowBlur=26;
+  _rcRR(g,372,468,865,326,28); g.fillStyle='rgba(8,12,20,.92)'; g.fill(); g.strokeStyle=goldG(468,794); g.lineWidth=4; g.stroke(); g.restore();
+  _rcLinkIcon(g,420,512,14,GOLD,5);
+  g.textAlign='left'; _rcFit(g,T('d4.sh.lnk'),'700',640,30,18); g.fillStyle=GOLD; g.fillText(T('d4.sh.lnk'),456,522);
+  _rcRR(g,400,542,809,62,31); g.fillStyle='rgba(255,255,255,.04)'; g.fill(); g.strokeStyle='rgba(240,185,11,.55)'; g.lineWidth=2; g.stroke();
+  _rcLinkIcon(g,442,573,11,GOLD,4);
+  var shown=''; try{ shown=new URL(qrLink).host+'/r?ref='+ctx.id; }catch(e){ shown=qrLink; }
+  _rcFit(g,shown,'400',540,28,15); g.fillStyle='#ffffff'; g.fillText(shown,478,582);
+  var cb=g.createLinearGradient(0,552,0,594); cb.addColorStop(0,'#ffd84a'); cb.addColorStop(1,'#e0a800');
+  _rcRR(g,1040,553,157,40,20); g.fillStyle=cb; g.fill();
+  g.textAlign='center'; var cpy=plain(T('d4.l.copy')); _rcFit(g,cpy,'700',120,22,13); g.fillStyle='#1a1200'; g.fillText(cpy,1118,581);
+  // กล่องข้อมูลสมาชิก
+  _rcRR(g,400,624,809,158,20); g.fillStyle='rgba(255,255,255,.03)'; g.fill(); g.strokeStyle='rgba(240,185,11,.35)'; g.lineWidth=2; g.stroke();
+  g.strokeStyle='rgba(240,185,11,.3)'; g.beginPath(); g.moveTo(804,642); g.lineTo(804,764); g.stroke();
+  var cell=function(ix,iy,label,value,color,kind){
+    g.fillStyle=GOLD; g.strokeStyle=GOLD; g.lineWidth=3;
+    if(kind==='user'){ g.beginPath(); g.arc(ix,iy-8,8,0,Math.PI*2); g.fill(); g.beginPath(); g.arc(ix,iy+20,15,Math.PI*1.1,Math.PI*1.9); g.fill(); }
+    else if(kind==='cal'){ _rcRR(g,ix-15,iy-12,30,28,5); g.stroke(); g.fillRect(ix-15,iy-12,30,8); }
+    else if(kind==='shield'){ g.beginPath(); g.moveTo(ix,iy-18); g.lineTo(ix+16,iy-11); g.lineTo(ix+14,iy+8); g.lineTo(ix,iy+20); g.lineTo(ix-14,iy+8); g.lineTo(ix-16,iy-11); g.closePath(); g.fill(); g.strokeStyle='#0b0f18'; g.lineWidth=3; g.beginPath(); g.moveTo(ix-7,iy+1); g.lineTo(ix-2,iy+7); g.lineTo(ix+8,iy-6); g.stroke(); }
+    else { g.beginPath(); g.arc(ix-8,iy-6,7,0,Math.PI*2); g.fill(); g.beginPath(); g.arc(ix+9,iy-4,6,0,Math.PI*2); g.fill(); g.beginPath(); g.arc(ix-8,iy+18,13,Math.PI*1.1,Math.PI*1.9); g.fill(); g.beginPath(); g.arc(ix+9,iy+16,11,Math.PI*1.1,Math.PI*1.9); g.fill(); }
+    g.textAlign='left';
+    _rcFit(g,label,'400',290,22,13); g.fillStyle=GOLD; g.fillText(label,ix+46,iy-6);
+    _rcFit(g,value,'700',290,28,15); g.fillStyle=color||'#ffffff'; g.fillText(value,ix+46,iy+28);
+  };
+  var isActive=!!ctx.active;
+  cell(440,662,T('d4.sh.name'),ctx.name||'\u2014','#ffffff','user');
+  cell(442,738,T('d4.sh.join'),ctx.join||'\u2014','#ffffff','cal');
+  cell(846,662,T('d4.sh.status'),isActive?T('d4.sh.active'):(ctx.status||'\u2014'),isActive?'#4ade80':'#fbbf24','shield');
+  cell(846,738,T('d4.sh.down'),String(ctx.down)+' '+T('d4.sh.unit'),'#ffffff','team');
+
+  // ── ปุ่ม SHARE NOW ──
+  g.save(); g.shadowColor='rgba(240,185,11,.55)'; g.shadowBlur=24;
+  _rcRR(g,618,812,372,66,33); var sg=g.createLinearGradient(0,812,0,878); sg.addColorStop(0,'#ffe27a'); sg.addColorStop(1,'#e0a800'); g.fillStyle=sg; g.fill(); g.restore();
+  _rcLinkIcon(g,672,845,12,'#1a1200',5);
+  g.textAlign='center'; _rcFit(g,T('d4.sh.now'),'700',250,36,18,'italic'); g.fillStyle='#1a1200'; g.fillText(T('d4.sh.now'),838,858);
+  g.textAlign='center'; var more=T('d4.sh.more'); _rcFit(g,more,'700',720,24,14); var moreW=g.measureText(more).width;
+  g.fillStyle=GOLD; g.fillText(more,640,914); sideLines(640,906,moreW,16,110);
+
+  // ── ปุ่ม LINE / Telegram (ตกแต่ง) ──
+  var pill=function(x,y,w,h,c1,c2,stroke){
+    g.save(); g.shadowColor=stroke; g.shadowBlur=26; _rcRR(g,x,y,w,h,h/2);
+    var pgd=g.createLinearGradient(x,y,x,y+h); pgd.addColorStop(0,c1); pgd.addColorStop(1,c2); g.fillStyle=pgd; g.fill(); g.restore();
+    _rcRR(g,x,y,w,h,h/2); g.strokeStyle=stroke; g.lineWidth=3; g.stroke();
+  };
+  var chev=function(x,y){ g.strokeStyle='#fff'; g.lineWidth=5; g.lineCap='round'; g.beginPath(); g.moveTo(x-8,y-16); g.lineTo(x+8,y); g.lineTo(x-8,y+16); g.stroke(); };
+  pill(220,936,420,110,'#22c55e','#15803d','#86efac');
+  g.fillStyle='#fff'; g.beginPath(); g.arc(280,991,36,0,Math.PI*2); g.fill();
+  g.fillStyle='#15803d'; g.textAlign='center'; g.font='700 22px '+RC_FONT; g.fillText('LINE',280,999);
+  g.strokeStyle='rgba(255,255,255,.4)'; g.lineWidth=2; g.beginPath(); g.moveTo(342,960); g.lineTo(342,1022); g.stroke();
+  g.textAlign='left'; _rcFit(g,T('d4.sh.on'),'700',200,26,14); g.fillStyle='#ffffff'; g.fillText(T('d4.sh.on'),372,978);
+  g.font='700 52px '+RC_FONT; g.fillText('LINE',372,1028); chev(604,991);
+  pill(658,936,408,110,'#2aa5f6','#1769d6','#7dd3fc');
+  g.fillStyle='#fff'; g.beginPath(); g.moveTo(700,991); g.lineTo(782,956); g.lineTo(762,1026); g.lineTo(738,1008); g.lineTo(724,1022); g.lineTo(722,1002); g.closePath(); g.fill();
+  g.textAlign='left'; _rcFit(g,T('d4.sh.on'),'700',200,26,14); g.fillStyle='#ffffff'; g.fillText(T('d4.sh.on'),812,978);
+  _rcFit(g,'TELEGRAM','700',200,46,24); g.fillText('TELEGRAM',812,1028); chev(1030,991);
+
+  // ── ท้ายภาพ ──
+  _rcRR(g,307,1068,666,44,22); g.strokeStyle='rgba(240,185,11,.5)'; g.lineWidth=2; g.stroke();
+  g.fillStyle=GOLD; g.beginPath(); g.moveTo(342,1078); g.lineTo(356,1084); g.lineTo(354,1098); g.lineTo(342,1106); g.lineTo(330,1098); g.lineTo(328,1084); g.closePath(); g.fill();
+  g.textAlign='center'; _rcFit(g,T('d4.sh.foot'),'400',560,22,12); g.fillStyle='#d7c58a'; g.fillText(T('d4.sh.foot'),650,1097);
+  return cv;
+}
+
+function _rcCanvasBlob(cv){
+  return new Promise(function(res,rej){
+    try{ cv.toBlob(function(b){ b?res(b):rej(new Error('blob')); },'image/png'); }catch(e){ rej(e); }
+  });
+}
+function _rcCloseModal(){
+  var m=document.getElementById('tcc-refshare-modal'); if(m) m.remove();
+  if(_refShareBlobUrl){ try{ URL.revokeObjectURL(_refShareBlobUrl); }catch(e){} _refShareBlobUrl=''; }
+  document.removeEventListener('keydown',_rcEsc);
+}
+function _rcEsc(ev){ if(ev.key==='Escape') _rcCloseModal(); }
+function _rcCopyText(txt){
+  var done=function(){ tccNotif('success',tccT('common.copied'),tccT('d4.copiedM')); };
+  if(window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done,function(){ _rcCopyFallback(txt,done); });
+  } else _rcCopyFallback(txt,done);
+}
+function _rcCopyFallback(txt,done){
+  var el=document.createElement('textarea'); el.value=txt; el.style.position='fixed'; el.style.opacity='0';
+  document.body.appendChild(el); el.select(); try{ document.execCommand('copy'); done(); }catch(e){} document.body.removeChild(el);
+}
+
+async function tcOpenRefShare(){
+  var base=window._refShareCtx; if(!base) return;
+  var ctx=Object.assign({},base);
+  ctx.lg=((typeof window.tccLang==='function')?window.tccLang():'th')||'th';
+  var link=tccRefShareLink(ctx), msg=String(tccT('d4.sh.msg')||''), full=msg+'\n'+link;
+  _rcCloseModal();
+  var ov=document.createElement('div'); ov.id='tcc-refshare-modal';
+  ov.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:12px;';
+  ov.innerHTML='<div style="background:#0f1522;border:1px solid rgba(240,185,11,.4);border-radius:14px;width:100%;max-width:540px;max-height:96vh;overflow:auto;padding:14px;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><b style="color:#f0b90b;font-size:.95rem;">'+esc(tccT('d4.sh.title'))+'</b>'
+    +'<button type="button" data-a="close" style="background:none;border:none;color:#9aa4b2;font-size:1.3rem;cursor:pointer;line-height:1;">&times;</button></div>'
+    +'<div data-r="stage" style="min-height:120px;display:flex;align-items:center;justify-content:center;color:#9aa4b2;font-size:.8rem;">'+esc(tccT('d4.sh.busy'))+'</div>'
+    +'<div data-r="btns" style="display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;"></div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',function(ev){ if(ev.target===ov || (ev.target.getAttribute && ev.target.getAttribute('data-a')==='close')) _rcCloseModal(); });
+  document.addEventListener('keydown',_rcEsc);
+  var blob;
+  try{
+    var cv=await tccRefCardCanvas(ctx);
+    blob=await _rcCanvasBlob(cv);
+  }catch(e){
+    console.error('[ref-share]',e); _rcCloseModal(); tccNotif('error',tccT('d4.sh.title'),tccT('d4.sh.fail')); return;
+  }
+  if(!document.getElementById('tcc-refshare-modal')) return;
+  _refShareBlobUrl=URL.createObjectURL(blob);
+  var stage=ov.querySelector('[data-r="stage"]'); stage.style.display='block';
+  stage.innerHTML='<img src="'+_refShareBlobUrl+'" alt="" style="width:100%;height:auto;border-radius:10px;display:block;">';
+  var fname='TCC-referral-'+String(ctx.id).replace(/[^\w.-]/g,'')+'.png';
+  var btns=ov.querySelector('[data-r="btns"]'); btns.style.display='grid';
+  var bs='padding:11px 8px;border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;border:1px solid rgba(240,185,11,.4);background:rgba(240,185,11,.1);color:#f0b90b;touch-action:manipulation;';
+  var list=[];
+  if(navigator.share) list.push({k:'native',t:'\uD83D\uDDBC\uFE0F '+tccT('d4.sh.native'),s:'grid-column:1/-1;background:#f0b90b;color:#000;border-color:#f0b90b;'});
+  list.push({k:'line',t:'LINE',s:'background:#06c755;color:#fff;border-color:#06c755;'});
+  list.push({k:'tg',t:'Telegram',s:'background:#229ed9;color:#fff;border-color:#229ed9;'});
+  list.push({k:'save',t:'\uD83D\uDCBE '+tccT('d4.sh.save'),s:''});
+  list.push({k:'copy',t:'\uD83D\uDCCB '+tccT('d4.sh.copyTxt'),s:''});
+  btns.innerHTML=list.map(function(b){ return '<button type="button" data-k="'+b.k+'" style="'+bs+b.s+'">'+esc(b.t)+'</button>'; }).join('');
+  btns.addEventListener('click',async function(ev){
+    var b=ev.target.closest('button[data-k]'); if(!b) return; var k=b.getAttribute('data-k');
+    if(k==='native'){
+      try{
+        var file=new File([blob],fname,{type:'image/png'});
+        if(navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({files:[file],text:full});
+        else await navigator.share({text:msg,url:link});
+      }catch(e){ /* ผู้ใช้ยกเลิก */ }
+    } else if(k==='line'){
+      window.open('https://line.me/R/msg/text/?'+encodeURIComponent(full),'_blank','noopener');
+    } else if(k==='tg'){
+      window.open('https://t.me/share/url?url='+encodeURIComponent(link)+'&text='+encodeURIComponent(msg),'_blank','noopener');
+    } else if(k==='save'){
+      var a=document.createElement('a'); a.href=_refShareBlobUrl; a.download=fname; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    } else if(k==='copy'){
+      _rcCopyText(full);
+    }
+  });
+}
+window.tcOpenRefShare=tcOpenRefShare;
+
 function tcS5Referral(myId){
   const fmtU = v=>'$'+parseFloat(v||0).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
 
@@ -22128,6 +22432,14 @@ function tcS5Referral(myId){
   };
   // expose สำหรับ onclick inline
   window._tcCopyRefLink = copyRefLink;
+
+  // [REF-SHARE] ข้อมูลสำหรับวาดภาพแชร์ (ใช้ตอนกดปุ่ม "แชร์ภาพแนะนำ")
+  (function(){
+    var mm = TC.member || {}, jd = String(mm['CreatedAt']||mm['Created']||'').trim();
+    if(/^\d{4}-\d{2}-\d{2}/.test(jd)) jd = jd.slice(0,10); else if(!jd) jd = '\u2014';
+    window._refShareCtx = { id:String(myId), name:String(memVal(mm,'name')||'').trim(), status:String(memVal(mm,'status')||'').trim(),
+      active:isRefApproved(memVal(mm,'status')), join:jd, down:referred.length, baseUrl:baseUrl };
+  })();
 
   // ── โบนัสที่รอ Admin อนุมัติ ────────────────────────────────────
   const pendingBonus  = pending.length  * REF_BONUS_PER_MEMBER;
@@ -22262,6 +22574,12 @@ function tcS5Referral(myId){
           ${tccT('d4.l.copy')}
         </button>
       </div>
+      <button type="button" onclick="tcOpenRefShare()"
+        style="width:100%;margin-top:10px;padding:10px 14px;background:rgba(240,185,11,.12);color:var(--gold);
+          border:1px solid rgba(240,185,11,.45);border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;
+          touch-action:manipulation;-webkit-tap-highlight-color:transparent;">
+        ${tccT('d4.sh.btn')}
+      </button>
       <div style="font-size:.68rem;color:var(--muted);margin-top:7px;">
         ${tccT('d4.l.hint')}
       </div>

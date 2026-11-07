@@ -22417,7 +22417,8 @@ function tcS5Referral(myId){
   //   ส่ง lang เสมอ (รวม th) เพื่อให้ผู้รับเห็นภาษาเดียวกับที่ผู้แนะนำเลือก · เปลี่ยนภาษา → tcRender() วาดแท็บนี้ใหม่ ลิงก์จึงอัปเดตตาม
   let _refLg = 'th';
   try{ const _l = (typeof window.tccLang==='function' ? window.tccLang() : '') || ''; if((window.TCC_LANGS||[]).indexOf(_l)>-1) _refLg = _l; }catch(e){}
-  const refLink = `${baseUrl}?ref=${encodeURIComponent(myId)}&lang=${_refLg}#register`;
+  // [REF-OG] ลิงก์ที่แสดง/คัดลอก/แชร์ = Worker /r (การ์ดพรีวิวภาพแชร์ + ข้อความตามภาษา) แล้ว Worker พาไปหน้าสมัคร ?ref=&lang=#register
+  const refLink = WORKER_URL + '/r?ref=' + encodeURIComponent(myId) + '&lang=' + _refLg;
 
   // ── คัดลอกลิงค์ ─────────────────────────────────────────────────
   const copyRefLink=()=>{

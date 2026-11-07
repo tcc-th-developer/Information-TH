@@ -22114,7 +22114,8 @@ var _refShareBlobUrl = '';
 // [REF-SITE] ลิงก์แนะนำ = หน้าเว็บหลักของสโมสร (ไม่ใช่โดเมน Worker API) → ผู้รับเห็นโดเมนเว็บจริง ลดความสับสน
 var TCC_REF_SITE = 'https://tradercafeclubthai.tradercafeclub.workers.dev/';
 function tccRefSiteLink(id,lg){
-  return TCC_REF_SITE + '?ref=' + encodeURIComponent(id) + '&lang=' + encodeURIComponent(lg) + '#register';
+  // inv = รหัสผู้แนะนำซ้ำอีกชื่อ: ตัวแปร "ref" เป็นชื่อที่ระบบ normalize ลิงก์ของแอปแชท (เช่น Telegram) อาจตัดทิ้ง ทำให้ลิงก์แนะนำชนกับลิงก์เปล่า ?lang=xx ใช้แคชพรีวิวร่วมกัน
+  return TCC_REF_SITE + '?ref=' + encodeURIComponent(id) + '&inv=' + encodeURIComponent(id) + '&lang=' + encodeURIComponent(lg) + '#register';
 }
 function tccRefShareLink(ctx){
   return tccRefSiteLink(ctx.id, ctx.lg);

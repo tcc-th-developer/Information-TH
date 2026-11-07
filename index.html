@@ -4549,9 +4549,19 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
     qa('#tcc-lang-menu button').forEach(function(b){ b.classList.toggle('on',b.getAttribute('data-l')===cur); });
   }
 
+  // [URL-LANG] ใส่ ?lang=<ภาษาที่ใช้อยู่> ในแถบที่อยู่เสมอ → คัดลอก/ส่งต่อลิงก์จากเบราว์เซอร์แล้วการ์ดพรีวิวเป็นภาษาเดียวกัน
+  function syncUrlLang(){
+    try{
+      var u=new URL(location.href);
+      if(u.searchParams.get('lang')===cur) return;
+      u.searchParams.set('lang',cur);
+      history.replaceState(history.state,'',u.pathname+u.search+u.hash);
+    }catch(e){}
+  }
   function tccSetLang(l){
     if(!has(l)||l===cur) return;
     cur=l; lsSet(KEY,l); lsSet(CHAT_KEY,l);
+    syncUrlLang();
     tccApplyI18n();
     try{ var f=$('iframe_chat'); if(f&&f.contentWindow) f.contentWindow.postMessage({type:'sc-lang',lang:l},'*'); }catch(e){}
     try{ document.dispatchEvent(new CustomEvent('tcc-lang',{detail:{lang:l}})); }catch(e){}
@@ -4573,6 +4583,7 @@ $("#lgKey").addEventListener("keydown", e => { if (e.key === "Enter") $("#lgBtn"
   function init(){
     var menu=buildMenu(), btn=$('langBtnMain');
     if(btn) btn.addEventListener('click',function(){ menu.classList.toggle('open'); });
+    syncUrlLang();
     tccApplyI18n();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();

@@ -8038,10 +8038,16 @@ function buildSystemPanel(){
     </div>
     <div class="card">
       <div class="card-hd"><div class="card-icon">📋</div><span class="card-title">รายการล่าสุด</span><button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="ssClear(SS_PAYMENTS);loadPayments(true)">🔄 รีเฟรช</button><button onclick="triggerBlockchainVerify(this)" style="margin-left:6px;background:rgba(0,180,255,0.1);border:1px solid rgba(0,180,255,0.4);color:#00b4ff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:0.75rem;font-weight:700;">🔍 ตรวจ Blockchain</button></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;">
+        <div class="search-box" style="flex:1;min-width:200px;"><span class="search-icon">🔍</span><input type="text" class="form-control" id="admin-pay-search" placeholder="ค้นหาชื่อ / BNB ID / ทีม ในรายการจ่าย..." autocomplete="off" oninput="adminPaySearchInput()"></div>
+        <div id="admin-pay-chips" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      </div>
+      <div id="admin-pay-count" style="font-size:0.72rem;color:var(--muted);margin-bottom:8px;"></div>
       <div class="tbl-wrap"><table>
         <thead><tr><th>วันที่</th><th>BNB ID</th><th>ชื่อ</th><th>ทีม</th><th>กำไร</th><th>สมาชิก</th><th>โอนรวม</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
         <tbody id="admin-payments-table"><tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px;">กำลังโหลด...</td></tr></tbody>
       </table></div>
+      <div id="admin-pay-more" style="text-align:center;margin-top:12px;display:none;"><button class="btn btn-outline btn-sm" onclick="adminPayShowMore()">⬇️ แสดงเพิ่ม</button></div>
     </div>
   </div>
 
@@ -14348,11 +14354,51 @@ function pexFilterByTeam(n){ pexFilterByTag(n); }
 
 
 
+// ── ค้นหา/กรองรายการจ่าย (แอดมิน) — ค้นจาก PAYMENTS ที่โหลดไว้แล้ว ไม่ดึงข้อมูลเพิ่ม · วาดทีละหน้าเพื่อไม่ให้ DOM หนัก ──
+const ADMIN_PAY_PAGE=30;
+let _adminPayStatus='all', _adminPayLimit=ADMIN_PAY_PAGE, _adminPayTimer=null;
+const _adminPayIdx=new WeakMap();   // แคชข้อความค้นหาต่อแถว (สร้างครั้งเดียวต่อ record)
+function _adminPayKey(p){
+  let k=_adminPayIdx.get(p);
+  if(k===undefined){
+    const t=payVal(p,'team'),a=payVal(p,'lva'),b=payVal(p,'lvb');
+    k=[payVal(p,'name'),payVal(p,'bnb_id'),t,teamLabel(t),a,teamLabel(a),b,teamLabel(b)].join(' ').toLowerCase();
+    _adminPayIdx.set(p,k);
+  }
+  return k;
+}
+function adminPaySearchInput(){
+  clearTimeout(_adminPayTimer);
+  _adminPayTimer=setTimeout(()=>{_adminPayLimit=ADMIN_PAY_PAGE;renderAdminPayments();},200);
+}
+function adminPaySetStatus(st){_adminPayStatus=st;_adminPayLimit=ADMIN_PAY_PAGE;renderAdminPayments();}
+function adminPayShowMore(){_adminPayLimit+=ADMIN_PAY_PAGE;renderAdminPayments();}
 function renderAdminPayments(){
   const tbody=document.getElementById('admin-payments-table');
   if(!tbody)return;
-  const rows=PAYMENTS.slice(0,30);
-  if(!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px;">ไม่มีข้อมูล</td></tr>';return;}
+  const q=(document.getElementById('admin-pay-search')?.value||'').toLowerCase().trim();
+  const terms=q?q.split(/\s+/):[];
+  let nPend=0,nDone=0;
+  const matched=[];
+  for(const p of PAYMENTS){
+    if(terms.length){const k=_adminPayKey(p);if(!terms.every(t=>k.includes(t)))continue;}
+    const ok=payVal(p,'position')==='Approve';
+    if(ok)nDone++;else nPend++;
+    if(_adminPayStatus==='pending'&&ok)continue;
+    if(_adminPayStatus==='done'&&!ok)continue;
+    matched.push(p);
+  }
+  const chips=document.getElementById('admin-pay-chips');
+  if(chips){
+    const chip=(id,label,n)=>`<button class="btn btn-sm ${_adminPayStatus===id?'btn-gold':'btn-outline'}" onclick="adminPaySetStatus('${id}')">${label} (${n})</button>`;
+    chips.innerHTML=chip('all','ทั้งหมด',nPend+nDone)+chip('pending','⏳ รอชำระ',nPend)+chip('done','✅ จ่ายแล้ว',nDone);
+  }
+  const cnt=document.getElementById('admin-pay-count');
+  const more=document.getElementById('admin-pay-more');
+  const rows=matched.slice(0,_adminPayLimit);
+  if(cnt)cnt.textContent=(q||_adminPayStatus!=='all')?`พบ ${matched.length} รายการ`:`แสดง ${rows.length} จาก ${matched.length} รายการ`;
+  if(more)more.style.display=matched.length>rows.length?'block':'none';
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px;">${PAYMENTS.length?'ไม่พบรายการที่ตรงกับการค้นหา':'ไม่มีข้อมูล'}</td></tr>`;return;}
   tbody.innerHTML=rows.map(p=>{
     const st=payVal(p,'position'),ok=st==='Approve';
     const profit=payNum(p,'profit'),member=payNum(p,'member'),transfer=payNum(p,'transfer');

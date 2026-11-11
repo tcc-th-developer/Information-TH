@@ -15254,6 +15254,9 @@ async function savePayment(){
   const lvbFromDOM=document.getElementById('af-lvb-full')?.dataset.key||'—';
   
   const payload={'Field 1':memVal(selectedAdminMember,'id'),'Field 2':memVal(selectedAdminMember,'name'),'Field 3':memVal(selectedAdminMember,'team'),'Field 4':lvaFromDOM,'Field 5':lvbFromDOM,'Field 6':dateStr,'Field 8':total.toFixed(2),'Field 15':status,'Field 16':note||tradeNote};
+  // ส่งกระเป๋ารับชำระที่แอดมินเลือก (Worker ตรวจกับชีต Wallets อีกชั้น) — ไม่เลือก = ให้ Worker ใช้กระเป๋าหลัก
+  const _wIdx=parseInt(document.getElementById('af-wallet-select')?.value);
+  if(!isNaN(_wIdx)&&WALLETS[_wIdx]&&WALLETS[_wIdx].addr) payload.PayWallet=String(WALLETS[_wIdx].addr).trim();
   const btn=document.querySelector('[onclick="savePayment()"]');
   btn.textContent='⏳ กำลังบันทึก...';btn.disabled=true;
   const resEl=document.getElementById('save-result');
@@ -15339,7 +15342,11 @@ function showPaymentDetail(rowId){
   const reviewHTML=isReview?`<div style="padding:10px 12px;border-radius:10px;border:1px solid rgba(96,165,250,0.35);margin-bottom:10px;text-align:center;font-size:0.76rem;color:#60a5fa;">${/sender_mismatch/.test(String(payVal(p,'sysnote')||note||''))?tccT('pd.review.mismatch'):tccT('pd.review.amount')}</div>`:'';
 
   // Get current default wallet
-  const activeWallet=WALLETS.find(w=>w.active)||WALLETS[0]||SYSTEM_WALLET_DEFAULT;
+  // แสดงกระเป๋าตามที่บันทึกไว้ในรายการนี้ (PayWallet) — ไม่พบ/รายการเก่าไม่มีค่า → กระเป๋าหลัก
+  const _pw=String(p.PayWallet||'').trim().toLowerCase();
+  const activeWallet=(_pw&&WALLETS.find(w=>String(w.addr).trim().toLowerCase()===_pw))
+    ||(_pw&&WALLET_ADDR_RE.test(_pw)?{label:'กระเป๋ารับเงิน',addr:String(p.PayWallet).trim(),qr:walletQrUrl(p.PayWallet)}:null)
+    ||WALLETS.find(w=>w.active)||WALLETS[0]||SYSTEM_WALLET_DEFAULT;
 
   // Parse trade history from note
   const tradeHistory=note?note.split(' | ').filter(x=>x.includes(':')&&!/^\s*\[auto:/.test(x)):[];

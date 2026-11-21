@@ -14467,6 +14467,24 @@ function renderAdminTeams(){
 }
 
 // ═══════════════ TEAM MEMBERS MODAL ═══════════════
+// ── ความเป็นส่วนตัว: ชื่อแสดงเฉพาะชื่อต้น · ซ่อนบางส่วนของ BNB ID และกระเป๋า ──
+function _tmFirstName(n){
+  var s=String(n==null?'':n).trim();
+  if(!s) return '—';
+  return s.split(/\s+/)[0];
+}
+function _tmMaskId(id){
+  var s=String(id==null?'':id).trim();
+  if(!s) return '—';
+  if(s.length<=4) return s.charAt(0)+'*'.repeat(s.length-1);
+  return s.slice(0,3)+'*'.repeat(s.length-5)+s.slice(-2);
+}
+function _tmMaskWallet(w){
+  var s=String(w==null?'':w).trim();
+  if(!s) return '—';
+  if(s.length<=12) return s.slice(0,4)+'…';
+  return s.slice(0,6)+'…'+s.slice(-4);
+}
 function showTeamMembers(teamName){
   const members=MEMBERS.filter(m=>memVal(m,'team')===teamName);
   const _pubCnt=teamCount(teamName);
@@ -14478,9 +14496,9 @@ function showTeamMembers(teamName){
     content.innerHTML=`<div class="tbl-wrap"><table>
       <thead><tr><th>BNB ID</th><th>${tccT('yt.tm.name')}</th><th>${tccT('yt.tm.wallet')}</th><th>${tccT('yt.th.status')}</th></tr></thead>
       <tbody>${members.map(m=>`<tr>
-        <td style="color:var(--gold);font-family:monospace;">${memVal(m,'id')}</td>
-        <td style="font-weight:600;">${memVal(m,'name')}</td>
-        <td style="font-family:monospace;font-size:0.72rem;color:var(--muted);">${memVal(m,'wallet').slice(0,16)}...</td>
+        <td style="color:var(--gold);font-family:monospace;">${_tmMaskId(memVal(m,'id'))}</td>
+        <td style="font-weight:600;">${_tmFirstName(memVal(m,'name'))}</td>
+        <td style="font-family:monospace;font-size:0.72rem;color:var(--muted);">${_tmMaskWallet(memVal(m,'wallet'))}</td>
         <td><span class="badge ${memVal(m,'status')==='Pending'?'badge-pending':'badge-approve'}">${memVal(m,'status')||'—'}</span></td>
       </tr>`).join('')}</tbody>
     </table></div>`;

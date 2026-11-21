@@ -14467,38 +14467,40 @@ function renderAdminTeams(){
 }
 
 // ═══════════════ TEAM MEMBERS MODAL ═══════════════
-// ── ความเป็นส่วนตัว: ชื่อแสดงเฉพาะชื่อต้น · ซ่อนบางส่วนของ BNB ID และกระเป๋า ──
-function _tmFirstName(n){
-  var s=String(n==null?'':n).trim();
-  if(!s) return '—';
-  return s.split(/\s+/)[0];
-}
-function _tmMaskId(id){
-  var s=String(id==null?'':id).trim();
-  if(!s) return '—';
-  if(s.length<=4) return s.charAt(0)+'*'.repeat(s.length-1);
-  return s.slice(0,3)+'*'.repeat(s.length-5)+s.slice(-2);
-}
-function _tmMaskWallet(w){
-  var s=String(w==null?'':w).trim();
-  if(!s) return '—';
-  if(s.length<=12) return s.slice(0,4)+'…';
-  return s.slice(0,6)+'…'+s.slice(-4);
-}
+// แอดมิน: เห็นข้อมูลครบ · ผู้ใช้ทั่วไป: ดึงรายชื่อที่ปิดบังแล้วจาก Worker (/api/public/team-members)
 function showTeamMembers(teamName){
   const members=MEMBERS.filter(m=>memVal(m,'team')===teamName);
   const _pubCnt=teamCount(teamName);
   document.getElementById('team-members-title').textContent=tccT('yt.tm.title',{team:teamLabel(teamName),n:(members.length||_pubCnt)});
   const content=document.getElementById('team-members-content');
-  if(!members.length && _pubCnt){ content.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">'+tccT('yt.tm.locked')+'</div>'; document.getElementById('team-members-modal').classList.add('open'); return; }
+  if(!members.length && _pubCnt){
+    // ผู้ใช้ทั่วไป (ไม่ใช่แอดมิน): ดึงรายชื่อที่ปิดบังแล้วจาก Worker
+    content.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">…</div>';
+    document.getElementById('team-members-modal').classList.add('open');
+    fetch(`${WORKER_URL}/api/public/team-members?team=${encodeURIComponent(teamName)}`)
+      .then(r=>r.json()).then(d=>{
+        const L=Array.isArray(d.list)?d.list:[];
+        if(!L.length){ content.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">'+tccT('yt.tm.none')+'</div>'; return; }
+        const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        content.innerHTML=`<div class="tbl-wrap"><table>
+          <thead><tr><th>BNB ID</th><th>${tccT('yt.tm.name')}</th><th>${tccT('yt.tm.wallet')}</th><th>${tccT('yt.th.status')}</th></tr></thead>
+          <tbody>${L.map(m=>`<tr>
+            <td style="color:var(--gold);font-family:monospace;">${esc(m.id)||'—'}</td>
+            <td style="font-weight:600;">${esc(m.name)||'—'}</td>
+            <td style="font-family:monospace;font-size:0.72rem;color:var(--muted);">${esc(m.wallet)||'—'}</td>
+            <td><span class="badge ${m.status==='Pending'?'badge-pending':'badge-approve'}">${esc(m.status)||'—'}</span></td>
+          </tr>`).join('')}</tbody></table></div>`;
+      }).catch(()=>{ content.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">'+tccT('yt.tm.locked')+'</div>'; });
+    return;
+  }
   if(!members.length){content.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">'+tccT('yt.tm.none')+'</div>';}
   else{
     content.innerHTML=`<div class="tbl-wrap"><table>
       <thead><tr><th>BNB ID</th><th>${tccT('yt.tm.name')}</th><th>${tccT('yt.tm.wallet')}</th><th>${tccT('yt.th.status')}</th></tr></thead>
       <tbody>${members.map(m=>`<tr>
-        <td style="color:var(--gold);font-family:monospace;">${_tmMaskId(memVal(m,'id'))}</td>
-        <td style="font-weight:600;">${_tmFirstName(memVal(m,'name'))}</td>
-        <td style="font-family:monospace;font-size:0.72rem;color:var(--muted);">${_tmMaskWallet(memVal(m,'wallet'))}</td>
+        <td style="color:var(--gold);font-family:monospace;">${memVal(m,'id')}</td>
+        <td style="font-weight:600;">${memVal(m,'name')}</td>
+        <td style="font-family:monospace;font-size:0.72rem;color:var(--muted);">${memVal(m,'wallet').slice(0,16)}...</td>
         <td><span class="badge ${memVal(m,'status')==='Pending'?'badge-pending':'badge-approve'}">${memVal(m,'status')||'—'}</span></td>
       </tr>`).join('')}</tbody>
     </table></div>`;
